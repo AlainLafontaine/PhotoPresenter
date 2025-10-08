@@ -123,11 +123,19 @@ struct ImageView: View {
                 }
                 
                 VStack {
-                    FloatingLabelView(text: controller.fileInfos[controller.currentIndex].filename, isDisplay: $displayFilename,position: .halfTop)
+                    FloatingLabelView(
+                        text: controller.fileInfos[controller.currentIndex].filename,
+                        isDisplay: $displayFilename,position: .halfTop,
+                        opacityMinimale: 0.1
+                    )
                 }
                 
                 VStack {
-                    FloatingLabelView(text: "\(controller.currentIndex + 1) sur \(controller.fileInfos.count)", isDisplay: $displayNumImage);
+                    FloatingLabelView(
+                        text: "\(controller.currentIndex + 1) sur \(controller.fileInfos.count)",
+                        isDisplay: $displayNumImage,
+                        opacityMinimale: 0.1
+                    );
                 }
             } else {
                 Text("Initiation des images...").onAppear { displayImage = true }
