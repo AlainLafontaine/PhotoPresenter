@@ -10,24 +10,26 @@ import SwiftUI
 import AppKit  // Nécessaire pour NSImage
 
 class SlideShowController: ObservableObject {
-    @Published var currentIndex: Int = 0
-    @Published var isPaused: Bool = false
-    @Published var isReverse: Bool = false
-    @Published var isRandomizing: Bool = false
+    @ObservedObject private var viewSetting: ViewSetting
+    
+    //@Published var currentIndex: Int = 0
+    //@Published var isPaused: Bool = false
+    //@Published var isReverse: Bool = false
+    //@Published var isRandomizing: Bool = false
                var timer: Timer?
-               var intervalTimer: Double = 2.0
+               //var intervalTimer: Double = 2.0
                var fileInfos: [FileInfo] = []
                var directories: [String]
 
     init(viewSetting setting: ViewSetting)
     {
-        currentIndex = setting.currentIndex
-        isPaused = setting.isPaused
-        isRandomizing = setting.isRandomizing
-        intervalTimer = setting.intervalTimer
+        //isPaused = setting.isPaused
+        //isRandomizing = setting.isRandomizing
+        //intervalTimer = setting.intervalTimer
+        self.viewSetting = setting
         
         switch setting.type {
-        case ViewType.FilesSelected:
+        case ImageViewType.FilesSelected:
             directories = []
             for path in setting.filesSelected ?? [] {
                 if let nsImage = NSImage(contentsOfFile: path),
@@ -44,7 +46,7 @@ class SlideShowController: ObservableObject {
                 }
             }
             
-        case ViewType.DirectorySelected:
+        case ImageViewType.DirectorySelected:
             let ratio = setting.ratio ?? 1.0
             let tolerance = setting.tolerance ?? 0.05
             
@@ -54,22 +56,22 @@ class SlideShowController: ObservableObject {
                 self.fileInfos.append(contentsOf: fileInfos)
             }
             
-        case ViewType.WebServiceSelected:
+        case ImageViewType.WebServiceSelected:
             directories = setting.directorySelected ?? []
         }
     }
     
     func start() {
         timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: intervalTimer, repeats: true) { [weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: viewSetting.intervalTimer, repeats: true) { [weak self] _ in
             guard let self = self else { return }
-            if !self.isPaused {
-                if self.isRandomizing {
-                    self.currentIndex = Int.random(in: 0..<self.fileInfos.count)
-                } else if isReverse {
-                    self.currentIndex = (self.currentIndex - 1 + self.fileInfos.count) % self.fileInfos.count
+            if !viewSetting.isPaused {
+                if viewSetting.isRandomizing {
+                    viewSetting.currentIndex = Int.random(in: 0..<self.fileInfos.count)
+                } else if viewSetting.isReverse {
+                    viewSetting.currentIndex = (viewSetting.currentIndex - 1 + self.fileInfos.count) % self.fileInfos.count
                 } else {
-                    self.currentIndex = (self.currentIndex + 1) % self.fileInfos.count
+                    viewSetting.currentIndex = (viewSetting.currentIndex + 1) % self.fileInfos.count
                 }
             }
         }
@@ -78,7 +80,7 @@ class SlideShowController: ObservableObject {
     func keyDown(with event: NSEvent) {
         switch event.keyCode {
         case 49:
-            isPaused.toggle()
+            viewSetting.isPaused.toggle()
             
         case 123...126:
             navigationByKeyboard(event: event)
@@ -126,30 +128,30 @@ class SlideShowController: ObservableObject {
     }
     
     private func navigationByKeyboard(event: NSEvent) {
-        if !isPaused {
-            isPaused.toggle()
+        if !viewSetting.isPaused {
+            viewSetting.isPaused.toggle()
         }
         
         switch event.keyCode {
         case 123: // Left
-            if self.currentIndex > 0 {
-                self.currentIndex -= 1
+            if viewSetting.currentIndex > 0 {
+                viewSetting.currentIndex -= 1
             } else {
-                self.currentIndex = self.fileInfos.count - 1
+                viewSetting.currentIndex = fileInfos.count - 1
             }
                 
         case 124: // Right
-            if self.currentIndex < self.fileInfos.count - 1 {
-                self.currentIndex += 1
+            if viewSetting.currentIndex < fileInfos.count - 1 {
+                viewSetting.currentIndex += 1
             } else {
-                self.currentIndex = 0
+                viewSetting.currentIndex = 0
             }
             
         case 125: // Down
-            self.currentIndex = 0
+            viewSetting.currentIndex = 0
             
         case 126: // Up
-            self.currentIndex = self.fileInfos.count - 1
+            viewSetting.currentIndex = self.fileInfos.count - 1
             
         default:
             break;

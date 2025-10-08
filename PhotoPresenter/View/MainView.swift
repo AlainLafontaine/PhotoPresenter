@@ -19,10 +19,10 @@ struct MainView: View {
         Group {
             switch viewModel.displayView {
             case .information:
-                PhotoPresenterInfo(presenter: $photoPresenter)
+                PhotoPresenterInfo(presenter: photoPresenter)
                 
             case .multiImageView:
-                MultiImageView(presenter: $photoPresenter)
+                MultiImageView(presenter: photoPresenter)
                     .frame(maxWidth: .infinity, maxHeight:.infinity)
                     .background(Color.black).onDisappear {
                         

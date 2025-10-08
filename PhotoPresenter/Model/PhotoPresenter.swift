@@ -6,50 +6,50 @@
 //
 
 import Foundation
+import Combine
 
-enum Orientation: String, Codable, Hashable {
-    case Horizontal
-    case Vertical
-    case Free
+class PhotoPresenter: ObservableObject, Codable, Hashable {
+    @Published var fileHeader: FileHeader
+    @Published var groupedViews: [GroupedView]
+
+    // MARK: - Codable
+    enum CodingKeys: String, CodingKey {
+        case fileHeader
+        case groupedViews
+    }
+
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        fileHeader = try container.decode(FileHeader.self, forKey: .fileHeader)
+        groupedViews = try container.decode([GroupedView].self, forKey: .groupedViews)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(fileHeader, forKey: .fileHeader)
+        try container.encode(groupedViews, forKey: .groupedViews)
+    }
+
+    // MARK: - Hashable
+    static func == (lhs: PhotoPresenter, rhs: PhotoPresenter) -> Bool {
+        lhs.fileHeader == rhs.fileHeader && lhs.groupedViews == rhs.groupedViews
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(fileHeader)
+        hasher.combine(groupedViews)
+    }
+
+    // MARK: - Initializer
+    init(fileHeader: FileHeader, groupedViews: [GroupedView]) {
+        self.fileHeader = fileHeader
+        self.groupedViews = groupedViews
+    }
 }
-
-enum ViewType: String, Codable, Hashable {
-    case FilesSelected
-    case DirectorySelected
-    case WebServiceSelected
-}
-
-struct PhotoPresenter: Codable, Hashable {
-    let fileHeader: FileHeader
-    let groupedViews: [GroupedView]
-}
-
+/*
 struct FileHeader: Codable, Hashable {
     let name: String
     let description: String?
     let orientation: Orientation
 }
-
-struct GroupedView: Codable, Hashable {
-    let nbOfView: Int
-    let viewSettings: [ViewSetting]
-}
-
-struct ViewSetting: Codable, Hashable {
-    let type: ViewType
-    
-    let isPaused: Bool
-    let isRandomizing: Bool
-    let currentIndex: Int
-    let intervalTimer: Double
-    let displayNumImage: Bool
-    let displayFilename: Bool
-
-    // Section pour le type fichiers par sélection
-    let filesSelected: [String]?
-    
-    // Section pour le type fichiers sélectionnés à l'aide de répertoire
-    let directorySelected: [String]?
-    let ratio: Double?
-    let tolerance: Double?
-}
+*/

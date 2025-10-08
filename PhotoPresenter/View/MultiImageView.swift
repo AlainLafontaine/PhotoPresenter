@@ -10,7 +10,7 @@ import AppKit  // Nécessaire pour NSImage
 import SwiftUtilities
 
 struct MultiImageView: View {
-    @Binding private var photoPresenter: PhotoPresenter
+    @ObservedObject private var photoPresenter: PhotoPresenter
     
     var body: some View {
         switch photoPresenter.fileHeader.orientation
@@ -22,9 +22,6 @@ struct MultiImageView: View {
                         VStack(spacing: 0) {
                             ImageView(name: photoPresenter.fileHeader.name,
                                       setting: photoPresenter.groupedViews[grViewIndex].viewSettings[viewSettingIndex])
-                                .onDisappear {
-                                    //saveToJSONFile<PhotoPresenter>()
-                                }
                         }
                     }
                 }.frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -52,7 +49,7 @@ struct MultiImageView: View {
         }
     }
 
-    init(presenter: Binding<PhotoPresenter>) {
-        self._photoPresenter = presenter // ✅ note le underscore
+    init(presenter: PhotoPresenter) {
+        self.photoPresenter = presenter // ✅ note le underscore
     }
 }

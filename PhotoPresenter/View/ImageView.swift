@@ -27,15 +27,12 @@ struct WindowAccessor: NSViewRepresentable {
 
 struct ImageView: View {
     
+    @ObservedObject private var viewSetting: ViewSetting
+
     @StateObject private var controller: SlideShowController
-    
-    var viewSetting: ViewSetting
-    
+
     @State private var displayImage = false
-    @State private var displayNumImage: Bool
-    @State private var displayFilename: Bool
     @State private var displayParameters: Bool = false
-    @State private var intervalTimer: Double
     @State private var savePauseState = false
     
     private var title: String;
@@ -49,7 +46,7 @@ struct ImageView: View {
                 }
                 
                 Image(
-                    nsImage: controller.fileInfos[controller.currentIndex].nsImage
+                    nsImage: controller.fileInfos[viewSetting.currentIndex].nsImage
                 )
                 .resizable()
                 .scaledToFit()
@@ -61,59 +58,59 @@ struct ImageView: View {
                 })
                 .contextMenu {
                     Button(action: {
-                        controller.isPaused.toggle()
+                        viewSetting.isPaused.toggle()
                     }) {
-                        Label("Pause", systemImage: controller.isPaused ? "checkmark.circle.fill" : "circle")
+                        Label("Pause", systemImage: viewSetting.isPaused ? "checkmark.circle.fill" : "circle")
                     }
                     
                     Button(action: {
-                        if controller.isReverse {
-                            controller.isReverse.toggle()
+                        if viewSetting.isReverse {
+                            viewSetting.isReverse.toggle()
                         } else {
-                            if controller.isRandomizing {
-                                controller.isRandomizing.toggle()
+                            if viewSetting.isRandomizing {
+                                viewSetting.isRandomizing.toggle()
                             }
-                            controller.isReverse.toggle()
+                            viewSetting.isReverse.toggle()
                         }
                     }) {
-                        Label("Inverser", systemImage: controller.isReverse ? "checkmark.circle.fill" : "circle")
+                        Label("Inverser", systemImage: viewSetting.isReverse ? "checkmark.circle.fill" : "circle")
                     }
                     
                     Button(action: {
-                        if controller.isRandomizing {
-                            controller.isRandomizing.toggle()
+                        if viewSetting.isRandomizing {
+                            viewSetting.isRandomizing.toggle()
                         } else {
-                            if controller.isReverse {
-                                controller.isReverse.toggle()
+                            if viewSetting.isReverse {
+                                viewSetting.isReverse.toggle()
                             }
-                            controller.isRandomizing.toggle()
+                            viewSetting.isRandomizing.toggle()
                         }
                     }) {
-                        Label("Aléatoire", systemImage: controller.isRandomizing ? "checkmark.circle.fill" : "circle")
+                        Label("Aléatoire", systemImage: viewSetting.isRandomizing ? "checkmark.circle.fill" : "circle")
                     }
                     
                     Divider() // ⬅️ Séparateur visuel
                     
                     Button(action: {
-                        displayFilename.toggle()
+                        viewSetting.displayFilename.toggle()
                     }) {
-                        Label("Nom du fichier", systemImage: displayFilename ? "checkmark.circle.fill" : "circle")
+                        Label("Nom du fichier", systemImage: viewSetting.displayFilename ? "checkmark.circle.fill" : "circle")
                     }
                     
                     Button(action: {
-                        displayNumImage.toggle()
+                        viewSetting.displayNumImage.toggle()
                     }) {
-                        Label("# Image", systemImage: displayNumImage ? "checkmark.circle.fill" : "circle")
+                        Label("# Image", systemImage: viewSetting.displayNumImage ? "checkmark.circle.fill" : "circle")
                     }
                     
                     Divider() // ⬅️ Séparateur visuel
                     
                     Button(action: {
-                        intervalTimer = controller.intervalTimer
-                        savePauseState = controller.isPaused
+                        viewSetting.intervalTimer = viewSetting.intervalTimer
+                        savePauseState = viewSetting.isPaused
                         
-                        if (!controller.isPaused) {
-                            controller.isPaused.toggle()
+                        if (!viewSetting.isPaused) {
+                            viewSetting.isPaused.toggle()
                         }
                         displayImage.toggle()
                         displayParameters.toggle()
@@ -124,16 +121,16 @@ struct ImageView: View {
                 
                 VStack {
                     FloatingLabelView(
-                        text: controller.fileInfos[controller.currentIndex].filename,
-                        isDisplay: $displayFilename,position: .halfTop,
+                        text: controller.fileInfos[viewSetting.currentIndex].filename,
+                        isDisplay: $viewSetting.displayFilename,position: .halfTop,
                         opacityMinimale: 0.1
                     )
                 }
                 
                 VStack {
                     FloatingLabelView(
-                        text: "\(controller.currentIndex + 1) sur \(controller.fileInfos.count)",
-                        isDisplay: $displayNumImage,
+                        text: "\(viewSetting.currentIndex + 1) sur \(controller.fileInfos.count)",
+                        isDisplay: $viewSetting.displayNumImage,
                         opacityMinimale: 0.1
                     );
                 }
@@ -141,20 +138,20 @@ struct ImageView: View {
                 Text("Initiation des images...").onAppear { displayImage = true }
             }
             
-            // Affichage pour la vue qui affiche les paramètresversion
+            // Affichage pour la vue qui affiche les paramètres version
             if displayParameters {
-                ParametersView(intervalTimer: $intervalTimer) { didApply in
+                ParametersView(intervalTimer: $viewSetting.intervalTimer) { didApply in
                     if didApply {
-                        controller.intervalTimer = intervalTimer
+                        viewSetting.intervalTimer = viewSetting.intervalTimer
                         displayParameters.toggle()
                         displayImage.toggle()
                         controller.start()
-                        controller.isPaused = savePauseState
+                        viewSetting.isPaused = savePauseState
                     } else {
                         displayParameters.toggle()
                         displayImage.toggle()
                         controller.start()
-                        controller.isPaused = savePauseState
+                        viewSetting.isPaused = savePauseState
                     }
                 }
             }
@@ -162,14 +159,8 @@ struct ImageView: View {
     }
 
     init(name title: String, setting: ViewSetting) {
-        _controller = StateObject(wrappedValue: SlideShowController(viewSetting: setting))
-        
+        self._controller = StateObject(wrappedValue: SlideShowController(viewSetting: setting))
         self.viewSetting = setting
-        
-        displayNumImage = setting.displayNumImage
-        displayFilename = setting.displayFilename
-        intervalTimer = setting.intervalTimer
-        
         self.title = title
     }
     
