@@ -37,10 +37,10 @@ struct PhotoPresenterApp: App {
             CommandGroup(after: .newItem) {
                 Button("Open…") {
                     if let url = openFileDialog(),
-                       var presenter = LoadPhotoPresenter(fullpath: url.path())
+                       let presenter = LoadPhotoPresenter(fullpath: url.path())
                     {
                         let viewModel = DisplayViewModel()
-                        var helper = MainViewHelper(filename: url.path(), presenter: presenter, viewId: viewModel.mainViewId)
+                        let helper = MainViewHelper(filename: url.path(), presenter: presenter, viewId: viewModel.mainViewId)
                         
                         displayViews[viewModel.mainViewId] = viewModel
                         openWindow(id: "mainWindow", value: helper)
