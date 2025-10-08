@@ -44,7 +44,7 @@ struct ImageView: View {
     var body: some View {
         ZStack {
             if displayImage {
-                KeyCatcherView { event in
+                KeyCatcherView { event, isShiftPressed in
                     controller.keyDown(with: event)
                 }
                 
@@ -122,18 +122,13 @@ struct ImageView: View {
                     }
                 }
                 
-                if displayFilename {
-                    VStack {
-                        FloatingLabelView(text: controller.fileInfos[controller.currentIndex].filename, position: .halfTop)
-                    }
+                VStack {
+                    FloatingLabelView(text: controller.fileInfos[controller.currentIndex].filename, isDisplay: $displayFilename,position: .halfTop)
                 }
                 
-                if displayNumImage {
-                    VStack {
-                        FloatingLabelView(text: "\(controller.currentIndex + 1) sur \(controller.fileInfos.count)")
-                    }
+                VStack {
+                    FloatingLabelView(text: "\(controller.currentIndex + 1) sur \(controller.fileInfos.count)", isDisplay: $displayNumImage);
                 }
-                
             } else {
                 Text("Initiation des images...").onAppear { displayImage = true }
             }
