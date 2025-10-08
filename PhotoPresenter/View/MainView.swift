@@ -10,8 +10,11 @@ import SwiftUtilities
 
 struct MainView: View {
     
-    @ObservedObject private var viewModel: DisplayViewModel    
+    @ObservedObject private var viewModel: DisplayViewModel
+    @ObservedObject private var windowObserver: WindowEventObserver
+    
     @State private var photoPresenter: PhotoPresenter
+    @State private var window: NSWindow?
     
     private let filename: String
     
@@ -29,18 +32,26 @@ struct MainView: View {
                     }
             }
         }.onAppear {
-            if let window = NSApp.windows.last {
-                window.identifier = NSUserInterfaceItemIdentifier(viewModel.mainViewId.uuidString)
+            if let wind = NSApp.windows.last {
+                self.window = wind
+                self.window?.identifier = NSUserInterfaceItemIdentifier(viewModel.mainViewId.uuidString)
             }
         }.onDisappear {
+            //photoPresenter.fileHeader.windowPosition = WindowPosition(x: Int(frame.origin.x), y: Int(frame.origin.y), width: Int(frame.size.width), height: Int(frame.size.height))
             saveToJSONFile(photoPresenter, filename: filename)
         }
     }
     
-    init(filename path: String, presenter photoPresenter: PhotoPresenter, displayViewModel displayView: DisplayViewModel) {
+    init(
+        filename path: String,
+        presenter photoPresenter: PhotoPresenter,
+        displayViewModel displayView: DisplayViewModel,
+        windowObserver observer: WindowEventObserver
+    ) {
         self.filename = path
         self.photoPresenter = photoPresenter
         self.viewModel = displayView
+        self.windowObserver = observer
     }
 }
 

@@ -9,6 +9,12 @@ import AppKit
 import UniformTypeIdentifiers  // ✅ nécessaire pour UTType
 import SwiftUI
 
+extension NSApplication {
+    var mainWindowFrame: NSRect? {
+        return self.mainWindow?.frame
+    }
+}
+
 struct MainViewHelper: Codable, Hashable {
     let filename: String
     let presenter: PhotoPresenter
@@ -18,6 +24,8 @@ struct MainViewHelper: Codable, Hashable {
 @main
 struct PhotoPresenterApp: App {
     @Environment(\.openWindow) private var openWindow
+    
+    @StateObject private var windowObserver = WindowEventObserver()
     
     @State private var displayViews: [UUID: DisplayViewModel] = [:]
     
@@ -31,7 +39,33 @@ struct PhotoPresenterApp: App {
             if let helper = helper,
                let viewModel = displayViews[helper.viewId]
             {
-                MainView(filename: helper.filename, presenter: helper.presenter, displayViewModel: viewModel)
+                MainView(
+                    filename: helper.filename,
+                    presenter: helper.presenter,
+                    displayViewModel: viewModel,
+                    windowObserver: windowObserver
+                )
+                .onAppear {
+                    if let window = NSApplication.shared.windows.first {
+                        if let position = helper.presenter.fileHeader.windowPosition {
+                            restoreWindowPosition(for: window, positionWindow: position)
+                        }
+                    }
+                }
+/*
+                .onReceive(windowObserver.$lastFrame) { newFrame in
+                    
+                    helper.presenter.fileHeader.windowPosition = WindowPosition(
+                        x: Int(newFrame.origin.x),
+                        y: Int(newFrame.origin.y),
+                        width: Int(newFrame.size.width),
+                        height: Int(newFrame.size.height)
+                    )
+                }
+ */
+                .background(WindowAccessor { window in
+                    window.delegate = windowObserver
+                })
             }
         }.commands {
             CommandGroup(after: .newItem) {
@@ -89,7 +123,7 @@ struct PhotoPresenterApp: App {
         }
     }
     
-    func sendCommandToActiveWindow(_ command: DisplayViewModel.DisplayView) {
+    private func sendCommandToActiveWindow(_ command: DisplayViewModel.DisplayView) {
         if let keyWindow = NSApp.keyWindow {
             for (id, controller) in displayViews {
                 if let window = NSApp.windows.first(where: { $0.identifier?.rawValue == id.uuidString }),
@@ -99,5 +133,20 @@ struct PhotoPresenterApp: App {
                 }
             }
         }
+    }
+    
+    private func restoreWindowPosition(for window: NSWindow, positionWindow pos: WindowPosition) {
+        let frame = NSRect(x: pos.x, y: pos.y, width: pos.width, height: pos.height)
+        window.setFrame(frame, display: true)
+    }
+    
+    private func saveWindowPosition(_ frame: NSRect) {
+        let dict: [String: CGFloat] = [
+            "x": frame.origin.x,
+            "y": frame.origin.y,
+            "width": frame.size.width,
+            "height": frame.size.height
+        ]
+        UserDefaults.standard.set(dict, forKey: "windowFrame")
     }
 }

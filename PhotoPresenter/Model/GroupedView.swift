@@ -6,12 +6,6 @@
 //
 
 import Foundation
-/*
-struct GroupedView: Codable, Hashable {
-    let nbOfView: Int
-    let viewSettings: [ViewSetting]
-}
-*/
 
 class GroupedView: ObservableObject, Codable, Hashable {
     @Published var nbOfView: Int
