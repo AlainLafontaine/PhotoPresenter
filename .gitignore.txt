@@ -1,0 +1,65 @@
+# Xcode
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+*.moved-aside
+*.xcworkspace/xcuserdata
+*.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
+*.xcodeproj/project.xcworkspace
+*.xcodeproj/xcuserdata
+*.xcodeproj/xcshareddata/WorkspaceSettings.xcsettings
+
+# Build artifacts
+DerivedData/
+build/
+Build/
+*.build/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+
+# Swift Package Manager
+.swiftpm/
+Package.resolved
+.build/
+
+# CocoaPods
+Pods/
+Podfile.lock
+
+# Carthage
+Carthage/Build/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# Archives
+*.xcarchive
+*.ipa
+*.dSYM
+*.app
+
+# Debugging
+*.log
+*.swp
+*.swo
+
+# Playground
+timeline.xctimeline
+playground.xcworkspace
+Contents.swift
+
+# User-specific
+*.DS_Store
+*.idea/
+*.vscode/
+*.env
+*.orig
+*.rej
+
+# iCloud Drive or external sync
+*.icloud
