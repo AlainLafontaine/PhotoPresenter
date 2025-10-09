@@ -19,7 +19,7 @@ struct MainViewHelper: Codable, Hashable {
 struct PhotoPresenterApp: App {
     @Environment(\.openWindow) private var openWindow
     
-    @State private var displayViews: [UUID: DisplayViewModel] = [:]
+    @State private var data2Presenters: [UUID: Data2Presenter] = [:]
     
     var body: some Scene {
         
@@ -29,9 +29,9 @@ struct PhotoPresenterApp: App {
         
         WindowGroup(id: "mainWindow", for: MainViewHelper.self) { $helper in
             if let helper = helper,
-               let viewModel = displayViews[helper.viewId]
+               let data2Presenter = data2Presenters[helper.viewId]
             {
-                MainView(filename: helper.filename, presenter: helper.presenter, displayViewModel: viewModel)
+                MainView(filename: helper.filename, presenter: helper.presenter, data2Presenter: data2Presenter)
             }
         }.commands {
             CommandGroup(after: .newItem) {
@@ -39,10 +39,10 @@ struct PhotoPresenterApp: App {
                     if let url = openFileDialog(),
                        let presenter = LoadPhotoPresenter(fullpath: url.path())
                     {
-                        let viewModel = DisplayViewModel()
-                        let helper = MainViewHelper(filename: url.path(), presenter: presenter, viewId: viewModel.mainViewId)
+                        let data2Presenter = Data2Presenter()
+                        let helper = MainViewHelper(filename: url.path(), presenter: presenter, viewId: data2Presenter.mainViewId)
                         
-                        displayViews[viewModel.mainViewId] = viewModel
+                        data2Presenters[data2Presenter.mainViewId] = data2Presenter
                         openWindow(id: "mainWindow", value: helper)
                     }
                 }
@@ -89,9 +89,9 @@ struct PhotoPresenterApp: App {
         }
     }
     
-    func sendCommandToActiveWindow(_ command: DisplayViewModel.DisplayView) {
+    func sendCommandToActiveWindow(_ command: Data2Presenter.DisplayView) {
         if let keyWindow = NSApp.keyWindow {
-            for (id, controller) in displayViews {
+            for (id, controller) in data2Presenters {
                 if let window = NSApp.windows.first(where: { $0.identifier?.rawValue == id.uuidString }),
                    window == keyWindow {
                     controller.displayView = command

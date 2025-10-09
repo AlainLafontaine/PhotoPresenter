@@ -7,7 +7,7 @@
 
 import Foundation
 
-class DisplayViewModel: ObservableObject, Identifiable {
+class Data2Presenter: ObservableObject, Identifiable {
     enum DisplayView: String, Codable, Equatable {
         case information
         case multiImageView
