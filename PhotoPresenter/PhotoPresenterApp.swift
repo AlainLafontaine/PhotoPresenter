@@ -8,6 +8,7 @@
 import AppKit
 import UniformTypeIdentifiers  // ✅ nécessaire pour UTType
 import SwiftUI
+import SwiftUtilities
 
 struct MainViewHelper: Codable, Hashable {
     let filename: String
@@ -19,7 +20,7 @@ struct MainViewHelper: Codable, Hashable {
 struct PhotoPresenterApp: App {
     @Environment(\.openWindow) private var openWindow
     
-    @State private var displayViews: [UUID: DisplayViewModel] = [:]
+    @State private var data2Presenters: [UUID: Data2Presenter] = [:]
     
     var body: some Scene {
         
@@ -29,9 +30,24 @@ struct PhotoPresenterApp: App {
         
         WindowGroup(id: "mainWindow", for: MainViewHelper.self) { $helper in
             if let helper = helper,
-               let viewModel = displayViews[helper.viewId]
+               let data2Presenter = data2Presenters[helper.viewId]
             {
-                MainView(filename: helper.filename, presenter: helper.presenter, displayViewModel: viewModel)
+                MainView(
+                    filename: helper.filename,
+                    presenter: helper.presenter,
+                    data2Presenter: data2Presenter
+                ).onAppear {
+                    if let window = NSApp.windows.first(where: { $0.identifier?.rawValue == data2Presenter.mainViewId.uuidString }) {
+                        let frame = NSRect(
+                            x: data2Presenter.photoPresenter?.fileHeader.windowPosition?.x ?? 0,
+                            y: data2Presenter.photoPresenter?.fileHeader.windowPosition?.y ?? 0,
+                            width: data2Presenter.photoPresenter?.fileHeader.windowPosition?.width ?? 400,
+                            height: data2Presenter.photoPresenter?.fileHeader.windowPosition?.height ?? 400
+                        )
+                                
+                        window.setFrame(frame, display: true)
+                    }
+                }
             }
         }.commands {
             CommandGroup(after: .newItem) {
@@ -39,14 +55,23 @@ struct PhotoPresenterApp: App {
                     if let url = openFileDialog(),
                        let presenter = LoadPhotoPresenter(fullpath: url.path())
                     {
-                        let viewModel = DisplayViewModel()
-                        let helper = MainViewHelper(filename: url.path(), presenter: presenter, viewId: viewModel.mainViewId)
+                        let data2Presenter = Data2Presenter(filename: url.path())
+                        let helper = MainViewHelper(filename: url.path(), presenter: presenter, viewId: data2Presenter.mainViewId)
                         
-                        displayViews[viewModel.mainViewId] = viewModel
+                        data2Presenters[data2Presenter.mainViewId] = data2Presenter
                         openWindow(id: "mainWindow", value: helper)
                     }
                 }
                 .keyboardShortcut("O", modifiers: [.command])
+                
+                Button("Save") {
+                    savePhotoPresenterToActiveWindow()
+                }
+                .keyboardShortcut("S", modifiers: [.command])
+                
+                Button("Save all") {
+                    saveAllPhotoPresenter()
+                }
             }
             
             CommandGroup(before: .sidebar) {
@@ -89,9 +114,9 @@ struct PhotoPresenterApp: App {
         }
     }
     
-    func sendCommandToActiveWindow(_ command: DisplayViewModel.DisplayView) {
+    func sendCommandToActiveWindow(_ command: Data2Presenter.DisplayView) {
         if let keyWindow = NSApp.keyWindow {
-            for (id, controller) in displayViews {
+            for (id, controller) in data2Presenters {
                 if let window = NSApp.windows.first(where: { $0.identifier?.rawValue == id.uuidString }),
                    window == keyWindow {
                     controller.displayView = command
@@ -100,4 +125,35 @@ struct PhotoPresenterApp: App {
             }
         }
     }
+    
+    func savePhotoPresenterToActiveWindow() {
+        if let keyWindow = NSApp.keyWindow {
+            for (id, data2Presenter) in data2Presenters {
+                if let window = NSApp.windows.first(where: { $0.identifier?.rawValue == id.uuidString }),
+                   window == keyWindow {
+                    data2Presenter.photoPresenter?.fileHeader.windowPosition?.x = Int(window.frame.origin.x)
+                    data2Presenter.photoPresenter?.fileHeader.windowPosition?.y = Int(window.frame.origin.y)
+                    data2Presenter.photoPresenter?.fileHeader.windowPosition?.width = Int(window.frame.size.width)
+                    data2Presenter.photoPresenter?.fileHeader.windowPosition?.height = Int(window.frame.size.height)
+                    
+                    saveToJSONFile(data2Presenter.photoPresenter, filename: data2Presenter.filename)
+                    break
+                }
+            }
+        }
+    }
+    
+    func saveAllPhotoPresenter() {
+        for (id, data2Presenter) in data2Presenters {
+            if let window = NSApp.windows.first(where: { $0.identifier?.rawValue == id.uuidString }) {
+                data2Presenter.photoPresenter?.fileHeader.windowPosition?.x = Int(window.frame.origin.x)
+                data2Presenter.photoPresenter?.fileHeader.windowPosition?.y = Int(window.frame.origin.y)
+                data2Presenter.photoPresenter?.fileHeader.windowPosition?.width = Int(window.frame.size.width)
+                data2Presenter.photoPresenter?.fileHeader.windowPosition?.height = Int(window.frame.size.height)
+                
+                saveToJSONFile(data2Presenter.photoPresenter, filename: data2Presenter.filename)
+            }
+        }
+    }
+
 }
