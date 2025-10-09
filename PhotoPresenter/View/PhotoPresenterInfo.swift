@@ -9,9 +9,8 @@ import SwiftUI
 import SwiftUtilities
 
 struct PhotoPresenterInfo: View {
-    @Binding private var photoPresenter: PhotoPresenter
+    @ObservedObject private var photoPresenter: PhotoPresenter
 
-    
     var body: some View {
         
         Text("Nom: \(photoPresenter.fileHeader.name)").padding()
@@ -21,7 +20,7 @@ struct PhotoPresenterInfo: View {
         }
     }
     
-    init(presenter: Binding<PhotoPresenter>) {
-        self._photoPresenter = presenter
+    init(presenter: PhotoPresenter) {
+        self.photoPresenter = presenter
     }
 }
