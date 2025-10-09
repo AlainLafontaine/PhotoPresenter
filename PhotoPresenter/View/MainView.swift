@@ -31,7 +31,20 @@ struct MainView: View {
         }.onAppear {
             if let window = NSApp.windows.last {
                 window.identifier = NSUserInterfaceItemIdentifier(data2Presenter.mainViewId.uuidString)
+                
+                if photoPresenter.fileHeader.windowPosition == nil {
+                    let pos: WindowPosition = WindowPosition(
+                        x: Int(window.frame.origin.x),
+                        y: Int(window.frame.origin.y),
+                        width: Int(window.frame.size.width),
+                        height: Int(window.frame.size.height)
+                    )
+
+                    photoPresenter.fileHeader.windowPosition = pos
+                }
             }
+            
+            data2Presenter.photoPresenter = photoPresenter
         }.onDisappear {
             saveToJSONFile(photoPresenter, filename: filename)
         }
@@ -43,4 +56,3 @@ struct MainView: View {
         self.data2Presenter = data
     }
 }
-

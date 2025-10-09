@@ -1,5 +1,5 @@
 //
-//  DisplayViewModel.swift
+//  Data2Presenter.swift
 //  PhotoPresenter
 //
 //  Created by Alain Lafontaine on 2025-09-26.
@@ -14,5 +14,12 @@ class Data2Presenter: ObservableObject, Identifiable {
     }
 
     let mainViewId = UUID()
+    let filename: String
+    
     @Published var displayView: DisplayView = .multiImageView
+    @Published var photoPresenter: PhotoPresenter? = nil
+    
+    init(filename path: String) {
+        filename = path
+    }
 }
