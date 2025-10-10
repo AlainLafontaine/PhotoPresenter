@@ -6,44 +6,56 @@
 //
 
 import Foundation
-/*
-struct GroupedView: Codable, Hashable {
-    let nbOfView: Int
-    let viewSettings: [ViewSetting]
-}
-*/
+
+import Foundation
 
 class GroupedView: ObservableObject, Codable, Hashable {
     @Published var nbOfView: Int
     @Published var viewSettings: [ViewSetting]
+    @Published var fastLoaddings: [FastLoading]?
 
-    enum CodingKeys: String, CodingKey {
-        case nbOfView, viewSettings
+    // MARK: - Initializer
+
+    init(nbOfView: Int, viewSettings: [ViewSetting], fastLoaddings: [FastLoading]? = nil) {
+        self.nbOfView = nbOfView
+        self.viewSettings = viewSettings
+        self.fastLoaddings = fastLoaddings
     }
 
-    required init(from decoder: Decoder) throws {
-        let c = try decoder.container(keyedBy: CodingKeys.self)
-        nbOfView = try c.decode(Int.self, forKey: .nbOfView)
-        viewSettings = try c.decode([ViewSetting].self, forKey: .viewSettings)
+    // MARK: - Codable
+
+    enum CodingKeys: String, CodingKey {
+        case nbOfView
+        case viewSettings
+        case fastLoaddings
+    }
+
+    required convenience init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let nbOfView = try container.decode(Int.self, forKey: .nbOfView)
+        let viewSettings = try container.decode([ViewSetting].self, forKey: .viewSettings)
+        let fastLoaddings = try container.decodeIfPresent([FastLoading].self, forKey: .fastLoaddings)
+        self.init(nbOfView: nbOfView, viewSettings: viewSettings, fastLoaddings: fastLoaddings)
     }
 
     func encode(to encoder: Encoder) throws {
-        var c = encoder.container(keyedBy: CodingKeys.self)
-        try c.encode(nbOfView, forKey: .nbOfView)
-        try c.encode(viewSettings, forKey: .viewSettings)
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(nbOfView, forKey: .nbOfView)
+        try container.encode(viewSettings, forKey: .viewSettings)
+        try container.encodeIfPresent(fastLoaddings, forKey: .fastLoaddings)
     }
 
+    // MARK: - Hashable
+
     static func == (lhs: GroupedView, rhs: GroupedView) -> Bool {
-        lhs.nbOfView == rhs.nbOfView && lhs.viewSettings == rhs.viewSettings
+        lhs.nbOfView == rhs.nbOfView &&
+        lhs.viewSettings == rhs.viewSettings &&
+        lhs.fastLoaddings == rhs.fastLoaddings
     }
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(nbOfView)
         hasher.combine(viewSettings)
-    }
-
-    init(nbOfView: Int, viewSettings: [ViewSetting]) {
-        self.nbOfView = nbOfView
-        self.viewSettings = viewSettings
+        hasher.combine(fastLoaddings)
     }
 }

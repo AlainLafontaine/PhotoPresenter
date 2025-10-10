@@ -22,11 +22,36 @@ struct PhotoPresenterApp: App {
     @Environment(\.openWindow) private var openWindow
     
     @State private var data2Presenters: [UUID: Data2Presenter] = [:]
+    @State private var width: Double = 16
+    @State private var height: Double = 9
     
     var body: some Scene {
         
         WindowGroup {
-            
+            GeometryReader { geometry in
+                let width = geometry.size.width
+                let height = geometry.size.height
+                
+                VStack {
+                    Spacer()
+                    VStack {
+                        
+                        Text("Largeur: \(String(format: "%.0f", width))")
+                        Text("Hauteur: \(String(format: "%.0f", height))")
+                    }
+                    Spacer()
+                    HStack {
+                        if height == 0 {
+                            Text("Pas de ratio")
+                        } else {
+                            let ratio = width / height
+                            Text("Ratio est de \(String(format: "%.3f", ratio))")
+                        }
+                    }
+                    Spacer()
+                    Spacer()
+                }.frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
         }
         
         WindowGroup(id: "mainWindow", for: MainViewHelper.self) { $helper in
@@ -75,6 +100,16 @@ struct PhotoPresenterApp: App {
                     if let url = openFileDialog(),
                        let presenter = LoadPhotoPresenter(fullpath: url.path())
                     {
+                        for grView in presenter.groupedViews {
+                            if grView.fastLoaddings == nil {
+                                grView.fastLoaddings = []
+                                
+                                for _ in 0..<grView.nbOfView {
+                                    grView.fastLoaddings?.append(FastLoading())
+                                }
+                            }
+                        }
+
                         let data2Presenter = Data2Presenter(filename: url.path())
                         let helper = MainViewHelper(filename: url.path(), presenter: presenter, viewId: data2Presenter.mainViewId)
                         
