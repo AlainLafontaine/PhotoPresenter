@@ -15,11 +15,15 @@ class Data2Presenter: ObservableObject, Identifiable {
 
     let mainViewId = UUID()
     let filename: String
+    let overridingWindowPosition: WindowPosition?
     
     @Published var displayView: DisplayView = .multiImageView
     @Published var photoPresenter: PhotoPresenter? = nil
     
-    init(filename path: String) {
-        filename = path
+    init(filename path: String,
+         overridingWindowPosition: WindowPosition? = nil)
+    {
+        self.filename = path
+        self.overridingWindowPosition = overridingWindowPosition
     }
 }

@@ -14,6 +14,7 @@ struct MainView: View {
     @State private var photoPresenter: PhotoPresenter
     
     private let filename: String
+    private let overringWindowPosition: WindowPosition?
     
     var body: some View {
         Group {
@@ -50,9 +51,15 @@ struct MainView: View {
         }
     }
     
-    init(filename path: String, presenter photoPresenter: PhotoPresenter, data2Presenter data: Data2Presenter) {
+    init(
+        filename path: String,
+        presenter photoPresenter: PhotoPresenter,
+        data2Presenter data: Data2Presenter,
+        overringWindowPosition: WindowPosition? = nil
+    ) {
         self.filename = path
         self.photoPresenter = photoPresenter
         self.data2Presenter = data
+        self.overringWindowPosition = overringWindowPosition
     }
 }

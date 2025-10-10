@@ -6,13 +6,6 @@
 //
 
 import Foundation
-
-/*
-"x": frame.origin.x,
-"y": frame.origin.y,
-"width": frame.size.width,
-"height": frame.size.height
-*/
  
 class WindowPosition: ObservableObject, Codable, Hashable {
     @Published var x: Int

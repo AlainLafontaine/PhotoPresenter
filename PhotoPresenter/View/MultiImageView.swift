@@ -20,8 +20,11 @@ struct MultiImageView: View {
                 HStack(spacing: 0) {
                     ForEach(0..<photoPresenter.groupedViews[grViewIndex].nbOfView, id: \.self) { viewSettingIndex in
                         VStack(spacing: 0) {
-                            ImageView(name: photoPresenter.fileHeader.name,
-                                      setting: photoPresenter.groupedViews[grViewIndex].viewSettings[viewSettingIndex])
+                            ImageView(
+                                name: photoPresenter.fileHeader.name,
+                                setting: photoPresenter.groupedViews[grViewIndex].viewSettings[viewSettingIndex],
+                                fastLoading: photoPresenter.groupedViews[grViewIndex].fastLoaddings![viewSettingIndex]
+                            )
                         }
                     }
                 }.frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -33,8 +36,11 @@ struct MultiImageView: View {
                 ForEach(0..<photoPresenter.groupedViews.count, id: \.self) { grViewIndex in
                     VStack(spacing: 0) {
                         ForEach(0..<photoPresenter.groupedViews[grViewIndex].nbOfView, id: \.self) { viewSettingIndex in
-                            ImageView(name: photoPresenter.fileHeader.name,
-                                      setting: photoPresenter.groupedViews[grViewIndex].viewSettings[viewSettingIndex])
+                            ImageView(
+                                name: photoPresenter.fileHeader.name,
+                                setting: photoPresenter.groupedViews[grViewIndex].viewSettings[viewSettingIndex],
+                                fastLoading: photoPresenter.groupedViews[grViewIndex].fastLoaddings![viewSettingIndex]
+                            )
                         }
                     }.frame(maxWidth: .infinity, maxHeight: .infinity)
                         .ignoresSafeArea()

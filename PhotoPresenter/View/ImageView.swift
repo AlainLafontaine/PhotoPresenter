@@ -28,7 +28,7 @@ struct WindowAccessor: NSViewRepresentable {
 struct ImageView: View {
     
     @ObservedObject private var viewSetting: ViewSetting
-
+    
     @StateObject private var controller: SlideShowController
 
     @State private var displayImage = false
@@ -45,8 +45,10 @@ struct ImageView: View {
                     controller.keyDown(with: event)
                 }
                 
+                // To do - exception si currentIndex dépasse le tableau
+                // tableau vide plante
                 Image(
-                    nsImage: controller.fileInfos[viewSetting.currentIndex].nsImage
+                    nsImage: controller.fastLoading.fileInfos[viewSetting.currentIndex].nsImage!
                 )
                 .resizable()
                 .scaledToFit()
@@ -121,7 +123,7 @@ struct ImageView: View {
                 
                 VStack {
                     FloatingLabelView(
-                        text: controller.fileInfos[viewSetting.currentIndex].filename,
+                        text: controller.fastLoading.fileInfos[viewSetting.currentIndex].filename,
                         isDisplay: $viewSetting.displayFilename,position: .halfTop,
                         opacityMinimale: 0.1
                     )
@@ -129,7 +131,7 @@ struct ImageView: View {
                 
                 VStack {
                     FloatingLabelView(
-                        text: "\(viewSetting.currentIndex + 1) sur \(controller.fileInfos.count)",
+                        text: "\(viewSetting.currentIndex + 1) sur \(controller.fastLoading.fileInfos.count)",
                         isDisplay: $viewSetting.displayNumImage,
                         opacityMinimale: 0.1
                     );
@@ -158,8 +160,12 @@ struct ImageView: View {
         }
     }
 
-    init(name title: String, setting: ViewSetting) {
-        self._controller = StateObject(wrappedValue: SlideShowController(viewSetting: setting))
+    init(
+        name title: String,
+        setting: ViewSetting,
+        fastLoading: FastLoading
+    ) {
+        self._controller = StateObject(wrappedValue: SlideShowController(viewSetting: setting, fastLoading: fastLoading))
         self.viewSetting = setting
         self.title = title
     }

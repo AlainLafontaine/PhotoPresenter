@@ -10,54 +10,63 @@ import SwiftUI
 import AppKit  // Nécessaire pour NSImage
 
 class SlideShowController: ObservableObject {
-    @ObservedObject private var viewSetting: ViewSetting
+    @ObservedObject var viewSetting: ViewSetting
+    @ObservedObject var fastLoading: FastLoading
     
-    //@Published var currentIndex: Int = 0
-    //@Published var isPaused: Bool = false
-    //@Published var isReverse: Bool = false
-    //@Published var isRandomizing: Bool = false
-               var timer: Timer?
-               //var intervalTimer: Double = 2.0
-               var fileInfos: [FileInfo] = []
-               var directories: [String]
-
-    init(viewSetting setting: ViewSetting)
-    {
-        //isPaused = setting.isPaused
-        //isRandomizing = setting.isRandomizing
-        //intervalTimer = setting.intervalTimer
+    var timer: Timer?
+    
+    init(viewSetting setting: ViewSetting, fastLoading: FastLoading) {
         self.viewSetting = setting
+        self.fastLoading = fastLoading
         
         switch setting.type {
         case ImageViewType.FilesSelected:
-            directories = []
-            for path in setting.filesSelected ?? [] {
-                if let nsImage = NSImage(contentsOfFile: path),
-                   let rep = nsImage.representations.first as? NSBitmapImageRep {
-                   let chemin = URL(fileURLWithPath: path)
-                   let fileInfo = FileInfo(
-                       filename: chemin.lastPathComponent,
-                       directoryIndex: 0, // tu peux gérer l’index ailleurs
-                       nsImage: nsImage,
-                       width: rep.pixelsWide,
-                       height: rep.pixelsHigh
-                    )
-                    fileInfos.append(fileInfo)
+            if fastLoading.fileInfos.count > 0 {
+                for fileInfo in fastLoading.fileInfos {
+                    let fullPath = "\(fastLoading.directories[fileInfo.directoryIndex])/\(fileInfo.filename)"
+                    
+                    if let nsImage = NSImage(contentsOfFile: fullPath) {
+                        fileInfo.nsImage = nsImage
+                    } else {
+                        // To do journalisation de l'erreur
+                    }
+                }
+            } else {
+                for fullPath in setting.filesSelected! {
+                    addImagefile4SelectedFiles(filename: fullPath)
                 }
             }
             
         case ImageViewType.DirectorySelected:
-            let ratio = setting.ratio ?? 1.0
-            let tolerance = setting.tolerance ?? 0.05
-            
-            directories = setting.directorySelected ?? []
-            for directory in directories {
-                let fileInfos: [FileInfo] = retrieveFiles(directory: directory, index: 0, ratio: ratio, tolerance: tolerance)
-                self.fileInfos.append(contentsOf: fileInfos)
+            if fastLoading.fileInfos.count > 0 {
+                for fileInfo in fastLoading.fileInfos {
+                    let fullPath = "\(fastLoading.directories[fileInfo.directoryIndex])/\(fileInfo.filename)"
+                    
+                    if let nsImage = NSImage(contentsOfFile: fullPath) {
+                        fileInfo.nsImage = nsImage
+                    } else {
+                        // To do journalisation de l'erreur
+                    }
+                }
+            } else {
+                let ratio = setting.ratio ?? 1.0
+                let tolerance = setting.tolerance ?? 0.05
+                
+                for directory in setting.directorySelected ?? [] {
+                    var index: Int? = fastLoading.directories.firstIndex(of: directory)
+
+                    if index == nil {
+                        fastLoading.directories.append(directory)
+                        index = fastLoading.directories.count - 1
+                    }
+                    
+                    fastLoading.fileInfos.append(
+                        contentsOf: retrieveFiles(directory: directory, index: index!, ratio: ratio, tolerance: tolerance)
+                    )
+                }
             }
-            
         case ImageViewType.WebServiceSelected:
-            directories = setting.directorySelected ?? []
+            break
         }
     }
     
@@ -67,11 +76,11 @@ class SlideShowController: ObservableObject {
             guard let self = self else { return }
             if !viewSetting.isPaused {
                 if viewSetting.isRandomizing {
-                    viewSetting.currentIndex = Int.random(in: 0..<self.fileInfos.count)
+                    viewSetting.currentIndex = Int.random(in: 0..<fastLoading.fileInfos.count)
                 } else if viewSetting.isReverse {
-                    viewSetting.currentIndex = (viewSetting.currentIndex - 1 + self.fileInfos.count) % self.fileInfos.count
+                    viewSetting.currentIndex = (viewSetting.currentIndex - 1 + fastLoading.fileInfos.count) % fastLoading.fileInfos.count
                 } else {
-                    viewSetting.currentIndex = (viewSetting.currentIndex + 1) % self.fileInfos.count
+                    viewSetting.currentIndex = (viewSetting.currentIndex + 1) % fastLoading.fileInfos.count
                 }
             }
         }
@@ -89,6 +98,34 @@ class SlideShowController: ObservableObject {
         }
     }
     
+    private func addImagefile4SelectedFiles(filename path: String) {
+        if let nsImage = NSImage(contentsOfFile: path),
+           let rep = nsImage.representations.first as? NSBitmapImageRep
+        {
+            let url = URL(fileURLWithPath: path)
+            let directoryPath = url.deletingLastPathComponent().path
+            let filename = url.lastPathComponent
+            var index: Int? = fastLoading.directories.firstIndex(of: directoryPath)
+
+            if index == nil {
+                fastLoading.directories.append(directoryPath)
+                index = fastLoading.directories.count - 1
+            }
+            
+            let fileInfo = FileInfo(
+                filename: filename,
+                directoryIndex: index!,
+                width: rep.pixelsWide,
+                height: rep.pixelsHigh,
+                nsImage: nsImage
+            )
+            
+            fastLoading.fileInfos.append(fileInfo)
+        } else {
+            // To do - journalisation de l'erreur
+        }
+    }
+    
     private func retrieveFiles(directory path: String, index directoryIndex: Int, ratio: Double, tolerance: Double) -> [FileInfo] {
         let fileManager = FileManager.default
         let directoryURL = URL(fileURLWithPath: path)
@@ -100,20 +137,26 @@ class SlideShowController: ObservableObject {
             for fileURL in contents {
                 switch fileURL.pathExtension {
                 case "jpg", "jpeg", "png":
-                    let nsImage = NSImage(contentsOfFile: fileURL.path)!
+                    // To do: faire une journalisation pour les erreurs de ce type
+                    //let nsImage = NSImage(contentsOfFile: fileURL.path)!  -> plante
+                    let nsImage: NSImage? = NSImage(contentsOfFile: fileURL.path)
                     
-                    if let rep = nsImage.representations.first as? NSBitmapImageRep {
+                    if let rep = nsImage?.representations.first as? NSBitmapImageRep {
                         if fabs(ratio - Double(rep.pixelsWide) / Double(rep.pixelsHigh)) < tolerance {
                             files.append(
                                 FileInfo(
                                     filename: fileURL.lastPathComponent,
                                     directoryIndex: directoryIndex,
-                                    nsImage: nsImage,
                                     width: rep.pixelsWide,
-                                    height: rep.pixelsHigh
+                                    height: rep.pixelsHigh,
+                                    nsImage: nsImage!
                                 )
                             )
                         }
+                    } else {
+                        // To do - journaliser l'erreur
+                        print("Erreur lors de la conversion de l'image en NSBitmapImageRep")
+                        print(fileURL.path)
                     }
                     break
                 default:
@@ -137,11 +180,11 @@ class SlideShowController: ObservableObject {
             if viewSetting.currentIndex > 0 {
                 viewSetting.currentIndex -= 1
             } else {
-                viewSetting.currentIndex = fileInfos.count - 1
+                viewSetting.currentIndex = fastLoading.fileInfos.count - 1
             }
                 
         case 124: // Right
-            if viewSetting.currentIndex < fileInfos.count - 1 {
+            if viewSetting.currentIndex < fastLoading.fileInfos.count - 1 {
                 viewSetting.currentIndex += 1
             } else {
                 viewSetting.currentIndex = 0
@@ -151,7 +194,7 @@ class SlideShowController: ObservableObject {
             viewSetting.currentIndex = 0
             
         case 126: // Up
-            viewSetting.currentIndex = self.fileInfos.count - 1
+            viewSetting.currentIndex = fastLoading.fileInfos.count - 1
             
         default:
             break;
