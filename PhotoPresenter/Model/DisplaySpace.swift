@@ -8,44 +8,51 @@
 import Foundation
 
 class DisplaySpace: ObservableObject, Codable, Hashable {
-    @Published var displaySpaceHeader: DisplaySpaceHeader
-    @Published var presenters: [DSPresenter]
-
-    // MARK: - Codable
+               var fileType: FileType = .DisplaySpace
+    @Published var fileHeader: DisplaySpaceHeader
+    @Published var windowPositions: [DSPresenter]
+    @Published var presenters: [PhotoPresenter]?
 
     enum CodingKeys: String, CodingKey {
-        case displaySpaceHeader
+        case fileType
+        case fileHeader
+        case windowPositions
         case presenters
+    }
+
+    init(fileHeader: DisplaySpaceHeader, windowPositions: [DSPresenter], presenters: [PhotoPresenter]? = nil) {
+        self.fileHeader = fileHeader
+        self.windowPositions = windowPositions
+        self.presenters = presenters
     }
 
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        displaySpaceHeader = try container.decode(DisplaySpaceHeader.self, forKey: .displaySpaceHeader)
-        presenters = try container.decode([DSPresenter].self, forKey: .presenters)
+        fileType = try container.decode(FileType.self, forKey: .fileType)
+        fileHeader = try container.decode(DisplaySpaceHeader.self, forKey: .fileHeader)
+        windowPositions = try container.decode([DSPresenter].self, forKey: .windowPositions)
+        presenters = try container.decodeIfPresent([PhotoPresenter].self, forKey: .presenters)
     }
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(displaySpaceHeader, forKey: .displaySpaceHeader)
-        try container.encode(presenters, forKey: .presenters)
+        try container.encode(fileType, forKey: .fileType)
+        try container.encode(fileHeader, forKey: .fileHeader)
+        try container.encode(windowPositions, forKey: .windowPositions)
+        try container.encodeIfPresent(presenters, forKey: .presenters)
     }
 
-    // MARK: - Hashable
-
     static func == (lhs: DisplaySpace, rhs: DisplaySpace) -> Bool {
-        lhs.displaySpaceHeader == rhs.displaySpaceHeader &&
+        lhs.fileType == rhs.fileType &&
+        lhs.fileHeader == rhs.fileHeader &&
+        lhs.windowPositions == rhs.windowPositions &&
         lhs.presenters == rhs.presenters
     }
 
     func hash(into hasher: inout Hasher) {
-        hasher.combine(displaySpaceHeader)
+        hasher.combine(fileType)
+        hasher.combine(fileHeader)
+        hasher.combine(windowPositions)
         hasher.combine(presenters)
-    }
-
-    // MARK: - Initializer
-
-    init(displaySpaceHeader: DisplaySpaceHeader, presenters: [DSPresenter]) {
-        self.displaySpaceHeader = displaySpaceHeader
-        self.presenters = presenters
     }
 }

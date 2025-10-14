@@ -12,7 +12,7 @@ import Foundation
 class GroupedView: ObservableObject, Codable, Hashable {
     @Published var nbOfView: Int
     @Published var viewSettings: [ViewSetting]
-    @Published var fastLoaddings: [FastLoading]?
+               var fastLoaddings: [FastLoading]?
 
     // MARK: - Initializer
 
