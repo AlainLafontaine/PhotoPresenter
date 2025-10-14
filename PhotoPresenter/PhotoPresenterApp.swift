@@ -57,13 +57,15 @@ struct PhotoPresenterApp: App {
                                             grView.fastLoaddings?.append(FastLoading())
                                         }
                                     }
-                                    
+
+/*
                                     for index in 0..<grView.nbOfView {
                                         LoadFileInfoInMem(
                                             viewSetting: grView.viewSettings[index],
                                             fastLoading: grView.fastLoaddings![index]
                                         )
                                     }
+*/
                                 }
                             }
                             
