@@ -17,15 +17,13 @@ struct DashboardView: View {
                 Text("\(description)")
             }
             
-            Text("Tableau de bord")
-        
             Spacer()
+            Text("Tableau de bord")        
             Spacer()
-/*
-            List(displaySpace.presenters) { presenter in
-                Text(presenter.name)
+            
+            List(displaySpace.viewPositions) { viewPosition in
+                Text(viewPosition.name)
             }
- */
             
         }.frame(maxWidth: .infinity, maxHeight: .infinity)
     }

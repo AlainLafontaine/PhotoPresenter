@@ -10,7 +10,7 @@ import SwiftUtilities
 
 struct PhotoPresenterView: View {
     @ObservedObject private var dataPresenter: DataPresenterHelp
-    @Binding private var dataPresenters: DataPresenterMap
+//    @Binding private var dataPresenters: DataPresenterMap
     
     var body: some View {
         Group {
@@ -26,6 +26,7 @@ struct PhotoPresenterView: View {
                 }
             }
         }.onAppear {
+/*
             var id: String = ""
             
             for window in NSApp.windows {
@@ -42,7 +43,7 @@ struct PhotoPresenterView: View {
             
             dataPresenter.windowId = id
             dataPresenters[dataPresenter.windowId!] = dataPresenter
-            
+*/
         }.onDisappear {
             saveToJSONFile(dataPresenter.presenter, filename: dataPresenter.filename)
         }
@@ -50,9 +51,9 @@ struct PhotoPresenterView: View {
     
     init(
         dataHelper: DataPresenterHelp,
-        dataPresenters: Binding<DataPresenterMap>
+        //dataPresenters: Binding<DataPresenterMap>
     ) {
         self.dataPresenter = dataHelper
-        self._dataPresenters = dataPresenters
+        //self._dataPresenters = dataPresenters
     }
 }
