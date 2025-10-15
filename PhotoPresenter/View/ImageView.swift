@@ -48,8 +48,9 @@ struct ImageView: View {
                 
                 // To do - exception si currentIndex dépasse le tableau
                 // tableau vide plante
+
                 Image(
-                    nsImage: imageController.getImage()
+                   nsImage: imageController.getImage()
                 )
                 .resizable()
                 .scaledToFit()

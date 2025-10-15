@@ -7,16 +7,18 @@
 
 import Foundation
 
+typealias DataPresenterMap = [String: DataPresenterHelp]
+
 class DataPresenterHelp: ObservableObject, Identifiable, Codable, Hashable {
-    let mainViewId = UUID()
+    var windowId: String? = nil
     let filename: String
-    let windowPos: WindowPosition?
+    var windowPos: WindowPosition?
 
     @Published var displayView: PhotoPresenterViewType
     @Published var presenter: PhotoPresenter
 
     enum CodingKeys: String, CodingKey {
-        case mainViewId
+        case windowId
         case filename
         case windowPos
         case displayView

@@ -10,6 +10,7 @@ import SwiftUtilities
 
 struct PhotoPresenterView: View {
     @ObservedObject private var dataPresenter: DataPresenterHelp
+    @Binding private var dataPresenters: DataPresenterMap
     
     var body: some View {
         Group {
@@ -25,30 +26,33 @@ struct PhotoPresenterView: View {
                 }
             }
         }.onAppear {
-            if let window = NSApp.windows.last {
-                window.identifier = NSUserInterfaceItemIdentifier(dataPresenter.mainViewId.uuidString)
-                
-                /*
-                if photoPresenter.fileHeader.windowPosition == nil {
-                    let pos: WindowPosition = WindowPosition(
-                        x: Int(window.frame.origin.x),
-                        y: Int(window.frame.origin.y),
-                        width: Int(window.frame.size.width),
-                        height: Int(window.frame.size.height)
-                    )
-
-                    photoPresenter.fileHeader.windowPosition = pos
+            var id: String = ""
+            
+            for window in NSApp.windows {
+                if let windowId = window.identifier?.rawValue {
+                    let components = windowId.split(separator: "-")
+                    
+                    if components.count == 3 && components[0] == "photoPresenterWindows"  {
+                        if windowId > id {
+                            id = windowId
+                        }
+                    }
                 }
-                */
             }
             
-//            data2Presenter.photoPresenter = photoPresenter
+            dataPresenter.windowId = id
+            dataPresenters[dataPresenter.windowId!] = dataPresenter
+            
         }.onDisappear {
-//            saveToJSONFile(photoPresenter, filename: filename)
+            saveToJSONFile(dataPresenter.presenter, filename: dataPresenter.filename)
         }
     }
     
-    init(data dataHelp: DataPresenterHelp) {
-        self.dataPresenter = dataHelp
+    init(
+        dataHelper: DataPresenterHelp,
+        dataPresenters: Binding<DataPresenterMap>
+    ) {
+        self.dataPresenter = dataHelper
+        self._dataPresenters = dataPresenters
     }
 }

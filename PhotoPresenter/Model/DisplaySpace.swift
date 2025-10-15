@@ -10,19 +10,19 @@ import Foundation
 class DisplaySpace: ObservableObject, Codable, Hashable {
                var fileType: FileType = .DisplaySpace
     @Published var fileHeader: DisplaySpaceHeader
-    @Published var windowPositions: [DSPresenter]
+    @Published var viewPositions: [PresenterViewPosition]
     @Published var presenters: [PhotoPresenter]?
 
     enum CodingKeys: String, CodingKey {
         case fileType
         case fileHeader
-        case windowPositions
+        case viewPositions
         case presenters
     }
 
-    init(fileHeader: DisplaySpaceHeader, windowPositions: [DSPresenter], presenters: [PhotoPresenter]? = nil) {
+    init(fileHeader: DisplaySpaceHeader, viewPositions: [PresenterViewPosition], presenters: [PhotoPresenter]? = nil) {
         self.fileHeader = fileHeader
-        self.windowPositions = windowPositions
+        self.viewPositions = viewPositions
         self.presenters = presenters
     }
 
@@ -30,7 +30,7 @@ class DisplaySpace: ObservableObject, Codable, Hashable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         fileType = try container.decode(FileType.self, forKey: .fileType)
         fileHeader = try container.decode(DisplaySpaceHeader.self, forKey: .fileHeader)
-        windowPositions = try container.decode([DSPresenter].self, forKey: .windowPositions)
+        viewPositions = try container.decode([PresenterViewPosition].self, forKey: .viewPositions)
         presenters = try container.decodeIfPresent([PhotoPresenter].self, forKey: .presenters)
     }
 
@@ -38,21 +38,21 @@ class DisplaySpace: ObservableObject, Codable, Hashable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(fileType, forKey: .fileType)
         try container.encode(fileHeader, forKey: .fileHeader)
-        try container.encode(windowPositions, forKey: .windowPositions)
+        try container.encode(viewPositions, forKey: .viewPositions)
         try container.encodeIfPresent(presenters, forKey: .presenters)
     }
 
     static func == (lhs: DisplaySpace, rhs: DisplaySpace) -> Bool {
         lhs.fileType == rhs.fileType &&
         lhs.fileHeader == rhs.fileHeader &&
-        lhs.windowPositions == rhs.windowPositions &&
+        lhs.viewPositions == rhs.viewPositions &&
         lhs.presenters == rhs.presenters
     }
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(fileType)
         hasher.combine(fileHeader)
-        hasher.combine(windowPositions)
+        hasher.combine(viewPositions)
         hasher.combine(presenters)
     }
 }
