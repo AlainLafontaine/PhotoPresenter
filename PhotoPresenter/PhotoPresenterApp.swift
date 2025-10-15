@@ -15,109 +15,90 @@ struct MainViewHelper: Codable, Hashable {
     let presenter: PhotoPresenter
     let viewId: UUID
     var windowPosition: WindowPosition?
+    var add2DisplaySpace: Bool = false
 }
 
 @main
 struct PhotoPresenterApp: App {
     @Environment(\.openWindow) private var openWindow
     
-    @State private var data2Presenters: [UUID: Data2Presenter] = [:]
-    @State private var width: Double = 16
-    @State private var height: Double = 9
+    @State       private var pathDisplaySpace: String? = nil
+    @StateObject private var displaySpace: DisplaySpace = DisplaySpace(
+                                                                fileHeader: DisplaySpaceHeader(name: "sans nom"),
+                                                                viewPositions: [PresenterViewPosition]()
+                                                          )
+    
+    @State private var dataPresenters: DataPresenterMap = DataPresenterMap()
     
     var body: some Scene {
-        
-        WindowGroup {
-            GeometryReader { geometry in
-                let width = geometry.size.width
-                let height = geometry.size.height
-                
-                VStack {
-                    Spacer()
-                    VStack {
-                        
-                        Text("Largeur: \(String(format: "%.0f", width))")
-                        Text("Hauteur: \(String(format: "%.0f", height))")
-                    }
-                    Spacer()
-                    HStack {
-                        if height == 0 {
-                            Text("Pas de ratio")
-                        } else {
-                            let ratio = width / height
-                            Text("Ratio est de \(String(format: "%.3f", ratio))")
-                        }
-                    }
-                    Spacer()
-                    Spacer()
-                }.frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
-        }
-        
-        WindowGroup(id: "mainWindow", for: MainViewHelper.self) { $helper in
-            if let helper = helper,
-               let data2Presenter = data2Presenters[helper.viewId]
-            {
-                MainView(
-                    filename: helper.filename,
-                    presenter: helper.presenter,
-                    data2Presenter: data2Presenter,
-                    overringWindowPosition: data2Presenter.overridingWindowPosition
-                ).onAppear {
-                    if let window = NSApp.windows.first(where: { $0.identifier?.rawValue == data2Presenter.mainViewId.uuidString }) {
-                        let pos: WindowPosition? = data2Presenter.overridingWindowPosition != nil ? data2Presenter.overridingWindowPosition : data2Presenter.photoPresenter?.fileHeader.windowPosition
-                        let frame = NSRect(
-                            x: pos?.x ?? 0,
-                            y: pos?.y ?? 0,
-                            width: pos?.width ?? 400,
-                            height: pos?.height ?? 400
-                        )
-                                
-                        window.setFrame(frame, display: true)
-                    }
-                }
-            }
+
+        WindowGroup(id: "displaySpaceWindows") {
+            DisplaySpaceView(
+                displaySpace: displaySpace
+            )
         }.commands {
             CommandGroup(after: .newItem) {
-                Button("Open Display Space…") {
-                    if let url = openFileDialog(),
-                       let displaySpaces = LoadDisplaySpace(fullpath: url.path())
-                    {
-                        for (_, displaySpace) in displaySpaces.presenters.enumerated()  {
-                            if let presenter = LoadPhotoPresenter(fullpath: displaySpace.pahtFile) {
-                                let data2Presenter = Data2Presenter(filename: displaySpace.pahtFile, overridingWindowPosition: displaySpace.windowPosition)
-                                let helper = MainViewHelper(filename: displaySpace.pahtFile, presenter: presenter, viewId: data2Presenter.mainViewId, windowPosition: displaySpace.windowPosition)
-                                
-                                self.data2Presenters[data2Presenter.mainViewId] = data2Presenter
-                                openWindow(id: "mainWindow", value: helper)
-                            }
-                        }
-                    }
-                }
-                .keyboardShortcut("O", modifiers: [.command])
-
                 Button("Open…") {
                     if let url = openFileDialog(),
-                       let presenter = LoadPhotoPresenter(fullpath: url.path())
+                       let fileType = checkFileType(path: url.path())
                     {
-                        for grView in presenter.groupedViews {
-                            if grView.fastLoaddings == nil {
-                                grView.fastLoaddings = []
+                        switch fileType {
+                        case .DisplaySpace:
+                            if let ds = LoadDisplaySpace(fullpath: url.path())
+                            {
+                                displaySpace.fileHeader = ds.fileHeader
+                                displaySpace.viewPositions = ds.viewPositions
+                                displaySpace.presenters = [PhotoPresenter]()
                                 
-                                for _ in 0..<grView.nbOfView {
-                                    grView.fastLoaddings?.append(FastLoading())
+                                for (_, viewPosition) in ds.viewPositions.enumerated()  {
+                                    if let presenter = LoadPhotoPresenter(fullpath: viewPosition.pahtFile)
+                                    {
+                                        for grView in presenter.groupedViews {
+                                            if grView.fastLoaddings == nil {
+                                                grView.fastLoaddings = []
+                                                
+                                                for _ in 0..<grView.nbOfView {
+                                                    grView.fastLoaddings?.append(FastLoading())
+                                                }
+                                            }
+                                        }
+                                        
+                                        let helper = DataPresenterHelp(
+                                            filename: url.path(),
+                                            presenter: presenter,
+                                            windowPos: viewPosition.windowPosition
+                                        )
+                                        
+                                        //dataPresenters[helper.windowId] = helper
+                                        openWindow(id: "photoPresenterWindows", value: helper)
+                                    }
                                 }
                             }
-                        }
-
-                        let data2Presenter = Data2Presenter(filename: url.path())
-                        let helper = MainViewHelper(filename: url.path(), presenter: presenter, viewId: data2Presenter.mainViewId)
+                            
+                            openWindow(id: "displaySpaceWindows")
                         
-                        data2Presenters[data2Presenter.mainViewId] = data2Presenter
-                        openWindow(id: "mainWindow", value: helper)
+                        case .PhotoPresenter:
+                            let presenter: PhotoPresenter? = LoadPhotoPresenter(fullpath: url.path())
+                         
+                            if let groupedViews = presenter?.groupedViews {
+                                for grView in groupedViews  {
+                                    if grView.fastLoaddings == nil {
+                                        grView.fastLoaddings = []
+                                        
+                                        for _ in 0..<grView.nbOfView {
+                                            grView.fastLoaddings?.append(FastLoading())
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            let helper = DataPresenterHelp(filename: url.path(), presenter: presenter!)
+                            
+                            //dataPresenters[helper.imageViewId] = helper
+                            openWindow(id: "photoPresenterWindows", value: helper)
+                        }
                     }
                 }
-                .keyboardShortcut("O", modifiers: [.command])
                 
                 Button("Save") {
                     savePhotoPresenterToActiveWindow()
@@ -128,6 +109,37 @@ struct PhotoPresenterApp: App {
                     saveAllPhotoPresenter()
                 }
             }
+        }
+        
+        WindowGroup(id: "photoPresenterWindows", for: DataPresenterHelp.self) { $helper in
+            if let helper = helper {
+                PhotoPresenterView(
+                    dataHelper: helper,
+                    dataPresenters: $dataPresenters
+                ).onAppear {
+                    if let pos = helper.windowPos,
+                       let window = NSApp.windows.first(where: { $0.identifier?.rawValue == helper.windowId })
+                    {
+                        let frame = NSRect(
+                            x: pos.x,
+                            y: pos.y,
+                            width: pos.width,
+                            height: pos.height
+                        )
+                                
+                        window.setFrame(frame, display: true)
+                    }
+                }
+            }
+        }
+        
+        
+/*
+    
+        
+        WindowGroup(id: "mainWindow", for: MainViewHelper.self) { $helper in
+            
+        }.commands {
             
             CommandGroup(before: .sidebar) {
                 Button("Information") {
@@ -141,6 +153,7 @@ struct PhotoPresenterApp: App {
                 .keyboardShortcut("P", modifiers: [.command])
             }
         }
+ */
     }
     
     private func openFileDialog() -> URL? {
@@ -156,6 +169,19 @@ struct PhotoPresenterApp: App {
         return réponse == .OK ? panel.url : nil
     }
     
+    private func checkFileType(path: String) -> FileType? {
+        let url = URL(fileURLWithPath: path)
+
+        do {
+            let data = try Data(contentsOf: url)
+            let checkFileType = try JSONDecoder().decode(CheckFileType.self, from: data)
+            return checkFileType.fileType
+        } catch {
+            print("Erreur : \(error)")
+            return nil
+        }
+    }
+    
     private func LoadPhotoPresenter(fullpath path: String) -> PhotoPresenter? {
         let url = URL(fileURLWithPath: path)
 
@@ -168,7 +194,7 @@ struct PhotoPresenterApp: App {
             return nil
         }
     }
-
+    
     private func LoadDisplaySpace(fullpath path: String) -> DisplaySpace? {
         let url = URL(fileURLWithPath: path)
 
@@ -182,10 +208,10 @@ struct PhotoPresenterApp: App {
         }
     }
     
-    func sendCommandToActiveWindow(_ command: Data2Presenter.DisplayView) {
+    func sendCommandToActiveWindow(_ command: PhotoPresenterViewType) {
         if let keyWindow = NSApp.keyWindow {
-            for (id, controller) in data2Presenters {
-                if let window = NSApp.windows.first(where: { $0.identifier?.rawValue == id.uuidString }),
+            for (id, controller) in dataPresenters {
+                if let window = NSApp.windows.first(where: { $0.identifier?.rawValue == id }),
                    window == keyWindow {
                     controller.displayView = command
                     break
@@ -196,17 +222,18 @@ struct PhotoPresenterApp: App {
     
     func savePhotoPresenterToActiveWindow() {
         if let keyWindow = NSApp.keyWindow {
-            for (id, data2Presenter) in data2Presenters {
-                if let window = NSApp.windows.first(where: { $0.identifier?.rawValue == id.uuidString }),
-                   window == keyWindow {
-                    if data2Presenter.overridingWindowPosition == nil {
-                        data2Presenter.photoPresenter?.fileHeader.windowPosition?.x = Int(window.frame.origin.x)
-                        data2Presenter.photoPresenter?.fileHeader.windowPosition?.y = Int(window.frame.origin.y)
-                        data2Presenter.photoPresenter?.fileHeader.windowPosition?.width = Int(window.frame.size.width)
-                        data2Presenter.photoPresenter?.fileHeader.windowPosition?.height = Int(window.frame.size.height)
+            for (id, dataPresenter) in dataPresenters {
+                if let window = NSApp.windows.first(where: { $0.identifier?.rawValue == id }),
+                       window == keyWindow
+                {
+                    if let windowPos = dataPresenter.windowPos {
+                        windowPos.x = Int(window.frame.origin.x)
+                        windowPos.y = Int(window.frame.origin.y)
+                        windowPos.width = Int(window.frame.size.width)
+                        windowPos.height = Int(window.frame.size.height)
                     }
-                    
-                    saveToJSONFile(data2Presenter.photoPresenter, filename: data2Presenter.filename)
+
+                    saveToJSONFile(dataPresenter.presenter, filename: dataPresenter.filename)
                     break
                 }
             }
@@ -214,16 +241,63 @@ struct PhotoPresenterApp: App {
     }
     
     func saveAllPhotoPresenter() {
-        for (id, data2Presenter) in data2Presenters {
-            if let window = NSApp.windows.first(where: { $0.identifier?.rawValue == id.uuidString }) {
-                if data2Presenter.overridingWindowPosition == nil {
-                    data2Presenter.photoPresenter?.fileHeader.windowPosition?.x = Int(window.frame.origin.x)
-                    data2Presenter.photoPresenter?.fileHeader.windowPosition?.y = Int(window.frame.origin.y)
-                    data2Presenter.photoPresenter?.fileHeader.windowPosition?.width = Int(window.frame.size.width)
-                    data2Presenter.photoPresenter?.fileHeader.windowPosition?.height = Int(window.frame.size.height)
+        for (id, dataPresenter) in dataPresenters {
+            for window in NSApp.windows {
+                if window.identifier?.rawValue == id {
+                    saveToJSONFile(dataPresenter.presenter, filename: dataPresenter.filename)
                 }
-
-                saveToJSONFile(data2Presenter.photoPresenter, filename: data2Presenter.filename)
+            }
+        }
+        
+        saveDisplaySpaceFile()
+    }
+    
+    func saveDisplaySpaceFile() {
+        for (id, dataPresenter) in dataPresenters {
+            for window in NSApp.windows {
+                if window.identifier?.rawValue == id {
+                    if let windowPos = dataPresenter.windowPos {
+                        windowPos.x = Int(window.frame.origin.x)
+                        windowPos.y = Int(window.frame.origin.y)
+                        windowPos.width = Int(window.frame.size.width)
+                        windowPos.height = Int(window.frame.size.height)
+                    } else {
+                        dataPresenter.windowPos = WindowPosition(
+                            x: Int(window.frame.origin.x),
+                            y: Int(window.frame.origin.y),
+                            width: Int(window.frame.size.width),
+                            height: Int(window.frame.size.height)
+                        )
+                    }
+                
+                    if let viewPosition = displaySpace.viewPositions.first(where: { $0.pahtFile == dataPresenter.filename }) {
+                        viewPosition.windowPosition = dataPresenter.windowPos!
+                    } else {
+                        displaySpace.viewPositions.append(
+                            PresenterViewPosition(
+                                pahtFile: dataPresenter.filename,
+                                windowPosition: dataPresenter.windowPos!
+                            )
+                        )
+                    }
+                }
+            }
+        }
+        
+        if let path = pathDisplaySpace {
+            saveToJSONFile(displaySpace, filename: path)
+        } else {
+            let panel = NSSavePanel()
+               
+            panel.title = "Enregistrer l'espace d'affichage"
+            panel.allowedContentTypes = [UTType.json]
+            panel.nameFieldStringValue = "displayspace.json"
+           
+            panel.begin { response in
+               if response == .OK, let url = panel.url {
+                   saveToJSONFile(displaySpace, filename: url.path)
+                   print("Fichier enregistré à : \(url.path)")
+               }
             }
         }
     }
