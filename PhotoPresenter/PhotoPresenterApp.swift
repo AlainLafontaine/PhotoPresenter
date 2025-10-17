@@ -27,10 +27,10 @@ struct PhotoPresenterApp: App {
                                                                 fileHeader: DisplaySpaceHeader(name: "sans nom"),
                                                                 viewPositions: [PresenterViewPosition]()
                                                           )
-    
+    @State private var windowIdentifier: Set<String> = []
     @State private var dataPresenters: DataPresenterMap = DataPresenterMap()
     @State private var nextPhotoPresenterWindowId = 1
-           private let photoPresenterWindowsId = "displaySpaceWindows-AppWindow-"
+           private let photoPresenterWindowsId = "photoPresenterWindows-AppWindow-"
     
     var body: some Scene {
 
@@ -46,6 +46,8 @@ struct PhotoPresenterApp: App {
                     {
                         switch fileType {
                         case .DisplaySpace:
+                            pathDisplaySpace = url.path()
+                            
                             if let ds = LoadDisplaySpace(fullpath: url.path())
                             {
                                 displaySpace.fileHeader = ds.fileHeader
@@ -66,7 +68,7 @@ struct PhotoPresenterApp: App {
                                         }
                                         
                                         let helper = DataPresenterHelp(
-                                            filename: url.path(),
+                                            filename: viewPosition.pahtFile,
                                             name: presenter.fileHeader.name,
                                             windowPos: viewPosition.windowPosition,
                                             presenter: presenter
@@ -94,17 +96,25 @@ struct PhotoPresenterApp: App {
                                 }
                             }
                             
+                            displaySpace.viewPositions.append(
+                                PresenterViewPosition(
+                                    name: presenter!.fileHeader.name,
+                                    pahtFile: url.path(),
+                                    windowPosition: WindowPosition(x: 0, y: 0, width: 400, height: 400)
+                                )
+                            )
+                            
                             let helper = DataPresenterHelp(
                                             filename: url.path(),
                                             name: presenter!.fileHeader.name,
                                             presenter: presenter!
                                          )
                             
-                            helper.windowId = "\(photoPresenterWindowsId)\(nextPhotoPresenterWindowId)"
-                            dataPresenters[helper.windowId!] = helper
-                            nextPhotoPresenterWindowId += 1
-                            openWindow(id: "photoPresenterWindows", value: helper)
+//                            helper.windowId = "\(photoPresenterWindowsId)\(nextPhotoPresenterWindowId)"
+//                            dataPresenters[helper.windowId!] = helper
+//                            nextPhotoPresenterWindowId += 1
                             
+                            openWindow(id: "photoPresenterWindows", value: helper)
                         }
                     }
                 }
@@ -123,14 +133,14 @@ struct PhotoPresenterApp: App {
         WindowGroup(id: "photoPresenterWindows", for: DataPresenterHelp.self) { $helper in
             if let helper = helper {
                 PhotoPresenterView(
-                    dataHelper: helper //,
-                    //dataPresenters: dataPresenters
+                    dataHelper: helper,
+                    dataPresenters: $dataPresenters,
+                    windowIdentifier: $windowIdentifier
                 ).onAppear {
                     
-                    
-                    if let pos = helper.windowPos,
-                       let window = NSApp.windows.first(where: { $0.identifier?.rawValue == helper.windowId })
-                    {
+/*
+                    if let pos = helper.windowPos {
+                        
                         let frame = NSRect(
                             x: pos.x,
                             y: pos.y,
@@ -140,12 +150,16 @@ struct PhotoPresenterApp: App {
                                 
                         window.setFrame(frame, display: true)
                     }
-                    
+                       let window = NSApp.windows.first(where: { $0.identifier?.rawValue == helper.windowId })
+                    {
+                        
+                    }
+  */
                     if displaySpace.presenters == nil {
                         displaySpace.presenters = []
                     }
                     
-                    displaySpace.presenters?.append(helper.presenter)
+                    //displaySpace.viewPositions.append(<#T##newElement: PresenterViewPosition##PresenterViewPosition#>)
                 }
             }
         }
