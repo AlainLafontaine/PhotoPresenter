@@ -64,7 +64,7 @@ struct PhotoPresenterView: View {
 
         }
         .onDisappear {
-            //saveToJSONFile(dataPresenter.presenter, filename: dataPresenter.filename)
+            saveToJSONFile(dataPresenter.presenter, filename: dataPresenter.filename)
         }
     }
     

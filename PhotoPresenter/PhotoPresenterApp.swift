@@ -109,11 +109,7 @@ struct PhotoPresenterApp: App {
                                             name: presenter!.fileHeader.name,
                                             presenter: presenter!
                                          )
-                            
-//                            helper.windowId = "\(photoPresenterWindowsId)\(nextPhotoPresenterWindowId)"
-//                            dataPresenters[helper.windowId!] = helper
-//                            nextPhotoPresenterWindowId += 1
-                            
+                                                    
                             openWindow(id: "photoPresenterWindows", value: helper)
                         }
                     }
@@ -137,29 +133,9 @@ struct PhotoPresenterApp: App {
                     dataPresenters: $dataPresenters,
                     windowIdentifier: $windowIdentifier
                 ).onAppear {
-                    
-/*
-                    if let pos = helper.windowPos {
-                        
-                        let frame = NSRect(
-                            x: pos.x,
-                            y: pos.y,
-                            width: pos.width,
-                            height: pos.height
-                        )
-                                
-                        window.setFrame(frame, display: true)
-                    }
-                       let window = NSApp.windows.first(where: { $0.identifier?.rawValue == helper.windowId })
-                    {
-                        
-                    }
-  */
                     if displaySpace.presenters == nil {
                         displaySpace.presenters = []
                     }
-                    
-                    //displaySpace.viewPositions.append(<#T##newElement: PresenterViewPosition##PresenterViewPosition#>)
                 }
             }
         }
@@ -275,6 +251,13 @@ struct PhotoPresenterApp: App {
         for (id, dataPresenter) in dataPresenters {
             for window in NSApp.windows {
                 if window.identifier?.rawValue == id {
+                    if let windowPos = dataPresenter.windowPos {
+                        windowPos.x = Int(window.frame.origin.x)
+                        windowPos.y = Int(window.frame.origin.y)
+                        windowPos.width = Int(window.frame.size.width)
+                        windowPos.height = Int(window.frame.size.height)
+                    }
+                    
                     saveToJSONFile(dataPresenter.presenter, filename: dataPresenter.filename)
                 }
             }

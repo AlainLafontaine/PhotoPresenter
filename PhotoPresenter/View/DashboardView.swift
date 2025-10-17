@@ -14,7 +14,13 @@ struct DashboardView: View {
         VStack {
             Text("Nom: \(displaySpace.fileHeader.name)")
             if let description = displaySpace.fileHeader.description {
-                Text("\(description)")
+                Text(
+                    "\(description)"
+                )
+                .lineLimit(nil) // Permet un nombre illimité de lignes
+                .fixedSize(horizontal: false, vertical: true) // Empêche le texte de déborder horizontalement
+                .frame(maxWidth: .infinity, alignment: .leading) // S'étend à la largeur disponible
+                .padding(.horizontal, 20) // marge égale à gauche et à droite
             }
             
             Spacer()
