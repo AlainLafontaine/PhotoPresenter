@@ -28,10 +28,15 @@ class WindowPosition: ObservableObject, Codable, Hashable {
 
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        x = try container.decode(Int.self, forKey: .x)
-        y = try container.decode(Int.self, forKey: .y)
-        width = try container.decode(Int.self, forKey: .width)
-        height = try container.decode(Int.self, forKey: .height)
+        let x = try container.decode(Int.self, forKey: .x)
+        let y = try container.decode(Int.self, forKey: .y)
+        let width = try container.decode(Int.self, forKey: .width)
+        let height = try container.decode(Int.self, forKey: .height)
+
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
     }
 
     func encode(to encoder: Encoder) throws {

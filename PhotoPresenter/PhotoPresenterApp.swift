@@ -22,6 +22,8 @@ struct MainViewHelper: Codable, Hashable {
 struct PhotoPresenterApp: App {
     @Environment(\.openWindow) private var openWindow
     
+    @State       private var loadingController: PresenterLoadingFileController? = nil
+    @State       private var loadingInProgress: Bool = false
     @State       private var pathDisplaySpace: String? = nil
     @StateObject private var displaySpace: DisplaySpace = DisplaySpace(
                                                                 fileHeader: DisplaySpaceHeader(name: "sans nom"),
@@ -54,8 +56,17 @@ struct PhotoPresenterApp: App {
                                 displaySpace.viewPositions = ds.viewPositions
                                 displaySpace.presenters = [PhotoPresenter]()
                                 
+                                if loadingController == nil {
+                                    loadingController = PresenterLoadingFileController(
+                                                            loadingInProgress: $loadingInProgress,
+                                                            openWindow: openWindow
+                                                        )
+                                }
+                    
+                                loadingController?.start(with: ds.viewPositions)
+ /*
                                 for (_, viewPosition) in ds.viewPositions.enumerated()  {
-                                    if let presenter = LoadPhotoPresenter(fullpath: viewPosition.pahtFile)
+                                    if let presenter = PhotoPresenterApp.LoadPhotoPresenter(fullpath: viewPosition.pahtFile)
                                     {
                                         for grView in presenter.groupedViews {
                                             if grView.fastLoaddings == nil {
@@ -77,12 +88,13 @@ struct PhotoPresenterApp: App {
                                         openWindow(id: "photoPresenterWindows", value: helper)
                                     }
                                 }
+  */
                             }
                             
                             //openWindow(id: "displaySpaceWindows")
                         
                         case .PhotoPresenter:
-                            let presenter: PhotoPresenter? = LoadPhotoPresenter(fullpath: url.path())
+                            let presenter: PhotoPresenter? = PhotoPresenterApp.LoadPhotoPresenter(fullpath: url.path())
                          
                             if let groupedViews = presenter?.groupedViews {
                                 for grView in groupedViews  {
@@ -136,6 +148,7 @@ struct PhotoPresenterApp: App {
                     if displaySpace.presenters == nil {
                         displaySpace.presenters = []
                     }
+                    loadingInProgress = false
                 }
             }
         }
@@ -163,6 +176,19 @@ struct PhotoPresenterApp: App {
  */
     }
     
+    static func LoadPhotoPresenter(fullpath path: String) -> PhotoPresenter? {
+        let url = URL(fileURLWithPath: path)
+
+        do {
+            let data = try Data(contentsOf: url)
+            let photoPresenter = try JSONDecoder().decode(PhotoPresenter.self, from: data)
+            return photoPresenter
+        } catch {
+            print("Erreur : \(error)")
+            return nil
+        }
+    }
+    
     private func openFileDialog() -> URL? {
         let panel = NSOpenPanel()
        
@@ -183,19 +209,6 @@ struct PhotoPresenterApp: App {
             let data = try Data(contentsOf: url)
             let checkFileType = try JSONDecoder().decode(CheckFileType.self, from: data)
             return checkFileType.fileType
-        } catch {
-            print("Erreur : \(error)")
-            return nil
-        }
-    }
-    
-    private func LoadPhotoPresenter(fullpath path: String) -> PhotoPresenter? {
-        let url = URL(fileURLWithPath: path)
-
-        do {
-            let data = try Data(contentsOf: url)
-            let photoPresenter = try JSONDecoder().decode(PhotoPresenter.self, from: data)
-            return photoPresenter
         } catch {
             print("Erreur : \(error)")
             return nil
