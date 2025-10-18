@@ -12,6 +12,7 @@ struct PhotoPresenterView: View {
     @ObservedObject private var dataPresenter: DataPresenterHelp
     @Binding private var dataPresenters: DataPresenterMap
     @Binding private var windowIdentifier: Set<String>
+    @Binding private var loadingInProgress: Bool
     
     var body: some View {
         Group {
@@ -60,21 +61,24 @@ struct PhotoPresenterView: View {
                 window!.setFrame(frame, display: true)
             }
             
-            print("Identifiant windowsss: \(id)")
+            loadingInProgress = false
+            print("Identifiant windows: \(id)")
 
         }
         .onDisappear {
-            saveToJSONFile(dataPresenter.presenter, filename: dataPresenter.filename)
+            //saveToJSONFile(dataPresenter.presenter, filename: dataPresenter.filename)
         }
     }
     
     init(
         dataHelper: DataPresenterHelp,
         dataPresenters: Binding<DataPresenterMap>,
-        windowIdentifier: Binding<Set<String>>
+        windowIdentifier: Binding<Set<String>>,
+        loadingInProgress: Binding<Bool>
     ) {
         self.dataPresenter = dataHelper
         self._dataPresenters = dataPresenters
         self._windowIdentifier = windowIdentifier
+        self._loadingInProgress = loadingInProgress
     }
 }

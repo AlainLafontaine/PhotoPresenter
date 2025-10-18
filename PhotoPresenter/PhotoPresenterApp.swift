@@ -32,8 +32,6 @@ struct PhotoPresenterApp: App {
                                                           )
     @State private var windowIdentifier: Set<String> = []
     @State private var dataPresenters: DataPresenterMap = DataPresenterMap()
-    @State private var nextPhotoPresenterWindowId = 1
-           private let photoPresenterWindowsId = "photoPresenterWindows-AppWindow-"
     
     var body: some Scene {
 
@@ -50,23 +48,24 @@ struct PhotoPresenterApp: App {
                     {
                         switch fileType {
                         case .DisplaySpace:
- 
+                            
+                            if pathDisplaySpace != nil {
+                                //saveAllPhotoPresenter()
 /*
-                            for win in NSApp.windows {
-                                if let windowId = win.identifier?.rawValue {
-                                    let components = windowId.split(separator: "-")
-                                    
-                                    if components[0] == "photoPresenterWindows"  {
-                                        if !windowIdentifier.contains(windowId) {
-                                            windowIdentifier.insert(windowId)
-                                            id = windowId
-                                            window = win
-                                            break;
+                                for window in NSApp.windows {
+                                    if let windowId = window.identifier?.rawValue {
+                                        let components = windowId.split(separator: "-")
+                                        
+                                        if components[0] == "photoPresenterWindows"  {
+                                            window.orderOut(nil)
                                         }
                                     }
                                 }
-                            }
 */
+                                windowIdentifier.removeAll()
+                                dataPresenters.removeAll()
+                            }
+
                             pathDisplaySpace = url.path()
                             
                             if let ds = LoadDisplaySpace(fullpath: url.path())
@@ -78,6 +77,7 @@ struct PhotoPresenterApp: App {
                                 if loadingController == nil {
                                     loadingController = PresenterLoadingFileController(
                                                             loadingInProgress: $loadingInProgress,
+                                                            windowIdentifier: $windowIdentifier,
                                                             openWindow: openWindow
                                                         )
                                 }
@@ -166,12 +166,13 @@ struct PhotoPresenterApp: App {
                 PhotoPresenterView(
                     dataHelper: helper,
                     dataPresenters: $dataPresenters,
-                    windowIdentifier: $windowIdentifier
+                    windowIdentifier: $windowIdentifier,
+                    loadingInProgress: $loadingInProgress
+                    
                 ).onAppear {
                     if displaySpace.presenters == nil {
                         displaySpace.presenters = []
                     }
-                    loadingInProgress = false
                 }
             }
         }

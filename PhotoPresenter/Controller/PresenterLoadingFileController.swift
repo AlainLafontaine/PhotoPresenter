@@ -12,17 +12,20 @@ import AppKit  // Nécessaire pour NSImage
 class PresenterLoadingFileController {
     
     @Binding var loadingInProgress: Bool
+    @Binding var windowIdentifier: Set<String>
     
     private var timer: Timer? = nil
-    private let intervalTimer = 1.0
+    private let intervalTimer = 0.1
     private let openWindow: OpenWindowAction
 
     init(
         loadingInProgress: Binding<Bool>,
+        windowIdentifier: Binding<Set<String>>,
         openWindow: OpenWindowAction
     )
     {
         _loadingInProgress = loadingInProgress
+        _windowIdentifier = windowIdentifier
         self.openWindow = openWindow
     }
 
@@ -62,6 +65,16 @@ class PresenterLoadingFileController {
 
             if index >= nbOfViews {
                 timer?.invalidate()
+ /*
+                // Libére les fenêtres du chargement précédent
+                for window in NSApp.windows {
+                    if let windowId = window.identifier?.rawValue {
+                        if !windowIdentifier.contains(windowId) {
+                            window.close()
+                        }
+                    }
+                }
+*/
             }
         }
     }
