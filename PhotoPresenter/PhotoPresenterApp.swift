@@ -25,6 +25,7 @@ struct PhotoPresenterApp: App {
     @State       private var loadingController: PresenterLoadingFileController? = nil
     @State       private var loadingInProgress: Bool = false
     @State       private var pathDisplaySpace: String? = nil
+    @State       private var displaySpaceViewType: DisplaySpaceViewType = .DashboardView
     @StateObject private var displaySpace: DisplaySpace = DisplaySpace(
                                                                 fileHeader: DisplaySpaceHeader(name: "sans nom"),
                                                                 viewPositions: [PresenterViewPosition]()
@@ -38,7 +39,8 @@ struct PhotoPresenterApp: App {
 
         WindowGroup(id: "displaySpaceWindows") {
             DisplaySpaceView(
-                displaySpace: displaySpace
+                displaySpace: displaySpace,
+                displayView: $displaySpaceViewType
             )
         }.commands {
             CommandGroup(after: .newItem) {
@@ -48,6 +50,23 @@ struct PhotoPresenterApp: App {
                     {
                         switch fileType {
                         case .DisplaySpace:
+ 
+/*
+                            for win in NSApp.windows {
+                                if let windowId = win.identifier?.rawValue {
+                                    let components = windowId.split(separator: "-")
+                                    
+                                    if components[0] == "photoPresenterWindows"  {
+                                        if !windowIdentifier.contains(windowId) {
+                                            windowIdentifier.insert(windowId)
+                                            id = windowId
+                                            window = win
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+*/
                             pathDisplaySpace = url.path()
                             
                             if let ds = LoadDisplaySpace(fullpath: url.path())
@@ -64,35 +83,8 @@ struct PhotoPresenterApp: App {
                                 }
                     
                                 loadingController?.start(with: ds.viewPositions)
- /*
-                                for (_, viewPosition) in ds.viewPositions.enumerated()  {
-                                    if let presenter = PhotoPresenterApp.LoadPhotoPresenter(fullpath: viewPosition.pahtFile)
-                                    {
-                                        for grView in presenter.groupedViews {
-                                            if grView.fastLoaddings == nil {
-                                                grView.fastLoaddings = []
-                                                
-                                                for _ in 0..<grView.nbOfView {
-                                                    grView.fastLoaddings?.append(FastLoading())
-                                                }
-                                            }
-                                        }
-                                        
-                                        let helper = DataPresenterHelp(
-                                            filename: viewPosition.pahtFile,
-                                            name: presenter.fileHeader.name,
-                                            windowPos: viewPosition.windowPosition,
-                                            presenter: presenter
-                                        )
-                                        
-                                        openWindow(id: "photoPresenterWindows", value: helper)
-                                    }
-                                }
-  */
-                            }
-                            
-                            //openWindow(id: "displaySpaceWindows")
-                        
+                             }
+                                                    
                         case .PhotoPresenter:
                             let presenter: PhotoPresenter? = PhotoPresenterApp.LoadPhotoPresenter(fullpath: url.path())
                          
@@ -136,6 +128,37 @@ struct PhotoPresenterApp: App {
                     saveAllPhotoPresenter()
                 }
             }
+            
+            CommandGroup(before: .sidebar) {
+                Button("Information") {
+                    sendCommandToActiveWindow(.information)
+                }
+                .keyboardShortcut("I", modifiers: [.command])
+                
+                Button("Presenter") {
+                    sendCommandToActiveWindow(.multiImageView)
+                }
+                .keyboardShortcut("P", modifiers: [.command])
+                
+                Divider() // 🔹 Séparateur visuel dans le menu principal
+                
+                Button("Library") {
+                    displaySpaceViewType = .LibraryView
+                }
+                .keyboardShortcut("L", modifiers: [.command])
+                
+                Button("Dashboard") {
+                    displaySpaceViewType = .DashboardView
+                }
+                .keyboardShortcut("D", modifiers: [.command])
+                
+                Button("Dashboard") {
+                    displaySpaceViewType = .RatioSimulatorView
+                }
+                .keyboardShortcut("R", modifiers: [.command])
+                
+                Divider() // 🔹 Séparateur visuel dans le menu principal
+            }
         }
         
         WindowGroup(id: "photoPresenterWindows", for: DataPresenterHelp.self) { $helper in
@@ -152,28 +175,6 @@ struct PhotoPresenterApp: App {
                 }
             }
         }
-        
-        
-/*
-    
-        
-        WindowGroup(id: "mainWindow", for: MainViewHelper.self) { $helper in
-            
-        }.commands {
-            
-            CommandGroup(before: .sidebar) {
-                Button("Information") {
-                    sendCommandToActiveWindow(.information)
-                }
-                .keyboardShortcut("I", modifiers: [.command])
-                
-                Button("Presenter") {
-                    sendCommandToActiveWindow(.multiImageView)
-                }
-                .keyboardShortcut("P", modifiers: [.command])
-            }
-        }
- */
     }
     
     static func LoadPhotoPresenter(fullpath path: String) -> PhotoPresenter? {
@@ -228,7 +229,10 @@ struct PhotoPresenterApp: App {
         }
     }
     
-    func sendCommandToActiveWindow(_ command: PhotoPresenterViewType) {
+    func sendCommandToActiveWindow(
+        _ command: PhotoPresenterViewType
+    )
+    {
         if let keyWindow = NSApp.keyWindow {
             for (id, controller) in dataPresenters {
                 if let window = NSApp.windows.first(where: { $0.identifier?.rawValue == id }),
