@@ -10,28 +10,25 @@ import UniformTypeIdentifiers  // ✅ nécessaire pour UTType
 import SwiftUI
 import SwiftUtilities
 
-struct MainViewHelper: Codable, Hashable {
-    let filename: String
-    let presenter: PhotoPresenter
-    let viewId: UUID
-    var windowPosition: WindowPosition?
-    var add2DisplaySpace: Bool = false
-}
 
 @main
 struct PhotoPresenterApp: App {
     @Environment(\.openWindow) private var openWindow
     
-    @State       private var loadingController: PresenterLoadingFileController? = nil
-    @State       private var loadingInProgress: Bool = false
-    @State       private var pathDisplaySpace: String? = nil
-    @State       private var displaySpaceViewType: DisplaySpaceViewType = .DashboardView
+    
+    
+    @State private var loadingInProgress: Bool = false
+    @State private var loadingController: PresenterLoadingFileController? = nil
+    @State private var pathDisplaySpace: String? = nil
+    @State private var displaySpaceViewType: DisplaySpaceViewType = .DashboardView
+    
+    @State private var windowIdentifier: Set<String> = []
+    @State private var dataPresenters: DataPresenterMap = DataPresenterMap()
+    
     @StateObject private var displaySpace: DisplaySpace = DisplaySpace(
                                                                 fileHeader: DisplaySpaceHeader(name: "sans nom"),
                                                                 viewPositions: [PresenterViewPosition]()
                                                           )
-    @State private var windowIdentifier: Set<String> = []
-    @State private var dataPresenters: DataPresenterMap = DataPresenterMap()
     
     var body: some Scene {
 
@@ -77,7 +74,7 @@ struct PhotoPresenterApp: App {
                                 if loadingController == nil {
                                     loadingController = PresenterLoadingFileController(
                                                             loadingInProgress: $loadingInProgress,
-                                                            windowIdentifier: $windowIdentifier,
+//                                                            windowIdentifier: $windowIdentifier,
                                                             openWindow: openWindow
                                                         )
                                 }
@@ -166,13 +163,30 @@ struct PhotoPresenterApp: App {
                 PhotoPresenterView(
                     dataHelper: helper,
                     dataPresenters: $dataPresenters,
-                    windowIdentifier: $windowIdentifier,
-                    loadingInProgress: $loadingInProgress
-                    
+                    windowIdentifier: $windowIdentifier
                 ).onAppear {
                     if displaySpace.presenters == nil {
                         displaySpace.presenters = []
                     }
+                    
+                    dataPresenters[helper.windowId!] = helper
+/*
+                    if let pos = helper.windowPos,
+                       let windowId = helper.windowId,
+                       let window = getNSWindow(withIdentifier: windowId)
+                    {
+                        let frame = NSRect(
+                            x: pos.x,
+                            y: pos.y,
+                            width: pos.width,
+                            height: pos.height
+                        )
+                        
+                        print("/(window.identifier: \(window.identifier!.rawValue))")
+                        window.setFrame(frame, display: true)
+                    }
+*/
+                    loadingInProgress = false
                 }
             }
         }
@@ -230,6 +244,10 @@ struct PhotoPresenterApp: App {
         }
     }
     
+    private func getNSWindow(withIdentifier identifier: String) -> NSWindow? {
+        return NSApp.windows.first(where: { $0.identifier?.rawValue == identifier })
+    }
+    
     func sendCommandToActiveWindow(
         _ command: PhotoPresenterViewType
     )
@@ -252,10 +270,10 @@ struct PhotoPresenterApp: App {
                        window == keyWindow
                 {
                     if let windowPos = dataPresenter.windowPos {
-                        windowPos.x = Int(window.frame.origin.x)
-                        windowPos.y = Int(window.frame.origin.y)
-                        windowPos.width = Int(window.frame.size.width)
-                        windowPos.height = Int(window.frame.size.height)
+                        windowPos.x = window.frame.origin.x
+                        windowPos.y = window.frame.origin.y
+                        windowPos.width = window.frame.size.width
+                        windowPos.height = window.frame.size.height
                     }
 
                     saveToJSONFile(dataPresenter.presenter, filename: dataPresenter.filename)
@@ -270,10 +288,10 @@ struct PhotoPresenterApp: App {
             for window in NSApp.windows {
                 if window.identifier?.rawValue == id {
                     if let windowPos = dataPresenter.windowPos {
-                        windowPos.x = Int(window.frame.origin.x)
-                        windowPos.y = Int(window.frame.origin.y)
-                        windowPos.width = Int(window.frame.size.width)
-                        windowPos.height = Int(window.frame.size.height)
+                        windowPos.x = window.frame.origin.x
+                        windowPos.y = window.frame.origin.y
+                        windowPos.width = window.frame.size.width
+                        windowPos.height = window.frame.size.height
                     }
                     
                     saveToJSONFile(dataPresenter.presenter, filename: dataPresenter.filename)
@@ -289,16 +307,16 @@ struct PhotoPresenterApp: App {
             for window in NSApp.windows {
                 if window.identifier?.rawValue == id {
                     if let windowPos = dataPresenter.windowPos {
-                        windowPos.x = Int(window.frame.origin.x)
-                        windowPos.y = Int(window.frame.origin.y)
-                        windowPos.width = Int(window.frame.size.width)
-                        windowPos.height = Int(window.frame.size.height)
+                        windowPos.x = window.frame.origin.x
+                        windowPos.y = window.frame.origin.y
+                        windowPos.width = window.frame.size.width
+                        windowPos.height = window.frame.size.height
                     } else {
                         dataPresenter.windowPos = WindowPosition(
-                            x: Int(window.frame.origin.x),
-                            y: Int(window.frame.origin.y),
-                            width: Int(window.frame.size.width),
-                            height: Int(window.frame.size.height)
+                            x: window.frame.origin.x,
+                            y: window.frame.origin.y,
+                            width: window.frame.size.width,
+                            height: window.frame.size.height
                         )
                     }
                 

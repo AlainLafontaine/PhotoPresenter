@@ -12,7 +12,6 @@ struct PhotoPresenterView: View {
     @ObservedObject private var dataPresenter: DataPresenterHelp
     @Binding private var dataPresenters: DataPresenterMap
     @Binding private var windowIdentifier: Set<String>
-    @Binding private var loadingInProgress: Bool
     
     var body: some View {
         Group {
@@ -28,9 +27,6 @@ struct PhotoPresenterView: View {
                 }
             }
         }.onAppear {
-            var id: String = ""
-            var window: NSWindow?
-            
             for win in NSApp.windows {
                 if let windowId = win.identifier?.rawValue {
                     let components = windowId.split(separator: "-")
@@ -38,32 +34,13 @@ struct PhotoPresenterView: View {
                     if components[0] == "photoPresenterWindows"  {
                         if !windowIdentifier.contains(windowId) {
                             windowIdentifier.insert(windowId)
-                            id = windowId
-                            window = win
+                            dataPresenter.windowId = windowId
+                            print("Identifiant windows: \(windowId)")
                             break;
                         }
                     }
                 }
             }
-            
-            dataPresenter.windowId = id
-            dataPresenters[dataPresenter.windowId!] = dataPresenter
-        
-            if let pos = dataPresenter.windowPos {
-                
-                let frame = NSRect(
-                    x: pos.x,
-                    y: pos.y,
-                    width: pos.width,
-                    height: pos.height
-                )
-                        
-                window!.setFrame(frame, display: true)
-            }
-            
-            loadingInProgress = false
-            print("Identifiant windows: \(id)")
-
         }
         .onDisappear {
             //saveToJSONFile(dataPresenter.presenter, filename: dataPresenter.filename)
@@ -73,12 +50,10 @@ struct PhotoPresenterView: View {
     init(
         dataHelper: DataPresenterHelp,
         dataPresenters: Binding<DataPresenterMap>,
-        windowIdentifier: Binding<Set<String>>,
-        loadingInProgress: Binding<Bool>
+        windowIdentifier: Binding<Set<String>>
     ) {
         self.dataPresenter = dataHelper
         self._dataPresenters = dataPresenters
         self._windowIdentifier = windowIdentifier
-        self._loadingInProgress = loadingInProgress
     }
 }
