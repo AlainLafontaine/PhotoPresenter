@@ -2,60 +2,46 @@
 //  FileHeader.swift
 //  PhotoPresenter
 //
-//  Created by Alain Lafontaine on 2025-10-08.
+//  Created by Alain Lafontaine on 2025-10-20.
 //
 
 import Foundation
 
-import Foundation
-
 class FileHeader: ObservableObject, Codable, Hashable {
-    @Published var name: String
-    @Published var description: String?
-    @Published var orientation: Orientation
-    @Published var windowPosition: WindowPosition?
+    var version: String
+    var fileType: FileType
 
-    // MARK: - Initializer
-    init(name: String, description: String?, orientation: Orientation, windowPosition: WindowPosition? = nil) {
-        self.name = name
-        self.description = description
-        self.orientation = orientation
-        self.windowPosition = windowPosition
+    // MARK: - Initialiseur
+    init(version: String = "0.01.0001", fileType: FileType) {
+        self.version = version
+        self.fileType = fileType
     }
 
     // MARK: - Codable
     enum CodingKeys: String, CodingKey {
-        case name, description, orientation, windowPosition
+        case version
+        case fileType
     }
 
     required init(from decoder: Decoder) throws {
-        let c = try decoder.container(keyedBy: CodingKeys.self)
-        name = try c.decode(String.self, forKey: .name)
-        description = try c.decodeIfPresent(String.self, forKey: .description)
-        orientation = try c.decode(Orientation.self, forKey: .orientation)
-        windowPosition = try c.decodeIfPresent(WindowPosition.self, forKey: .windowPosition)
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        version = try container.decode(String.self, forKey: .version)
+        fileType = try container.decode(FileType.self, forKey: .fileType)
     }
 
     func encode(to encoder: Encoder) throws {
-        var c = encoder.container(keyedBy: CodingKeys.self)
-        try c.encode(name, forKey: .name)
-        try c.encodeIfPresent(description, forKey: .description)
-        try c.encode(orientation, forKey: .orientation)
-        try c.encodeIfPresent(windowPosition, forKey: .windowPosition)
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(version, forKey: .version)
+        try container.encode(fileType, forKey: .fileType)
     }
 
     // MARK: - Hashable
     static func == (lhs: FileHeader, rhs: FileHeader) -> Bool {
-        lhs.name == rhs.name &&
-        lhs.description == rhs.description &&
-        lhs.orientation == rhs.orientation &&
-        lhs.windowPosition == rhs.windowPosition
+        lhs.version == rhs.version && lhs.fileType == rhs.fileType
     }
 
     func hash(into hasher: inout Hasher) {
-        hasher.combine(name)
-        hasher.combine(description)
-        hasher.combine(orientation)
-        hasher.combine(windowPosition)
+        hasher.combine(version)
+        hasher.combine(fileType)
     }
 }

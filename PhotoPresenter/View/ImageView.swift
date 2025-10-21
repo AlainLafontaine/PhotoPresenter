@@ -28,8 +28,9 @@ struct WindowAccessor: NSViewRepresentable {
 struct ImageView: View {
     
     @ObservedObject private var viewSetting: ViewSetting
-
-    @StateObject private var controller: SlideShowController
+    
+    @StateObject private var sideShowController: SlideShowController
+    @StateObject private var imageController : ImageController
 
     @State private var displayImage = false
     @State private var displayParameters: Bool = false
@@ -42,16 +43,20 @@ struct ImageView: View {
         ZStack {
             if displayImage {
                 KeyCatcherView { event, isShiftPressed in
-                    controller.keyDown(with: event)
+                    sideShowController.keyDown(with: event)
                 }
                 
+                // To do - exception si currentIndex dépasse le tableau
+                // tableau vide plante
+
                 Image(
-                    nsImage: controller.fileInfos[viewSetting.currentIndex].nsImage
+                   nsImage: imageController.getImage()
                 )
                 .resizable()
                 .scaledToFit()
+//                .scaledToFill()
                 .onAppear {
-                    controller.start()
+                    sideShowController.start()
                 }
                 .background(WindowAccessor { window in
                     window.title = "\(title)"
@@ -121,7 +126,7 @@ struct ImageView: View {
                 
                 VStack {
                     FloatingLabelView(
-                        text: controller.fileInfos[viewSetting.currentIndex].filename,
+                        text: sideShowController.fastLoading.fileInfos[viewSetting.currentIndex].filename,
                         isDisplay: $viewSetting.displayFilename,position: .halfTop,
                         opacityMinimale: 0.1
                     )
@@ -129,7 +134,7 @@ struct ImageView: View {
                 
                 VStack {
                     FloatingLabelView(
-                        text: "\(viewSetting.currentIndex + 1) sur \(controller.fileInfos.count)",
+                        text: "\(viewSetting.currentIndex + 1) sur \(sideShowController.fastLoading.fileInfos.count)",
                         isDisplay: $viewSetting.displayNumImage,
                         opacityMinimale: 0.1
                     );
@@ -145,12 +150,12 @@ struct ImageView: View {
                         viewSetting.intervalTimer = viewSetting.intervalTimer
                         displayParameters.toggle()
                         displayImage.toggle()
-                        controller.start()
+                        sideShowController.start()
                         viewSetting.isPaused = savePauseState
                     } else {
                         displayParameters.toggle()
                         displayImage.toggle()
-                        controller.start()
+                        sideShowController.start()
                         viewSetting.isPaused = savePauseState
                     }
                 }
@@ -158,8 +163,13 @@ struct ImageView: View {
         }
     }
 
-    init(name title: String, setting: ViewSetting) {
-        self._controller = StateObject(wrappedValue: SlideShowController(viewSetting: setting))
+    init(
+        name title: String,
+        setting: ViewSetting,
+        fastLoading: FastLoading
+    ) {
+        self._sideShowController = StateObject(wrappedValue: SlideShowController(viewSetting: setting, fastLoading: fastLoading))
+        self._imageController = StateObject(wrappedValue: ImageController(viewSetting: setting, fastLoading: fastLoading))
         self.viewSetting = setting
         self.title = title
     }
