@@ -26,7 +26,8 @@ struct PhotoPresenterApp: App {
     @State private var dataPresenters: DataPresenterMap = DataPresenterMap()
     
     @StateObject private var displaySpace: DisplaySpace = DisplaySpace(
-                                                                fileHeader: DisplaySpaceHeader(name: "sans nom"),
+                                                                fileHeader: FileHeader(fileType: FileType.DisplaySpace),
+                                                                displaySpaceHeader: DisplaySpaceHeader(name: "sans nom"),
                                                                 viewPositions: [PresenterViewPosition]()
                                                           )
     
@@ -47,18 +48,19 @@ struct PhotoPresenterApp: App {
                         case .DisplaySpace:
                             
                             if pathDisplaySpace != nil {
-                                //saveAllPhotoPresenter()
-/*
+                                saveAllPhotoPresenter()
+                                
+                                // Libére les fenêtres du chargement précédent
                                 for window in NSApp.windows {
                                     if let windowId = window.identifier?.rawValue {
                                         let components = windowId.split(separator: "-")
                                         
                                         if components[0] == "photoPresenterWindows"  {
-                                            window.orderOut(nil)
+                                            window.close()
                                         }
                                     }
                                 }
-*/
+                                
                                 windowIdentifier.removeAll()
                                 dataPresenters.removeAll()
                             }
@@ -68,6 +70,7 @@ struct PhotoPresenterApp: App {
                             if let ds = LoadDisplaySpace(fullpath: url.path())
                             {
                                 displaySpace.fileHeader = ds.fileHeader
+                                displaySpace.displaySpaceHeader = ds.displaySpaceHeader
                                 displaySpace.viewPositions = ds.viewPositions
                                 displaySpace.presenters = [PhotoPresenter]()
                                 
@@ -97,21 +100,23 @@ struct PhotoPresenterApp: App {
                                 }
                             }
                             
-                            displaySpace.viewPositions.append(
-                                PresenterViewPosition(
-                                    name: presenter!.fileHeader.name,
-                                    pahtFile: url.path(),
-                                    windowPosition: WindowPosition(x: 0, y: 0, width: 400, height: 400)
+                            if let pp = presenter {
+                                displaySpace.viewPositions.append(
+                                    PresenterViewPosition(
+                                        name: pp.photoPresenterHeader.name,
+                                        pahtFile: url.path(),
+                                        windowPosition: WindowPosition(x: 0, y: 0, width: 400, height: 400)
+                                    )
                                 )
-                            )
-                            
-                            let helper = DataPresenterHelp(
-                                            filename: url.path(),
-                                            name: presenter!.fileHeader.name,
-                                            presenter: presenter!
-                                         )
-                                                    
-                            openWindow(id: "photoPresenterWindows", value: helper)
+                                
+                                let helper = DataPresenterHelp(
+                                                filename: url.path(),
+                                                name: pp.photoPresenterHeader.name,
+                                                presenter: presenter!
+                                             )
+                                                        
+                                openWindow(id: "photoPresenterWindows", value: helper)
+                            }
                         }
                     }
                 }
@@ -223,8 +228,13 @@ struct PhotoPresenterApp: App {
 
         do {
             let data = try Data(contentsOf: url)
-            let checkFileType = try JSONDecoder().decode(CheckFileType.self, from: data)
-            return checkFileType.fileType
+
+            struct RootHeader: Decodable {
+                let fileHeader: FileHeader
+            }
+
+            let root = try JSONDecoder().decode(RootHeader.self, from: data)
+            return root.fileHeader.fileType
         } catch {
             print("Erreur : \(error)")
             return nil
@@ -356,5 +366,9 @@ struct PhotoPresenterApp: App {
                 displaySpace.presenters = tmp
             }
         }
+    }
+    
+    private func updatePresenter(presenter pp: PhotoPresenter) {
+        
     }
 }

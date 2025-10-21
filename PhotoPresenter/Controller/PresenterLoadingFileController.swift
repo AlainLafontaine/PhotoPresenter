@@ -54,7 +54,7 @@ class PresenterLoadingFileController: ObservableObject {
 
                         let helper = DataPresenterHelp(
                             filename: viewPosition.pahtFile,
-                            name: presenter.fileHeader.name,
+                            name: presenter.photoPresenterHeader.name,
                             windowPos: viewPosition.windowPosition,
                             presenter: presenter
                         )
@@ -86,6 +86,7 @@ class PresenterLoadingFileController: ObservableObject {
                         )
                         
                         window.setFrame(frame, display: true)
+                        window.title = helper.presenter.photoPresenterHeader.name
                     }
                 }
             }

@@ -12,8 +12,8 @@ struct DashboardView: View {
     
     var body: some View {
         VStack {
-            Text("Nom: \(displaySpace.fileHeader.name)")
-            if let description = displaySpace.fileHeader.description {
+            Text("Nom: \(displaySpace.displaySpaceHeader.name)")
+            if let description = displaySpace.displaySpaceHeader.description {
                 Text(
                     "\(description)"
                 )

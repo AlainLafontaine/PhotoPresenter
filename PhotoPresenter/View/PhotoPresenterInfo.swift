@@ -13,9 +13,9 @@ struct PhotoPresenterInfo: View {
 
     var body: some View {
         
-        Text("Nom: \(photoPresenter.fileHeader.name)").padding()
+        Text("Nom: \(photoPresenter.photoPresenterHeader.name)").padding()
         
-        if let description = photoPresenter.fileHeader.description {
+        if let description = photoPresenter.photoPresenterHeader.description {
             Text("Description: \(description)").padding()
         }
     }
