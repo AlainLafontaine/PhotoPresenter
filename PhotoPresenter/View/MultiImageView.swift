@@ -13,7 +13,7 @@ struct MultiImageView: View {
     @ObservedObject private var photoPresenter: PhotoPresenter
     
     var body: some View {
-        switch photoPresenter.fileHeader.orientation
+        switch photoPresenter.photoPresenterHeader.orientation
         {
         case .Horizontal:
             ForEach(0..<photoPresenter.groupedViews.count, id: \.self) { grViewIndex in
@@ -21,7 +21,7 @@ struct MultiImageView: View {
                     ForEach(0..<photoPresenter.groupedViews[grViewIndex].nbOfView, id: \.self) { viewSettingIndex in
                         VStack(spacing: 0) {
                             ImageView(
-                                name: photoPresenter.fileHeader.name,
+                                name: photoPresenter.photoPresenterHeader.name,
                                 setting: photoPresenter.groupedViews[grViewIndex].viewSettings[viewSettingIndex],
                                 fastLoading: photoPresenter.groupedViews[grViewIndex].fastLoaddings![viewSettingIndex]
                             )
@@ -37,7 +37,7 @@ struct MultiImageView: View {
                     VStack(spacing: 0) {
                         ForEach(0..<photoPresenter.groupedViews[grViewIndex].nbOfView, id: \.self) { viewSettingIndex in
                             ImageView(
-                                name: photoPresenter.fileHeader.name,
+                                name: photoPresenter.photoPresenterHeader.name,
                                 setting: photoPresenter.groupedViews[grViewIndex].viewSettings[viewSettingIndex],
                                 fastLoading: photoPresenter.groupedViews[grViewIndex].fastLoaddings![viewSettingIndex]
                             )

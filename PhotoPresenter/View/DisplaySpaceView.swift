@@ -10,21 +10,27 @@ import SwiftUI
 struct DisplaySpaceView: View {
     @ObservedObject var displaySpace: DisplaySpace
     
-    @State private var displayView: DisplaySpaceViewType = .DashboardView
+    @Binding private var displayView: DisplaySpaceViewType
     
     var body: some View {
         switch displayView {
+        case .LibraryView:
+            Text("LibraryView")
+            
         case .DashboardView:
             DashboardView(displaySpace: displaySpace)
             
         case .RatioSimulatorView:
             RatioSimulatorView()
-            
         }
     }
     
-    init(displaySpace: DisplaySpace) {
+    init(
+        displaySpace: DisplaySpace,
+        displayView: Binding<DisplaySpaceViewType>
+    ) {
         self.displaySpace = displaySpace
+        self._displayView = displayView
     }
 }
 

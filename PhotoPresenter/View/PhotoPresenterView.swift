@@ -11,6 +11,7 @@ import SwiftUtilities
 struct PhotoPresenterView: View {
     @ObservedObject private var dataPresenter: DataPresenterHelp
     @Binding private var dataPresenters: DataPresenterMap
+    @Binding private var windowIdentifier: Set<String>
     
     var body: some View {
         Group {
@@ -26,33 +27,33 @@ struct PhotoPresenterView: View {
                 }
             }
         }.onAppear {
-            var id: String = ""
-            
-            for window in NSApp.windows {
-                if let windowId = window.identifier?.rawValue {
+            for win in NSApp.windows {
+                if let windowId = win.identifier?.rawValue {
                     let components = windowId.split(separator: "-")
                     
-                    if components.count == 3 && components[0] == "photoPresenterWindows"  {
-                        if windowId > id {
-                            id = windowId
+                    if components[0] == "photoPresenterWindows"  {
+                        if !windowIdentifier.contains(windowId) {
+                            windowIdentifier.insert(windowId)
+                            dataPresenter.windowId = windowId
+                            print("Identifiant windows: \(windowId)")
+                            break;
                         }
                     }
                 }
             }
-            
-            dataPresenter.windowId = id
-            dataPresenters[dataPresenter.windowId!] = dataPresenter
-            
-        }.onDisappear {
-            saveToJSONFile(dataPresenter.presenter, filename: dataPresenter.filename)
+        }
+        .onDisappear {
+            //saveToJSONFile(dataPresenter.presenter, filename: dataPresenter.filename)
         }
     }
     
     init(
         dataHelper: DataPresenterHelp,
-        dataPresenters: Binding<DataPresenterMap>
+        dataPresenters: Binding<DataPresenterMap>,
+        windowIdentifier: Binding<Set<String>>
     ) {
         self.dataPresenter = dataHelper
         self._dataPresenters = dataPresenters
+        self._windowIdentifier = windowIdentifier
     }
 }

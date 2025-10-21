@@ -12,20 +12,24 @@ struct DashboardView: View {
     
     var body: some View {
         VStack {
-            Text("Nom: \(displaySpace.fileHeader.name)")
-            if let description = displaySpace.fileHeader.description {
-                Text("\(description)")
+            Text("Nom: \(displaySpace.displaySpaceHeader.name)")
+            if let description = displaySpace.displaySpaceHeader.description {
+                Text(
+                    "\(description)"
+                )
+                .lineLimit(nil) // Permet un nombre illimité de lignes
+                .fixedSize(horizontal: false, vertical: true) // Empêche le texte de déborder horizontalement
+                .frame(maxWidth: .infinity, alignment: .leading) // S'étend à la largeur disponible
+                .padding(.horizontal, 20) // marge égale à gauche et à droite
             }
             
-            Text("Tableau de bord")
-        
             Spacer()
+            Text("Tableau de bord")        
             Spacer()
-/*
-            List(displaySpace.presenters) { presenter in
-                Text(presenter.name)
+            
+            List(displaySpace.viewPositions) { viewPosition in
+                Text(viewPosition.name)
             }
- */
             
         }.frame(maxWidth: .infinity, maxHeight: .infinity)
     }

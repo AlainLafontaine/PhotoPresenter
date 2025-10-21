@@ -8,13 +8,13 @@
 import Foundation
  
 class WindowPosition: ObservableObject, Codable, Hashable {
-    @Published var x: Int
-    @Published var y: Int
-    @Published var width: Int
-    @Published var height: Int
+    @Published var x: CGFloat
+    @Published var y: CGFloat
+    @Published var width: CGFloat
+    @Published var height: CGFloat
 
     // MARK: - Initializer
-    init(x: Int, y: Int, width: Int, height: Int) {
+    init(x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat) {
         self.x = x
         self.y = y
         self.width = width
@@ -28,10 +28,15 @@ class WindowPosition: ObservableObject, Codable, Hashable {
 
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        x = try container.decode(Int.self, forKey: .x)
-        y = try container.decode(Int.self, forKey: .y)
-        width = try container.decode(Int.self, forKey: .width)
-        height = try container.decode(Int.self, forKey: .height)
+        let x = try container.decode(CGFloat.self, forKey: .x)
+        let y = try container.decode(CGFloat.self, forKey: .y)
+        let width = try container.decode(CGFloat.self, forKey: .width)
+        let height = try container.decode(CGFloat.self, forKey: .height)
+
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
     }
 
     func encode(to encoder: Encoder) throws {

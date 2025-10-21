@@ -54,6 +54,7 @@ struct ImageView: View {
                 )
                 .resizable()
                 .scaledToFit()
+//                .scaledToFill()
                 .onAppear {
                     sideShowController.start()
                 }
