@@ -75,19 +75,11 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		F33707AA2E93F68A00C04025 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		F3D552D12E85A09C00B41F74 = {
 			isa = PBXGroup;
 			children = (
-				F337078A2E93F61F00C04025 /* SwiftUtilities.xcodeproj */,
 				F3D552DC2E85A09C00B41F74 /* PhotoPresenter */,
-				F33707AA2E93F68A00C04025 /* Frameworks */,
+				F337078A2E93F61F00C04025 /* SwiftUtilities.xcodeproj */,
 				F3D552DB2E85A09C00B41F74 /* Products */,
 			);
 			sourceTree = "<group>";

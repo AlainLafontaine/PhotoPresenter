@@ -145,7 +145,7 @@ struct ImageView: View {
             
             // Affichage pour la vue qui affiche les paramètres version
             if displayParameters {
-                ParametersView(intervalTimer: $viewSetting.intervalTimer) { didApply in
+                ImageParametersView(intervalTimer: $viewSetting.intervalTimer) { didApply in
                     if didApply {
                         viewSetting.intervalTimer = viewSetting.intervalTimer
                         displayParameters.toggle()

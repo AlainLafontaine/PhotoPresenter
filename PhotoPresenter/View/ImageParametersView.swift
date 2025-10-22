@@ -8,7 +8,7 @@
 import SwiftUI
 import SwiftUtilities
 
-struct ParametersView: View {
+struct ImageParametersView: View {
     @Binding var intervalTimer: Double
     var result: (_ applic: Bool) -> Void
     

@@ -12,20 +12,18 @@ import AppKit  // Nécessaire pour NSImage
 class PresenterLoadingFileController: ObservableObject {
     
     @Binding var loadingInProgress: Bool
-//    @Binding var windowIdentifier: Set<String>
     
     private var timer: Timer? = nil
     private let intervalTimer = 0.1
     private let openWindow: OpenWindowAction
-
+    private let presenter: PhotoPresenterLoader = PhotoPresenterLoader()
+    
     init(
         loadingInProgress: Binding<Bool>,
-//        windowIdentifier: Binding<Set<String>>,
         openWindow: OpenWindowAction
     )
     {
         _loadingInProgress = loadingInProgress
-//        _windowIdentifier = windowIdentifier
         self.openWindow = openWindow
     }
 
@@ -45,7 +43,7 @@ class PresenterLoadingFileController: ObservableObject {
                     
                     loadingInProgress = true
 
-                    if let presenter = PhotoPresenterApp.LoadPhotoPresenter(fullpath: viewPosition.pahtFile) {
+                    if let presenter = presenter.load(fullpath: viewPosition.pahtFile) {
                         for grView in presenter.groupedViews {
                             if grView.fastLoaddings == nil {
                                 grView.fastLoaddings = (0..<grView.nbOfView).map { _ in FastLoading() }
@@ -60,6 +58,7 @@ class PresenterLoadingFileController: ObservableObject {
                         )
                         
                         helpers.append(helper)
+                        
 
                         // Utilisation de la closure injectée
                         openWindow.callAsFunction(id: "photoPresenterWindows", value: helper)

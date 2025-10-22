@@ -10,7 +10,7 @@ import AppKit
 
 class PresenterViewPosition: ObservableObject, Identifiable, Codable, Hashable {
     // MARK: - Identifiable
-    let id: UUID
+    var id: UUID
 
     // MARK: - Published properties
     @Published var name: String
@@ -55,7 +55,7 @@ class PresenterViewPosition: ObservableObject, Identifiable, Codable, Hashable {
     }
 
     // MARK: - Initializer
-    init(id: UUID = UUID(),
+    init(id: UUID,
          name: String,
          pahtFile: String,
          windowPosition: WindowPosition) {
