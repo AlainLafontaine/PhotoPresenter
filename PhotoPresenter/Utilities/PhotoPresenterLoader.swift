@@ -31,14 +31,7 @@ struct PhotoPresenterLoader {
             presenter.fileHeader.id = UUID()
             
         default:
-            let fileHeader = presenter.fileHeader
-            
-            if let id = fileHeader.id {
-                print("Identifiant: \(id) version: \(fileHeader.version)")
-            } else {
-                print("version: \(fileHeader.version)")
-            }
-            
+            break
         }
     }
 }

@@ -35,7 +35,6 @@ struct PhotoPresenterView: View {
                         if !windowIdentifier.contains(windowId) {
                             windowIdentifier.insert(windowId)
                             dataPresenter.windowId = windowId
-                            print("Identifiant windows: \(windowId)")
                             break;
                         }
                     }

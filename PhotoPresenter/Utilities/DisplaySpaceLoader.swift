@@ -35,13 +35,7 @@ struct DisplaySpaceLoader {
             updateFor0_1_0001(viewPositions: displaySpace.viewPositions)
             
         default:
-            let fileHeader = displaySpace.fileHeader
-            
-            if let id = fileHeader.id {
-                print("Identifiant: \(id) version: \(fileHeader.version)")
-            } else {
-                print("version: \(fileHeader.version)")
-            }
+            break
         }
     }
     

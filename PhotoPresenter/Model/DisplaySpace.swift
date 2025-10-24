@@ -15,22 +15,9 @@ class DisplaySpace: ObservableObject, Codable, Hashable {
     @Published var windowPosition: WindowPosition?
     @Published var viewPositions: [PresenterViewPosition]
     @Published var presenters: [PhotoPresenter]?
+    @Published var emergencyDisplaySpace: EmergencyDisplaySpace?
 
-    // MARK: - Initializer
-
-    init(fileHeader: FileHeader,
-         displaySpaceHeader: DisplaySpaceHeader,
-         windowPosition: WindowPosition? = nil,
-         viewPositions: [PresenterViewPosition],
-         presenters: [PhotoPresenter]? = nil) {
-        self.fileHeader = fileHeader
-        self.displaySpaceHeader = displaySpaceHeader
-        self.windowPosition = windowPosition
-        self.viewPositions = viewPositions
-        self.presenters = presenters
-    }
-
-    // MARK: - Codable
+    // MARK: - CodingKeys
 
     enum CodingKeys: String, CodingKey {
         case fileHeader
@@ -38,7 +25,10 @@ class DisplaySpace: ObservableObject, Codable, Hashable {
         case windowPosition
         case viewPositions
         case presenters
+        case emergencyDisplaySpace
     }
+
+    // MARK: - Codable
 
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -47,6 +37,7 @@ class DisplaySpace: ObservableObject, Codable, Hashable {
         windowPosition = try container.decodeIfPresent(WindowPosition.self, forKey: .windowPosition)
         viewPositions = try container.decode([PresenterViewPosition].self, forKey: .viewPositions)
         presenters = try container.decodeIfPresent([PhotoPresenter].self, forKey: .presenters)
+        emergencyDisplaySpace = try container.decodeIfPresent(EmergencyDisplaySpace.self, forKey: .emergencyDisplaySpace)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -56,6 +47,7 @@ class DisplaySpace: ObservableObject, Codable, Hashable {
         try container.encodeIfPresent(windowPosition, forKey: .windowPosition)
         try container.encode(viewPositions, forKey: .viewPositions)
         try container.encodeIfPresent(presenters, forKey: .presenters)
+        try container.encodeIfPresent(emergencyDisplaySpace, forKey: .emergencyDisplaySpace)
     }
 
     // MARK: - Hashable
@@ -65,7 +57,8 @@ class DisplaySpace: ObservableObject, Codable, Hashable {
         lhs.displaySpaceHeader == rhs.displaySpaceHeader &&
         lhs.windowPosition == rhs.windowPosition &&
         lhs.viewPositions == rhs.viewPositions &&
-        lhs.presenters == rhs.presenters
+        lhs.presenters == rhs.presenters &&
+        lhs.emergencyDisplaySpace == rhs.emergencyDisplaySpace
     }
 
     func hash(into hasher: inout Hasher) {
@@ -74,5 +67,24 @@ class DisplaySpace: ObservableObject, Codable, Hashable {
         hasher.combine(windowPosition)
         hasher.combine(viewPositions)
         hasher.combine(presenters)
+        hasher.combine(emergencyDisplaySpace)
+    }
+
+    // MARK: - Initializer
+
+    init(
+        fileHeader: FileHeader,
+        displaySpaceHeader: DisplaySpaceHeader,
+        windowPosition: WindowPosition? = nil,
+        viewPositions: [PresenterViewPosition],
+        presenters: [PhotoPresenter]? = nil,
+        emergencyDisplaySpace: EmergencyDisplaySpace? = nil
+    ) {
+        self.fileHeader = fileHeader
+        self.displaySpaceHeader = displaySpaceHeader
+        self.windowPosition = windowPosition
+        self.viewPositions = viewPositions
+        self.presenters = presenters
+        self.emergencyDisplaySpace = emergencyDisplaySpace
     }
 }
