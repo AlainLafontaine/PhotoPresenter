@@ -43,7 +43,7 @@ class PresenterLoadingFileController: ObservableObject {
                     
                     loadingInProgress = true
 
-                    if let presenter = presenter.load(fullpath: viewPosition.pahtFile) {
+                    if let presenter = presenter.load(fullpath: viewPosition.pathFile) {
                         for grView in presenter.groupedViews {
                             if grView.fastLoaddings == nil {
                                 grView.fastLoaddings = (0..<grView.nbOfView).map { _ in FastLoading() }
@@ -51,7 +51,7 @@ class PresenterLoadingFileController: ObservableObject {
                         }
 
                         let helper = DataPresenterHelp(
-                            filename: viewPosition.pahtFile,
+                            filename: viewPosition.pathFile,
                             name: presenter.photoPresenterHeader.name,
                             windowPos: viewPosition.windowPosition,
                             presenter: presenter

@@ -32,16 +32,13 @@ struct DashboardView: View {
                 
                 List(displaySpace.viewPositions) { viewPosition in
                     HStack {
-                        Text(viewPosition.name)
-                        Spacer()
-                        
                         if let presenter = displaySpace.presenters?.first(where:{ $0.fileHeader.id == viewPosition.id }) {
+                            Text(presenter.photoPresenterHeader.name)
+                            Spacer()
                             Text("\(NumberOfPhotos(presenter.groupedViews)) photos")
                         }
                     }
-                    
                 }
-                
             }.frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }

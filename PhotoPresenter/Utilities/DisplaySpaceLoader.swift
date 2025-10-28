@@ -32,21 +32,21 @@ struct DisplaySpaceLoader {
             
             fileHeader.version = "0.1.0002"
             fileHeader.id = UUID()
-            updateFor0_1_0001(viewPositions: displaySpace.viewPositions)
-            
+            updateFor_0_1_0001(viewPositions: displaySpace.viewPositions)
+                    
         default:
             break
         }
     }
     
     // Migration 0.1.0001 -> 0.1.0002
-    private func updateFor0_1_0001(viewPositions: [PresenterViewPosition]) {
+    private func updateFor_0_1_0001(viewPositions: [PresenterViewPosition]) {
         let presenterLoader: PhotoPresenterLoader = PhotoPresenterLoader()
         
         // Itérer sur viewPositions pour appliquer les changements nécessaires
         for viewPosition in viewPositions {
             
-            if let presenter = presenterLoader.load(fullpath: viewPosition.pahtFile) {
+            if let presenter = presenterLoader.load(fullpath: viewPosition.pathFile) {
                 viewPosition.id = presenter.fileHeader.id!
             }
         }

@@ -278,14 +278,13 @@ struct PhotoPresenterApp: App {
                         )
                     }
                 
-                    if let viewPosition = displaySpace.viewPositions.first(where: { $0.pahtFile == dataPresenter.filename }) {
+                    if let viewPosition = displaySpace.viewPositions.first(where: { $0.pathFile == dataPresenter.filename }) {
                         viewPosition.windowPosition = dataPresenter.windowPos!
                     } else {
                         displaySpace.viewPositions.append(
                             PresenterViewPosition(
                                 id: dataPresenter.presenter.fileHeader.id!,
-                                name: dataPresenter.name,
-                                pahtFile: dataPresenter.filename,
+                                pathFile: dataPresenter.filename,
                                 windowPosition: dataPresenter.windowPos!
                             )
                         )
@@ -297,6 +296,7 @@ struct PhotoPresenterApp: App {
         let tmp = displaySpace.presenters
         
         displaySpace.presenters = nil
+        
         if let path = pathDisplaySpace {
             saveToJSONFile(displaySpace, filename: path)
         } else {
@@ -317,10 +317,10 @@ struct PhotoPresenterApp: App {
                         window.title = displaySpace.displaySpaceHeader.name
                     }
                 }
-                
-                displaySpace.presenters = tmp
             }
         }
+        
+        displaySpace.presenters = tmp
     }
     
     private func getDisplaySpaceView() -> NSWindow? {
@@ -418,8 +418,7 @@ struct PhotoPresenterApp: App {
                      displaySpace.viewPositions.append(
                          PresenterViewPosition(
                              id: pp.fileHeader.id!,
-                             name: pp.photoPresenterHeader.name,
-                             pahtFile: url.path(),
+                             pathFile: url.path(),
                              windowPosition: WindowPosition(x: 0, y: 0, width: 400, height: 400)
                          )
                      )
