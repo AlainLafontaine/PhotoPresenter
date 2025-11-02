@@ -20,6 +20,7 @@ class ViewSetting: ObservableObject, Codable, Hashable {
     @Published var directorySelected: [String]?
     @Published var ratio: Double?
     @Published var tolerance: Double?
+    @Published var displaySpaceId: UUID?
 
     // MARK: - Initializer
 
@@ -35,7 +36,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         filesSelected: [String]? = nil,
         directorySelected: [String]? = nil,
         ratio: Double? = nil,
-        tolerance: Double? = nil
+        tolerance: Double? = nil,
+        displaySpaceId: UUID? = nil
     ) {
         self.type = type
         self.isPaused = isPaused
@@ -49,6 +51,7 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         self.directorySelected = directorySelected
         self.ratio = ratio
         self.tolerance = tolerance
+        self.displaySpaceId = displaySpaceId
     }
 
     // MARK: - Codable
@@ -56,7 +59,7 @@ class ViewSetting: ObservableObject, Codable, Hashable {
     enum CodingKeys: String, CodingKey {
         case type, isPaused, isReverse, isRandomizing, currentIndex, intervalTimer,
              displayNumImage, displayFilename, filesSelected, directorySelected,
-             ratio, tolerance
+             ratio, tolerance, displaySpaceId
     }
 
     required convenience init(from decoder: Decoder) throws {
@@ -73,6 +76,7 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         let directorySelected = try c.decodeIfPresent([String].self, forKey: .directorySelected)
         let ratio = try c.decodeIfPresent(Double.self, forKey: .ratio)
         let tolerance = try c.decodeIfPresent(Double.self, forKey: .tolerance)
+        let displaySpaceId = try c.decodeIfPresent(UUID.self, forKey: .displaySpaceId)
 
         self.init(
             type: type,
@@ -86,7 +90,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
             filesSelected: filesSelected,
             directorySelected: directorySelected,
             ratio: ratio,
-            tolerance: tolerance
+            tolerance: tolerance,
+            displaySpaceId: displaySpaceId
         )
     }
 
@@ -104,6 +109,7 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         try c.encodeIfPresent(directorySelected, forKey: .directorySelected)
         try c.encodeIfPresent(ratio, forKey: .ratio)
         try c.encodeIfPresent(tolerance, forKey: .tolerance)
+        try c.encodeIfPresent(displaySpaceId, forKey: .displaySpaceId)
     }
 
     // MARK: - Hashable
@@ -120,7 +126,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         lhs.filesSelected == rhs.filesSelected &&
         lhs.directorySelected == rhs.directorySelected &&
         lhs.ratio == rhs.ratio &&
-        lhs.tolerance == rhs.tolerance
+        lhs.tolerance == rhs.tolerance &&
+        lhs.displaySpaceId == rhs.displaySpaceId
     }
 
     func hash(into hasher: inout Hasher) {
@@ -136,5 +143,6 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         hasher.combine(directorySelected)
         hasher.combine(ratio)
         hasher.combine(tolerance)
+        hasher.combine(displaySpaceId)
     }
 }

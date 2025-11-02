@@ -10,12 +10,12 @@ import SwiftUI
 import AppKit  // Nécessaire pour NSImage
 
 class SlideShowController: ObservableObject {
-    @ObservedObject var viewSetting: ViewSetting
+    @ObservedObject var viewSetting: ViewSetting2
     @ObservedObject var fastLoading: FastLoading
     
     var timer: Timer?
     
-    init(viewSetting setting: ViewSetting, fastLoading: FastLoading) {
+    init(viewSetting setting: ViewSetting2, fastLoading: FastLoading) {
         self.viewSetting = setting
         self.fastLoading = fastLoading
     }

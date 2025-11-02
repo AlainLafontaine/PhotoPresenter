@@ -27,7 +27,7 @@ struct WindowAccessor: NSViewRepresentable {
 
 struct ImageView: View {
     
-    @ObservedObject private var viewSetting: ViewSetting
+    @ObservedObject private var viewSetting: ViewSetting2
     
     @StateObject private var sideShowController: SlideShowController
     @StateObject private var imageController : ImageController
@@ -128,7 +128,7 @@ struct ImageView: View {
                     FloatingLabelView(
                         text: sideShowController.fastLoading.fileInfos[viewSetting.currentIndex].filename,
                         isDisplay: $viewSetting.displayFilename,position: .halfTop,
-                        opacityMinimale: 0.1
+                        opacityMinimale: 0.01
                     )
                 }
                 
@@ -136,7 +136,7 @@ struct ImageView: View {
                     FloatingLabelView(
                         text: "\(viewSetting.currentIndex + 1) sur \(sideShowController.fastLoading.fileInfos.count)",
                         isDisplay: $viewSetting.displayNumImage,
-                        opacityMinimale: 0.1
+                        opacityMinimale: 0.01
                     );
                 }
             } else {
@@ -165,7 +165,7 @@ struct ImageView: View {
 
     init(
         name title: String,
-        setting: ViewSetting,
+        setting: ViewSetting2,
         fastLoading: FastLoading
     ) {
         self._sideShowController = StateObject(wrappedValue: SlideShowController(viewSetting: setting, fastLoading: fastLoading))

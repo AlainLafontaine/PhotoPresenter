@@ -381,7 +381,7 @@ struct PhotoPresenterApp: App {
                                              )
                      }
 
-                     loadingController?.start(with: ds.viewPositions)
+                     loadingController?.start(with: ds.viewPositions, for: displaySpace.fileHeader.id!)
                      
                      if let window = getDisplaySpaceView() {
                          if let windowPosition = displaySpace.windowPosition {
@@ -405,11 +405,7 @@ struct PhotoPresenterApp: App {
                  if let groupedViews = presenter?.groupedViews {
                      for grView in groupedViews  {
                          if grView.fastLoaddings == nil {
-                             grView.fastLoaddings = []
-                             
-                             for _ in 0..<grView.nbOfView {
-                                 grView.fastLoaddings?.append(FastLoading())
-                             }
+                             grView.fastLoaddings = (0..<grView.nbOfView).map { _ in FastLoading() }
                          }
                      }
                  }
@@ -423,10 +419,13 @@ struct PhotoPresenterApp: App {
                          )
                      )
                      
+                     
+                     
                      let helper = DataPresenterHelp(
                                      filename: url.path(),
                                      name: pp.photoPresenterHeader.name,
-                                     presenter: presenter!
+                                     presenter: presenter!,
+                                     displaySpaceId: displaySpace.fileHeader.id!,
                                   )
                                              
                      openWindow(id: "photoPresenterWindows", value: helper)

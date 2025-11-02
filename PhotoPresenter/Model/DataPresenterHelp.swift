@@ -16,12 +16,13 @@ class DataPresenterHelp: ObservableObject, Identifiable, Codable, Hashable {
 
     let filename: String
     let name: String
+    var displaySpaceId: UUID
     var windowPos: WindowPosition?
     var windowId: String?
     
     // MARK: - Coding Keys
     enum CodingKeys: String, CodingKey {
-        case windowId, filename, name, windowPos, displayView, presenter
+        case windowId, filename, name, windowPos, displayView, presenter, displaySpaceId
     }
 
     // MARK: - Codable
@@ -33,6 +34,7 @@ class DataPresenterHelp: ObservableObject, Identifiable, Codable, Hashable {
         windowPos = try container.decodeIfPresent(WindowPosition.self, forKey: .windowPos)
         displayView = try container.decode(PhotoPresenterViewType.self, forKey: .displayView)
         presenter = try container.decode(PhotoPresenter.self, forKey: .presenter)
+        displaySpaceId = try container.decodeIfPresent(UUID.self, forKey: .displaySpaceId) ?? UUID()
     }
 
     func encode(to encoder: Encoder) throws {
@@ -43,6 +45,7 @@ class DataPresenterHelp: ObservableObject, Identifiable, Codable, Hashable {
         try container.encodeIfPresent(windowPos, forKey: .windowPos)
         try container.encode(displayView, forKey: .displayView)
         try container.encode(presenter, forKey: .presenter)
+        try container.encode(displaySpaceId, forKey: .displaySpaceId)
     }
 
     // MARK: - Hashable
@@ -52,7 +55,8 @@ class DataPresenterHelp: ObservableObject, Identifiable, Codable, Hashable {
                lhs.name == rhs.name &&
                lhs.windowPos == rhs.windowPos &&
                lhs.displayView == rhs.displayView &&
-               lhs.presenter == rhs.presenter
+               lhs.presenter == rhs.presenter &&
+               lhs.displaySpaceId == rhs.displaySpaceId
     }
 
     func hash(into hasher: inout Hasher) {
@@ -62,6 +66,7 @@ class DataPresenterHelp: ObservableObject, Identifiable, Codable, Hashable {
         hasher.combine(windowPos)
         hasher.combine(displayView)
         hasher.combine(presenter)
+        hasher.combine(displaySpaceId)
     }
 
     // MARK: - Initializer
@@ -71,7 +76,8 @@ class DataPresenterHelp: ObservableObject, Identifiable, Codable, Hashable {
         name: String,
         windowPos: WindowPosition? = nil,
         displayView: PhotoPresenterViewType = .multiImageView,
-        presenter: PhotoPresenter
+        presenter: PhotoPresenter,
+        displaySpaceId: UUID
     )
     {
         self.windowId = windowId
@@ -80,5 +86,6 @@ class DataPresenterHelp: ObservableObject, Identifiable, Codable, Hashable {
         self.windowPos = windowPos
         self.displayView = displayView
         self.presenter = presenter
+        self.displaySpaceId = displaySpaceId
     }
 }
