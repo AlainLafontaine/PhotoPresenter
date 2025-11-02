@@ -278,14 +278,13 @@ struct PhotoPresenterApp: App {
                         )
                     }
                 
-                    if let viewPosition = displaySpace.viewPositions.first(where: { $0.pahtFile == dataPresenter.filename }) {
+                    if let viewPosition = displaySpace.viewPositions.first(where: { $0.pathFile == dataPresenter.filename }) {
                         viewPosition.windowPosition = dataPresenter.windowPos!
                     } else {
                         displaySpace.viewPositions.append(
                             PresenterViewPosition(
                                 id: dataPresenter.presenter.fileHeader.id!,
-                                name: dataPresenter.name,
-                                pahtFile: dataPresenter.filename,
+                                pathFile: dataPresenter.filename,
                                 windowPosition: dataPresenter.windowPos!
                             )
                         )
@@ -297,6 +296,7 @@ struct PhotoPresenterApp: App {
         let tmp = displaySpace.presenters
         
         displaySpace.presenters = nil
+        
         if let path = pathDisplaySpace {
             saveToJSONFile(displaySpace, filename: path)
         } else {
@@ -317,10 +317,10 @@ struct PhotoPresenterApp: App {
                         window.title = displaySpace.displaySpaceHeader.name
                     }
                 }
-                
-                displaySpace.presenters = tmp
             }
         }
+        
+        displaySpace.presenters = tmp
     }
     
     private func getDisplaySpaceView() -> NSWindow? {
@@ -381,7 +381,7 @@ struct PhotoPresenterApp: App {
                                              )
                      }
 
-                     loadingController?.start(with: ds.viewPositions)
+                     loadingController?.start(with: ds.viewPositions, for: displaySpace.fileHeader.id!)
                      
                      if let window = getDisplaySpaceView() {
                          if let windowPosition = displaySpace.windowPosition {
@@ -405,11 +405,7 @@ struct PhotoPresenterApp: App {
                  if let groupedViews = presenter?.groupedViews {
                      for grView in groupedViews  {
                          if grView.fastLoaddings == nil {
-                             grView.fastLoaddings = []
-                             
-                             for _ in 0..<grView.nbOfView {
-                                 grView.fastLoaddings?.append(FastLoading())
-                             }
+                             grView.fastLoaddings = (0..<grView.nbOfView).map { _ in FastLoading() }
                          }
                      }
                  }
@@ -418,16 +414,18 @@ struct PhotoPresenterApp: App {
                      displaySpace.viewPositions.append(
                          PresenterViewPosition(
                              id: pp.fileHeader.id!,
-                             name: pp.photoPresenterHeader.name,
-                             pahtFile: url.path(),
+                             pathFile: url.path(),
                              windowPosition: WindowPosition(x: 0, y: 0, width: 400, height: 400)
                          )
                      )
                      
+                     
+                     
                      let helper = DataPresenterHelp(
                                      filename: url.path(),
                                      name: pp.photoPresenterHeader.name,
-                                     presenter: presenter!
+                                     presenter: presenter!,
+                                     displaySpaceId: displaySpace.fileHeader.id!,
                                   )
                                              
                      openWindow(id: "photoPresenterWindows", value: helper)

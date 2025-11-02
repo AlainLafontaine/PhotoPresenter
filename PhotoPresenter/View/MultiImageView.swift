@@ -11,6 +11,8 @@ import SwiftUtilities
 
 struct MultiImageView: View {
     @ObservedObject private var photoPresenter: PhotoPresenter
+                    
+    private let displaySpaceId: UUID
     
     var body: some View {
         switch photoPresenter.photoPresenterHeader.orientation
@@ -20,9 +22,15 @@ struct MultiImageView: View {
                 HStack(spacing: 0) {
                     ForEach(0..<photoPresenter.groupedViews[grViewIndex].nbOfView, id: \.self) { viewSettingIndex in
                         VStack(spacing: 0) {
+                            
+                            
                             ImageView(
                                 name: photoPresenter.photoPresenterHeader.name,
-                                setting: photoPresenter.groupedViews[grViewIndex].viewSettings[viewSettingIndex],
+                                setting: getViewSetting(
+                                    displaySpaceId: displaySpaceId,
+                                    packInDisplaySpaces: photoPresenter.groupedViews[grViewIndex].packInDisplaySpaces ?? [],
+                                    viewSettingIndex: viewSettingIndex
+                                ),
                                 fastLoading: photoPresenter.groupedViews[grViewIndex].fastLoaddings![viewSettingIndex]
                             )
                         }
@@ -38,7 +46,11 @@ struct MultiImageView: View {
                         ForEach(0..<photoPresenter.groupedViews[grViewIndex].nbOfView, id: \.self) { viewSettingIndex in
                             ImageView(
                                 name: photoPresenter.photoPresenterHeader.name,
-                                setting: photoPresenter.groupedViews[grViewIndex].viewSettings[viewSettingIndex],
+                                setting: getViewSetting(
+                                    displaySpaceId: displaySpaceId,
+                                    packInDisplaySpaces: photoPresenter.groupedViews[grViewIndex].packInDisplaySpaces ?? [],
+                                    viewSettingIndex: viewSettingIndex
+                                ),
                                 fastLoading: photoPresenter.groupedViews[grViewIndex].fastLoaddings![viewSettingIndex]
                             )
                         }
@@ -55,7 +67,20 @@ struct MultiImageView: View {
         }
     }
 
-    init(presenter: PhotoPresenter) {
-        self.photoPresenter = presenter // ✅ note le underscore
+    init(presenter: PhotoPresenter, displaySpaceId: UUID) {
+        self.photoPresenter = presenter
+        self.displaySpaceId = displaySpaceId
+    }
+    
+    private func getViewSetting(
+        displaySpaceId: UUID,
+        packInDisplaySpaces: [PackInDisplaySpace],
+        viewSettingIndex: Int
+    ) -> ViewSetting2
+    {
+        // Chercher l'élément PackInDisplaySpace qui correspond au displaySpaceId
+        let packInDisplaySpace = packInDisplaySpaces.first(where: { $0.displaySpaceId == displaySpaceId })
+            
+        return packInDisplaySpace!.viewSettings[viewSettingIndex]
     }
 }

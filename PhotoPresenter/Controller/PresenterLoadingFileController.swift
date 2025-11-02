@@ -27,7 +27,7 @@ class PresenterLoadingFileController: ObservableObject {
         self.openWindow = openWindow
     }
 
-    func start(with viewPositions: [PresenterViewPosition]) {
+    func start(with viewPositions: [PresenterViewPosition], for displaySpaceId: UUID) {
         let nbOfViews = viewPositions.count
         var index: Int = 0
         var helpers = [DataPresenterHelp]()
@@ -43,7 +43,7 @@ class PresenterLoadingFileController: ObservableObject {
                     
                     loadingInProgress = true
 
-                    if let presenter = presenter.load(fullpath: viewPosition.pahtFile) {
+                    if let presenter = presenter.load(fullpath: viewPosition.pathFile) {
                         for grView in presenter.groupedViews {
                             if grView.fastLoaddings == nil {
                                 grView.fastLoaddings = (0..<grView.nbOfView).map { _ in FastLoading() }
@@ -51,14 +51,14 @@ class PresenterLoadingFileController: ObservableObject {
                         }
 
                         let helper = DataPresenterHelp(
-                            filename: viewPosition.pahtFile,
+                            filename: viewPosition.pathFile,
                             name: presenter.photoPresenterHeader.name,
                             windowPos: viewPosition.windowPosition,
-                            presenter: presenter
+                            presenter: presenter,
+                            displaySpaceId: displaySpaceId
                         )
                         
                         helpers.append(helper)
-                        
 
                         // Utilisation de la closure injectée
                         openWindow.callAsFunction(id: "photoPresenterWindows", value: helper)

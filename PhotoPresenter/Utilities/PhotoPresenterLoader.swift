@@ -30,6 +30,9 @@ struct PhotoPresenterLoader {
             presenter.fileHeader.version = "0.1.0002"
             presenter.fileHeader.id = UUID()
             
+        case "0.1.0002":
+            presenter.fileHeader.version = "0.1.0003"
+            
         default:
             break
         }

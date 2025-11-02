@@ -10,10 +10,10 @@ import SwiftUI
 import AppKit  // Nécessaire pour NSImage
 
 class ImageController: ObservableObject {
-    @ObservedObject var viewSetting: ViewSetting
+    @ObservedObject var viewSetting: ViewSetting2
     @ObservedObject var fastLoading: FastLoading
     
-    init(viewSetting setting: ViewSetting, fastLoading: FastLoading) {
+    init(viewSetting setting: ViewSetting2, fastLoading: FastLoading) {
         self.viewSetting = setting
         self.fastLoading = fastLoading
         
@@ -36,7 +36,7 @@ class ImageController: ObservableObject {
     }
     
     private func LoadOneFileInfoInMem(index: Int) -> NSImage {
-        switch viewSetting.type {
+        switch viewSetting.presenterDataSource.type {
         case .FilesSelected, .DirectorySelected:
             let fullPath = "\(fastLoading.directories[fastLoading.fileInfos[index].directoryIndex])/\(fastLoading.fileInfos[index].filename)"
             
@@ -55,7 +55,7 @@ class ImageController: ObservableObject {
     }
     
     private func LoadFileInfoInMem() {
-        switch viewSetting.type {
+        switch viewSetting.presenterDataSource.type {
         case .FilesSelected:
             if fastLoading.fileInfos.count > 0 {
                 for fileInfo in fastLoading.fileInfos {
@@ -68,7 +68,7 @@ class ImageController: ObservableObject {
                     }
                 }
             } else {
-                for fullPath in viewSetting.filesSelected! {
+                for fullPath in viewSetting.presenterDataSource.filesSelected! {
                     addImagefile4SelectedFiles(filename: fullPath, fastLoading: fastLoading)
                 }
             }
@@ -85,10 +85,10 @@ class ImageController: ObservableObject {
                     }
                 }
             } else {
-                let ratio = viewSetting.ratio ?? 1.0
-                let tolerance = viewSetting.tolerance ?? 0.05
+                let ratio = viewSetting.presenterDataSource.ratio ?? 1.0
+                let tolerance = viewSetting.presenterDataSource.tolerance ?? 0.05
                 
-                for directory in viewSetting.directorySelected ?? [] {
+                for directory in viewSetting.presenterDataSource.directorySelected ?? [] {
                     var index: Int? = fastLoading.directories.firstIndex(of: directory)
 
                     if index == nil {
