@@ -419,7 +419,30 @@ struct PhotoPresenterApp: App {
                          )
                      )
                      
-                     
+                     for groupedView in pp.groupedViews {
+                         if groupedView.packInDisplaySpaces == nil {
+                             groupedView.packInDisplaySpaces = []
+                         }
+                         
+                         var viewSettings2: [ViewSetting2] = [ViewSetting2]()
+                         
+                         for index in 0..<groupedView.nbOfView {
+                             if let presenterDataSource = groupedView.packInDisplaySpaces?[0].viewSettings[index].presenterDataSource   {
+                                 let viewSetting = ViewSetting2(
+                                     presenterDataSource: presenterDataSource,
+                                 )
+                                 
+                                 viewSettings2.append(viewSetting)
+                             }
+                         }
+                         
+                         let packInDisplaySpace = PackInDisplaySpace(
+                             displaySpaceId: displaySpace.fileHeader.id!,
+                             viewSettings: viewSettings2
+                         )
+                         
+                         groupedView.packInDisplaySpaces?.append(packInDisplaySpace)
+                     }
                      
                      let helper = DataPresenterHelp(
                                      filename: url.path(),

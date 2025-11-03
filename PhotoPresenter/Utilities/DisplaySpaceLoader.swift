@@ -34,14 +34,21 @@ struct DisplaySpaceLoader {
             fileHeader.version = "0.1.0002"
             fileHeader.id = UUID()
             updateFor_0_1_0002(viewPositions: displaySpace.viewPositions)
-            updateFor_0_1_0003(displaySpace)
+            check4Update(displaySpace)
             
         case "0.1.0002":
             let fileHeader = displaySpace.fileHeader
             
             fileHeader.version = "0.1.0003"
             updateFor_0_1_0003(displaySpace)
-                    
+            check4Update(displaySpace)
+            
+        case "0.1.0003":
+            let fileHeader = displaySpace.fileHeader
+            fileHeader.version = "0.1.0004"
+            updateFor_0_1_0004(displaySpace)
+            check4Update(displaySpace)
+            
         default:
             break
         }
@@ -78,6 +85,7 @@ struct DisplaySpaceLoader {
     private func updateFor_0_1_0003(_ displaySpace: DisplaySpace) {
         for viewPosition in displaySpace.viewPositions {
             if let photoPresenter = loadPhotoPresententer(fullpath: viewPosition.pathFile) {
+                
                 for groupedView in photoPresenter.groupedViews {
                     if groupedView.packInDisplaySpaces == nil {
                         groupedView.packInDisplaySpaces = []
@@ -118,6 +126,12 @@ struct DisplaySpaceLoader {
                                 )
                                 
                                 viewSettings2.append(viewSetting)
+                            } else {
+                                if let viewSetting = groupedView.packInDisplaySpaces?[0].viewSettings[0]   {
+                                    viewSettings2.append(viewSetting)
+                                } else {
+                                    fatalError()
+                                }
                             }
                             
                         default:
@@ -134,6 +148,35 @@ struct DisplaySpaceLoader {
                     groupedView.viewSettings = nil
                 }
                 
+                saveToJSONFile(photoPresenter, filename: viewPosition.pathFile)
+            }
+        }
+    }
+    
+    // Migration 0.1.0003 -> 0.1.0004
+    private func updateFor_0_1_0004(_ displaySpace: DisplaySpace) {
+        for viewPosition in displaySpace.viewPositions {
+            if let photoPresenter = loadPhotoPresententer(fullpath: viewPosition.pathFile) {
+                for groupedView in photoPresenter.groupedViews {
+                    if groupedView.photoPresenterDataSources == nil {
+                        var first: Bool = true
+                        
+                        groupedView.photoPresenterDataSources = []
+                        for packInDisplaySpace in groupedView.packInDisplaySpaces! {
+                            if first {
+                                for viewSetting in packInDisplaySpace.viewSettings {
+                                    groupedView.photoPresenterDataSources?.append(viewSetting.presenterDataSource!)
+                                    viewSetting.presenterDataSource = nil
+                                }
+                                first = false;
+                            } else {
+                                for viewSetting in packInDisplaySpace.viewSettings {
+                                    viewSetting.presenterDataSource = nil
+                                }
+                            }
+                        }
+                    }
+                }
                 saveToJSONFile(photoPresenter, filename: viewPosition.pathFile)
             }
         }
