@@ -427,12 +427,19 @@ struct PhotoPresenterApp: App {
                          var viewSettings2: [ViewSetting2] = [ViewSetting2]()
                          
                          for index in 0..<groupedView.nbOfView {
-                             if let presenterDataSource = groupedView.packInDisplaySpaces?[0].viewSettings[index].presenterDataSource   {
-                                 let viewSetting = ViewSetting2(
-                                     presenterDataSource: presenterDataSource,
-                                 )
+                             if groupedView.packInDisplaySpaces?.count ?? 0 > 0 {
                                  
-                                 viewSettings2.append(viewSetting)
+                                 if let presenterDataSource = groupedView.packInDisplaySpaces?[0].viewSettings[index].presenterDataSource   {
+                                     let viewSetting = ViewSetting2(
+                                         presenterDataSource: presenterDataSource,
+                                     )
+                                     
+                                     viewSettings2.append(viewSetting)
+                                 } else {
+                                     viewSettings2.append(ViewSetting2())
+                                 }
+                             } else {
+                                 viewSettings2.append(ViewSetting2())
                              }
                          }
                          

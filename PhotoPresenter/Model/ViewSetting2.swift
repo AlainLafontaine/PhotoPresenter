@@ -83,8 +83,8 @@ class ViewSetting2: ObservableObject, Codable, Hashable {
          isReverse: Bool = false,
          isRandomizing: Bool = false,
          currentIndex: Int = 0,
-         intervalTimer: Double = 0.0,
-         displayNumImage: Bool = false,
+         intervalTimer: Double = 3.0,
+         displayNumImage: Bool = true,
          displayFilename: Bool = false) {
         self.presenterDataSource = presenterDataSource
         self.isPaused = isPaused

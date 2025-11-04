@@ -9,8 +9,8 @@ import SwiftUI
 
 struct RatioSimulatorView: View {
     
-    private var nbLine: Int = 2
-    private var lines: [Int] = [3, 2]
+    private var nbLine: Int = 1
+    private var lines: [Int] = [1]
     
     var body: some View {
 
