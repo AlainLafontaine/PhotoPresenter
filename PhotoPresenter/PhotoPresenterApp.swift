@@ -279,11 +279,13 @@ struct PhotoPresenterApp: App {
                 
                     if let viewPosition = displaySpace.viewPositions.first(where: { $0.pathFile == dataPresenter.filename }) {
                         viewPosition.windowPosition = dataPresenter.windowPos!
+                        viewPosition.screenName = getScreenName(for: dataPresenter.windowPos!, in: self.screensInfo)
                     } else {
                         displaySpace.viewPositions.append(
                             PresenterViewPosition(
                                 id: dataPresenter.presenter.fileHeader.id!,
                                 pathFile: dataPresenter.filename,
+                                screenName: getScreenName(for: dataPresenter.windowPos!, in: self.screensInfo),
                                 windowPosition: dataPresenter.windowPos!
                             )
                         )
@@ -414,6 +416,7 @@ struct PhotoPresenterApp: App {
                          PresenterViewPosition(
                              id: pp.fileHeader.id!,
                              pathFile: url.path(),
+                             screenName: getScreenName(for: WindowPosition(x: 0, y: 0, width: 400, height: 400), in: self.screensInfo),
                              windowPosition: WindowPosition(x: 0, y: 0, width: 400, height: 400)
                          )
                      )
@@ -450,5 +453,22 @@ struct PhotoPresenterApp: App {
         }
         
         return true
+    }
+    
+    private func getScreenName(for windowPosition: WindowPosition, in screensInfo: ScreensInfo) -> String? {
+        let windowCenterX = windowPosition.x + windowPosition.width / 2
+        let windowCenterY = windowPosition.y + windowPosition.height / 2
+        
+        for (index, position) in screensInfo.positions.enumerated() {
+            if windowCenterX >= position.x &&
+               windowCenterX < position.x + position.width &&
+               windowCenterY >= position.y &&
+               windowCenterY < position.y + position.height {
+                return screensInfo.screennames[index]
+            }
+        }
+        
+        // Si aucun écran ne correspond
+        return nil
     }
 }

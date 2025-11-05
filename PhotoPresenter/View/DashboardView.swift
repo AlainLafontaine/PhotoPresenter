@@ -12,7 +12,7 @@ struct DashboardView: View {
     
     var body: some View {
         GeometryReader { geometry in
-            VStack {
+            VStack() {
                 
                 if let description = displaySpace.displaySpaceHeader.description {
                     HStack {
@@ -30,14 +30,24 @@ struct DashboardView: View {
                 Text("Tableau de bord")
                 Spacer()
                 
-                List(displaySpace.viewPositions) { viewPosition in
-                    HStack {
-                        if let presenter = displaySpace.presenters?.first(where:{ $0.fileHeader.id == viewPosition.id }) {
-                            Text(presenter.photoPresenterHeader.name)
-                            Spacer()
-                            Text("\(NumberOfPhotos(presenter.groupedViews)) photos")
+                List(Array(displaySpace.viewPositions.enumerated()), id: \.element.id) { index, viewPosition in
+                    VStack(alignment: .leading, spacing: 0) {
+                        HStack {
+                            if let presenter = displaySpace.presenters?.first(where:{ $0.fileHeader.id == viewPosition.id }) {
+                                Text(presenter.photoPresenterHeader.name)
+                                Spacer()
+                                Text("\(NumberOfPhotos(presenter.groupedViews)) photos")
+                            }
+                        }
+                        HStack {
+                            Text(viewPosition.screenName ?? "Inconnue")
+                                .font(.system(size: 10)) // taille plus petite que le standard
                         }
                     }
+                    .padding(8) // marge intérieure de tous les côtés
+                    .background(index % 2 == 0 ? Color.blue.opacity(0.1) : Color.green.opacity(0.1))
+                    .listRowSeparator(.hidden) // supprime la ligne de séparation
+                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)) // supprime l'espacement
                 }
             }.frame(maxWidth: .infinity, maxHeight: .infinity)
         }
