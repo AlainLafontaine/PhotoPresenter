@@ -15,13 +15,12 @@ import SwiftUtilities
 struct PhotoPresenterApp: App {
     @Environment(\.openWindow) private var openWindow
     
-    
-    
     @State private var loadingInProgress: Bool = false
     @State private var loadingController: PresenterLoadingFileController? = nil
     @State private var pathDisplaySpace: String? = nil
     @State private var displaySpaceViewType: DisplaySpaceViewType = .DashboardView
-    
+    @State private var screensInfo: ScreensInfo = getScreenInfo()
+
     @State private var windowIdentifier: Set<String> = []
     @State private var dataPresenters: DataPresenterMap = DataPresenterMap()
     @State private var emergencyExit: Bool = false
@@ -426,21 +425,8 @@ struct PhotoPresenterApp: App {
                          
                          var viewSettings2: [ViewSetting2] = [ViewSetting2]()
                          
-                         for index in 0..<groupedView.nbOfView {
-                             if groupedView.packInDisplaySpaces?.count ?? 0 > 0 {
-                                 
-                                 if let presenterDataSource = groupedView.packInDisplaySpaces?[0].viewSettings[index].presenterDataSource   {
-                                     let viewSetting = ViewSetting2(
-                                         presenterDataSource: presenterDataSource,
-                                     )
-                                     
-                                     viewSettings2.append(viewSetting)
-                                 } else {
-                                     viewSettings2.append(ViewSetting2())
-                                 }
-                             } else {
-                                 viewSettings2.append(ViewSetting2())
-                             }
+                         for _ in 0..<groupedView.nbOfView {
+                             viewSettings2.append(ViewSetting2())
                          }
                          
                          let packInDisplaySpace = PackInDisplaySpace(

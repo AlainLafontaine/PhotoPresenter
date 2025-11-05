@@ -13,7 +13,6 @@ class GroupedView: ObservableObject, Codable, Hashable {
     @Published var nbOfView: Int
     @Published var photoPresenterDataSources: [PhotoPresenterDataSource]?
     @Published var packInDisplaySpaces: [PackInDisplaySpace]?
-    @Published var viewSettings: [ViewSetting]?
     var fastLoaddings: [FastLoading]?
 
     // MARK: - Coding Keys
@@ -21,7 +20,6 @@ class GroupedView: ObservableObject, Codable, Hashable {
         case nbOfView
         case photoPresenterDataSources
         case packInDisplaySpaces
-        case viewSettings
         case fastLoaddings
     }
 
@@ -31,7 +29,6 @@ class GroupedView: ObservableObject, Codable, Hashable {
         nbOfView = try container.decode(Int.self, forKey: .nbOfView)
         photoPresenterDataSources = try container.decodeIfPresent([PhotoPresenterDataSource].self, forKey: .photoPresenterDataSources)
         packInDisplaySpaces = try container.decodeIfPresent([PackInDisplaySpace].self, forKey: .packInDisplaySpaces)
-        viewSettings = try container.decodeIfPresent([ViewSetting].self, forKey: .viewSettings)
         fastLoaddings = try container.decodeIfPresent([FastLoading].self, forKey: .fastLoaddings)
     }
 
@@ -40,7 +37,6 @@ class GroupedView: ObservableObject, Codable, Hashable {
         try container.encode(nbOfView, forKey: .nbOfView)
         try container.encodeIfPresent(photoPresenterDataSources, forKey: .photoPresenterDataSources)
         try container.encodeIfPresent(packInDisplaySpaces, forKey: .packInDisplaySpaces)
-        try container.encodeIfPresent(viewSettings, forKey: .viewSettings)
         try container.encodeIfPresent(fastLoaddings, forKey: .fastLoaddings)
     }
 
@@ -49,7 +45,6 @@ class GroupedView: ObservableObject, Codable, Hashable {
         lhs.nbOfView == rhs.nbOfView &&
         lhs.photoPresenterDataSources == rhs.photoPresenterDataSources &&
         lhs.packInDisplaySpaces == rhs.packInDisplaySpaces &&
-        lhs.viewSettings == rhs.viewSettings &&
         lhs.fastLoaddings == rhs.fastLoaddings
     }
 
@@ -57,7 +52,6 @@ class GroupedView: ObservableObject, Codable, Hashable {
         hasher.combine(nbOfView)
         hasher.combine(photoPresenterDataSources)
         hasher.combine(packInDisplaySpaces)
-        hasher.combine(viewSettings)
         hasher.combine(fastLoaddings)
     }
 
@@ -65,12 +59,10 @@ class GroupedView: ObservableObject, Codable, Hashable {
     init(nbOfView: Int,
          photoPresenterDataSources: [PhotoPresenterDataSource]? = nil,
          packInDisplaySpaces: [PackInDisplaySpace]? = nil,
-         viewSettings: [ViewSetting]? = nil,
          fastLoaddings: [FastLoading]? = nil) {
         self.nbOfView = nbOfView
         self.photoPresenterDataSources = photoPresenterDataSources
         self.packInDisplaySpaces = packInDisplaySpaces
-        self.viewSettings = viewSettings
         self.fastLoaddings = fastLoaddings
     }
 }

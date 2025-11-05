@@ -8,7 +8,6 @@
 import Foundation
 
 class ViewSetting2: ObservableObject, Codable, Hashable {
-    @Published var presenterDataSource: PhotoPresenterDataSource?
     @Published var isPaused: Bool
     @Published var isReverse: Bool
     @Published var isRandomizing: Bool
@@ -19,7 +18,6 @@ class ViewSetting2: ObservableObject, Codable, Hashable {
 
     // MARK: - CodingKeys
     enum CodingKeys: String, CodingKey {
-        case presenterDataSource
         case isPaused
         case isReverse
         case isRandomizing
@@ -32,7 +30,6 @@ class ViewSetting2: ObservableObject, Codable, Hashable {
     // MARK: - Codable
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        presenterDataSource = try container.decodeIfPresent(PhotoPresenterDataSource.self, forKey: .presenterDataSource)
         isPaused = try container.decode(Bool.self, forKey: .isPaused)
         isReverse = try container.decode(Bool.self, forKey: .isReverse)
         isRandomizing = try container.decode(Bool.self, forKey: .isRandomizing)
@@ -44,7 +41,6 @@ class ViewSetting2: ObservableObject, Codable, Hashable {
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encodeIfPresent(presenterDataSource, forKey: .presenterDataSource)
         try container.encode(isPaused, forKey: .isPaused)
         try container.encode(isReverse, forKey: .isReverse)
         try container.encode(isRandomizing, forKey: .isRandomizing)
@@ -56,7 +52,6 @@ class ViewSetting2: ObservableObject, Codable, Hashable {
 
     // MARK: - Hashable
     static func == (lhs: ViewSetting2, rhs: ViewSetting2) -> Bool {
-        lhs.presenterDataSource == rhs.presenterDataSource &&
         lhs.isPaused == rhs.isPaused &&
         lhs.isReverse == rhs.isReverse &&
         lhs.isRandomizing == rhs.isRandomizing &&
@@ -67,7 +62,6 @@ class ViewSetting2: ObservableObject, Codable, Hashable {
     }
 
     func hash(into hasher: inout Hasher) {
-        hasher.combine(presenterDataSource)
         hasher.combine(isPaused)
         hasher.combine(isReverse)
         hasher.combine(isRandomizing)
@@ -78,15 +72,13 @@ class ViewSetting2: ObservableObject, Codable, Hashable {
     }
 
     // MARK: - Initializer
-    init(presenterDataSource: PhotoPresenterDataSource? = nil,
-         isPaused: Bool = false,
+    init(isPaused: Bool = false,
          isReverse: Bool = false,
          isRandomizing: Bool = false,
          currentIndex: Int = 0,
          intervalTimer: Double = 3.0,
          displayNumImage: Bool = true,
          displayFilename: Bool = false) {
-        self.presenterDataSource = presenterDataSource
         self.isPaused = isPaused
         self.isReverse = isReverse
         self.isRandomizing = isRandomizing
