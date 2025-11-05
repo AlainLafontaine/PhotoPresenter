@@ -26,7 +26,7 @@ struct MultiImageView: View {
                             
                             ImageView(
                                 name: photoPresenter.photoPresenterHeader.name,
-                                presenterDataSource: photoPresenter.groupedViews[grViewIndex].photoPresenterDataSources![viewSettingIndex],
+                                presenterDataSource: photoPresenter.groupedViews[grViewIndex].photoPresenterDataSources[viewSettingIndex],
                                 setting: getViewSetting(
                                     displaySpaceId: displaySpaceId,
                                     packInDisplaySpaces: photoPresenter.groupedViews[grViewIndex].packInDisplaySpaces ?? [],
@@ -47,7 +47,7 @@ struct MultiImageView: View {
                         ForEach(0..<photoPresenter.groupedViews[grViewIndex].nbOfView, id: \.self) { viewSettingIndex in
                             ImageView(
                                 name: photoPresenter.photoPresenterHeader.name,
-                                presenterDataSource: photoPresenter.groupedViews[grViewIndex].photoPresenterDataSources![viewSettingIndex],
+                                presenterDataSource: photoPresenter.groupedViews[grViewIndex].photoPresenterDataSources[viewSettingIndex],
                                 setting: getViewSetting(
                                     displaySpaceId: displaySpaceId,
                                     packInDisplaySpaces: photoPresenter.groupedViews[grViewIndex].packInDisplaySpaces ?? [],
@@ -78,7 +78,7 @@ struct MultiImageView: View {
         displaySpaceId: UUID,
         packInDisplaySpaces: [PackInDisplaySpace],
         viewSettingIndex: Int
-    ) -> ViewSetting2
+    ) -> ViewSetting
     {
         // Chercher l'élément PackInDisplaySpace qui correspond au displaySpaceId
         let packInDisplaySpace = packInDisplaySpaces.first(where: { $0.displaySpaceId == displaySpaceId })

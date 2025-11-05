@@ -423,10 +423,10 @@ struct PhotoPresenterApp: App {
                              groupedView.packInDisplaySpaces = []
                          }
                          
-                         var viewSettings2: [ViewSetting2] = [ViewSetting2]()
+                         var viewSettings2: [ViewSetting] = [ViewSetting]()
                          
                          for _ in 0..<groupedView.nbOfView {
-                             viewSettings2.append(ViewSetting2())
+                             viewSettings2.append(ViewSetting())
                          }
                          
                          let packInDisplaySpace = PackInDisplaySpace(

@@ -9,7 +9,7 @@ import Foundation
 
 class PackInDisplaySpace: ObservableObject, Codable, Hashable {
     @Published var displaySpaceId: UUID
-    @Published var viewSettings: [ViewSetting2]
+    @Published var viewSettings: [ViewSetting]
     
     // MARK: - Coding Keys
     enum CodingKeys: String, CodingKey {
@@ -17,7 +17,7 @@ class PackInDisplaySpace: ObservableObject, Codable, Hashable {
     }
     
     // MARK: - Initializers
-    init(displaySpaceId: UUID, viewSettings: [ViewSetting2]) {
+    init(displaySpaceId: UUID, viewSettings: [ViewSetting]) {
         self.displaySpaceId = displaySpaceId
         self.viewSettings = viewSettings
     }
@@ -26,7 +26,7 @@ class PackInDisplaySpace: ObservableObject, Codable, Hashable {
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         displaySpaceId = try container.decode(UUID.self, forKey: .displaySpaceId)
-        viewSettings = try container.decode([ViewSetting2].self, forKey: .viewSettings)
+        viewSettings = try container.decode([ViewSetting].self, forKey: .viewSettings)
     }
     
     func encode(to encoder: Encoder) throws {

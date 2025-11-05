@@ -11,12 +11,12 @@ import AppKit  // Nécessaire pour NSImage
 
 class ImageController: ObservableObject {
     @ObservedObject var presenterDataSource: PhotoPresenterDataSource
-    @ObservedObject var viewSetting: ViewSetting2
+    @ObservedObject var viewSetting: ViewSetting
     @ObservedObject var fastLoading: FastLoading
     
     init(
         dataSource presenterDataSource: PhotoPresenterDataSource,
-        viewSetting setting: ViewSetting2,
+        viewSetting setting: ViewSetting,
         fastLoading: FastLoading
     )
     {

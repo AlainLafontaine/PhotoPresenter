@@ -11,8 +11,9 @@ import Foundation
 
 class GroupedView: ObservableObject, Codable, Hashable {
     @Published var nbOfView: Int
-    @Published var photoPresenterDataSources: [PhotoPresenterDataSource]?
+    @Published var photoPresenterDataSources: [PhotoPresenterDataSource]
     @Published var packInDisplaySpaces: [PackInDisplaySpace]?
+    
     var fastLoaddings: [FastLoading]?
 
     // MARK: - Coding Keys
@@ -27,7 +28,7 @@ class GroupedView: ObservableObject, Codable, Hashable {
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         nbOfView = try container.decode(Int.self, forKey: .nbOfView)
-        photoPresenterDataSources = try container.decodeIfPresent([PhotoPresenterDataSource].self, forKey: .photoPresenterDataSources)
+        photoPresenterDataSources = try container.decode([PhotoPresenterDataSource].self, forKey: .photoPresenterDataSources)
         packInDisplaySpaces = try container.decodeIfPresent([PackInDisplaySpace].self, forKey: .packInDisplaySpaces)
         fastLoaddings = try container.decodeIfPresent([FastLoading].self, forKey: .fastLoaddings)
     }
@@ -57,7 +58,7 @@ class GroupedView: ObservableObject, Codable, Hashable {
 
     // MARK: - Initializer
     init(nbOfView: Int,
-         photoPresenterDataSources: [PhotoPresenterDataSource]? = nil,
+         photoPresenterDataSources: [PhotoPresenterDataSource],
          packInDisplaySpaces: [PackInDisplaySpace]? = nil,
          fastLoaddings: [FastLoading]? = nil) {
         self.nbOfView = nbOfView
