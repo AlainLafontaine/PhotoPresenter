@@ -46,5 +46,5 @@ struct DisplaySpaceLoader {
             print("Erreur : \(error)")
             return nil
         }
-    }    
+    }
 }

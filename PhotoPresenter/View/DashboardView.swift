@@ -9,6 +9,7 @@ import SwiftUI
 
 struct DashboardView: View {
     @ObservedObject var displaySpace: DisplaySpace
+    @ObservedObject var sharedRessources: SharedRessources
     
     var body: some View {
         GeometryReader { geometry in
@@ -40,7 +41,7 @@ struct DashboardView: View {
                             }
                         }
                         HStack {
-                            Text(viewPosition.screenName ?? "Inconnue")
+                            Text(getFriendlyName(for: viewPosition.screenName ?? "Inconnue"))
                                 .font(.system(size: 10)) // taille plus petite que le standard
                         }
                     }
@@ -53,8 +54,13 @@ struct DashboardView: View {
         }
     }
     
-    init (displaySpace: DisplaySpace) {
+    init (
+        displaySpace: DisplaySpace,
+        sharedRessources: SharedRessources
+    )
+    {
         self.displaySpace = displaySpace
+        self.sharedRessources = sharedRessources
     }
     
     private func NumberOfPhotos(_ groupedViews: [GroupedView]) -> Int {
@@ -70,6 +76,17 @@ struct DashboardView: View {
         
         return count
     }
+    
+    private func getFriendlyName(for screenName: String) -> String {
+        // Recherche dans sharedRessources pour trouver le mapping
+        if let mapping = sharedRessources.screenNames2FriendlyNames.first(where: { $0.screenName == screenName }) {
+            return mapping.friendlyName
+        }
+        
+        // Si aucun mapping n'est trouvé, retourne le screenName original
+        return screenName
+    }
+    
 }
 
 #Preview {

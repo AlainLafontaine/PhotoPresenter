@@ -25,6 +25,7 @@ struct PhotoPresenterApp: App {
     @State private var dataPresenters: DataPresenterMap = DataPresenterMap()
     @State private var emergencyExit: Bool = false
     @State private var back2LastDisplaySpace: String? = nil
+    @State private var sharedRessources: SharedRessources = loadSharedResources(path: "/Volumes/Image_Mac/Emergency/sharedRessources.json") ?? SharedRessources()
     
     @StateObject private var displaySpace: DisplaySpace = DisplaySpace(
                                                                 fileHeader: FileHeader(fileType: FileType.DisplaySpace),
@@ -40,6 +41,7 @@ struct PhotoPresenterApp: App {
         WindowGroup(id: "displaySpaceWindows") {
             DisplaySpaceView(
                 displaySpace: displaySpace,
+                sharedRessources: sharedRessources,
                 displayView: $displaySpaceViewType
             ).onAppear() {
                 if let window = getDisplaySpaceView() {
@@ -470,5 +472,19 @@ struct PhotoPresenterApp: App {
         
         // Si aucun écran ne correspond
         return nil
+    }
+    
+    static private func loadSharedResources(path: String) -> SharedRessources? {
+        let url = URL(fileURLWithPath: path)
+
+        do {
+            let data = try Data(contentsOf: url)
+            let sharedRessources = try JSONDecoder().decode(SharedRessources.self, from: data)
+                
+            return sharedRessources
+        } catch {
+            print("Erreur : \(error)")
+            return nil
+        }
     }
 }
