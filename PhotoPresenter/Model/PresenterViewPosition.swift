@@ -14,24 +14,31 @@ final class PresenterViewPosition: ObservableObject, Identifiable, Codable, Hash
 
     // MARK: - Published properties
     @Published var pathFile: String
+    @Published var screenName: String?
     @Published var windowPosition: WindowPosition
 
+    // MARK: - CodingKeys
+    enum CodingKeys: String, CodingKey {
+        case id
+        case pathFile
+        case screenName
+        case windowPosition
+    }
+
     // MARK: - Init
-    init(id: UUID = UUID(), pathFile: String, windowPosition: WindowPosition) {
+    init(id: UUID = UUID(), pathFile: String, screenName: String?, windowPosition: WindowPosition) {
         self.id = id
         self.pathFile = pathFile
+        self.screenName = screenName
         self.windowPosition = windowPosition
     }
 
     // MARK: - Codable
-    enum CodingKeys: String, CodingKey {
-        case id, pathFile, windowPosition
-    }
-
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(UUID.self, forKey: .id)
         pathFile = try container.decode(String.self, forKey: .pathFile)
+        screenName = try container.decodeIfPresent(String.self, forKey: .screenName)
         windowPosition = try container.decode(WindowPosition.self, forKey: .windowPosition)
     }
 
@@ -39,15 +46,22 @@ final class PresenterViewPosition: ObservableObject, Identifiable, Codable, Hash
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
         try container.encode(pathFile, forKey: .pathFile)
+        try container.encode(screenName, forKey: .screenName)
         try container.encode(windowPosition, forKey: .windowPosition)
     }
 
     // MARK: - Hashable
     static func == (lhs: PresenterViewPosition, rhs: PresenterViewPosition) -> Bool {
-        lhs.id == rhs.id
+        lhs.id == rhs.id &&
+        lhs.pathFile == rhs.pathFile &&
+        lhs.screenName == rhs.screenName &&
+        lhs.windowPosition == rhs.windowPosition
     }
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
+        hasher.combine(pathFile)
+        hasher.combine(screenName)
+        hasher.combine(windowPosition)
     }
 }

@@ -9,6 +9,7 @@ import SwiftUI
 
 struct DisplaySpaceView: View {
     @ObservedObject var displaySpace: DisplaySpace
+    @ObservedObject var sharedRessources: SharedRessources
     
     @Binding private var displayView: DisplaySpaceViewType
     
@@ -18,7 +19,10 @@ struct DisplaySpaceView: View {
             Text("LibraryView")
             
         case .DashboardView:
-            DashboardView(displaySpace: displaySpace)
+            DashboardView(
+                displaySpace: displaySpace,
+                sharedRessources: sharedRessources
+            )
             
         case .RatioSimulatorView:
             RatioSimulatorView()
@@ -27,9 +31,11 @@ struct DisplaySpaceView: View {
     
     init(
         displaySpace: DisplaySpace,
+        sharedRessources: SharedRessources,
         displayView: Binding<DisplaySpaceViewType>
     ) {
         self.displaySpace = displaySpace
+        self.sharedRessources = sharedRessources
         self._displayView = displayView
     }
 }

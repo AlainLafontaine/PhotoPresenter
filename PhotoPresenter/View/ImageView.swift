@@ -27,7 +27,7 @@ struct WindowAccessor: NSViewRepresentable {
 
 struct ImageView: View {
     
-    @ObservedObject private var viewSetting: ViewSetting2
+    @ObservedObject private var viewSetting: ViewSetting
     
     @StateObject private var sideShowController: SlideShowController
     @StateObject private var imageController : ImageController
@@ -165,11 +165,12 @@ struct ImageView: View {
 
     init(
         name title: String,
-        setting: ViewSetting2,
+        presenterDataSource: PhotoPresenterDataSource,
+        setting: ViewSetting,
         fastLoading: FastLoading
     ) {
         self._sideShowController = StateObject(wrappedValue: SlideShowController(viewSetting: setting, fastLoading: fastLoading))
-        self._imageController = StateObject(wrappedValue: ImageController(viewSetting: setting, fastLoading: fastLoading))
+        self._imageController = StateObject(wrappedValue: ImageController(dataSource: presenterDataSource,  viewSetting: setting, fastLoading: fastLoading))
         self.viewSetting = setting
         self.title = title
     }

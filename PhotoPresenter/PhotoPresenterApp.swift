@@ -15,17 +15,17 @@ import SwiftUtilities
 struct PhotoPresenterApp: App {
     @Environment(\.openWindow) private var openWindow
     
-    
-    
     @State private var loadingInProgress: Bool = false
     @State private var loadingController: PresenterLoadingFileController? = nil
     @State private var pathDisplaySpace: String? = nil
     @State private var displaySpaceViewType: DisplaySpaceViewType = .DashboardView
-    
+    @State private var screensInfo: ScreensInfo = getScreenInfo()
+
     @State private var windowIdentifier: Set<String> = []
     @State private var dataPresenters: DataPresenterMap = DataPresenterMap()
     @State private var emergencyExit: Bool = false
     @State private var back2LastDisplaySpace: String? = nil
+    @State private var sharedRessources: SharedRessources = loadSharedResources(path: "/Volumes/Image_Mac/Emergency/sharedRessources.json") ?? SharedRessources()
     
     @StateObject private var displaySpace: DisplaySpace = DisplaySpace(
                                                                 fileHeader: FileHeader(fileType: FileType.DisplaySpace),
@@ -41,6 +41,7 @@ struct PhotoPresenterApp: App {
         WindowGroup(id: "displaySpaceWindows") {
             DisplaySpaceView(
                 displaySpace: displaySpace,
+                sharedRessources: sharedRessources,
                 displayView: $displaySpaceViewType
             ).onAppear() {
                 if let window = getDisplaySpaceView() {
@@ -280,11 +281,13 @@ struct PhotoPresenterApp: App {
                 
                     if let viewPosition = displaySpace.viewPositions.first(where: { $0.pathFile == dataPresenter.filename }) {
                         viewPosition.windowPosition = dataPresenter.windowPos!
+                        viewPosition.screenName = getScreenName(for: dataPresenter.windowPos!, in: self.screensInfo)
                     } else {
                         displaySpace.viewPositions.append(
                             PresenterViewPosition(
                                 id: dataPresenter.presenter.fileHeader.id!,
                                 pathFile: dataPresenter.filename,
+                                screenName: getScreenName(for: dataPresenter.windowPos!, in: self.screensInfo),
                                 windowPosition: dataPresenter.windowPos!
                             )
                         )
@@ -377,6 +380,8 @@ struct PhotoPresenterApp: App {
                      if loadingController == nil {
                          loadingController = PresenterLoadingFileController(
                                                  loadingInProgress: $loadingInProgress,
+                                                 screensInfo: $screensInfo,
+                                                 sharedRessources: sharedRessources,
                                                  openWindow: openWindow
                                              )
                      }
@@ -415,11 +420,29 @@ struct PhotoPresenterApp: App {
                          PresenterViewPosition(
                              id: pp.fileHeader.id!,
                              pathFile: url.path(),
+                             screenName: getScreenName(for: WindowPosition(x: 0, y: 0, width: 400, height: 400), in: self.screensInfo),
                              windowPosition: WindowPosition(x: 0, y: 0, width: 400, height: 400)
                          )
                      )
                      
-                     
+                     for groupedView in pp.groupedViews {
+                         if groupedView.packInDisplaySpaces == nil {
+                             groupedView.packInDisplaySpaces = []
+                         }
+                         
+                         var viewSettings2: [ViewSetting] = [ViewSetting]()
+                         
+                         for _ in 0..<groupedView.nbOfView {
+                             viewSettings2.append(ViewSetting())
+                         }
+                         
+                         let packInDisplaySpace = PackInDisplaySpace(
+                             displaySpaceId: displaySpace.fileHeader.id!,
+                             viewSettings: viewSettings2
+                         )
+                         
+                         groupedView.packInDisplaySpaces?.append(packInDisplaySpace)
+                     }
                      
                      let helper = DataPresenterHelp(
                                      filename: url.path(),
@@ -434,5 +457,36 @@ struct PhotoPresenterApp: App {
         }
         
         return true
+    }
+    
+    private func getScreenName(for windowPosition: WindowPosition, in screensInfo: ScreensInfo) -> String? {
+        let windowCenterX = windowPosition.x + windowPosition.width / 2
+        let windowCenterY = windowPosition.y + windowPosition.height / 2
+        
+        for (index, position) in screensInfo.positions.enumerated() {
+            if windowCenterX >= position.x &&
+               windowCenterX < position.x + position.width &&
+               windowCenterY >= position.y &&
+               windowCenterY < position.y + position.height {
+                return screensInfo.screennames[index]
+            }
+        }
+        
+        // Si aucun écran ne correspond
+        return nil
+    }
+    
+    static private func loadSharedResources(path: String) -> SharedRessources? {
+        let url = URL(fileURLWithPath: path)
+
+        do {
+            let data = try Data(contentsOf: url)
+            let sharedRessources = try JSONDecoder().decode(SharedRessources.self, from: data)
+                
+            return sharedRessources
+        } catch {
+            print("Erreur : \(error)")
+            return nil
+        }
     }
 }
