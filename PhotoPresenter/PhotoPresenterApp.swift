@@ -380,6 +380,8 @@ struct PhotoPresenterApp: App {
                      if loadingController == nil {
                          loadingController = PresenterLoadingFileController(
                                                  loadingInProgress: $loadingInProgress,
+                                                 screensInfo: $screensInfo,
+                                                 sharedRessources: sharedRessources,
                                                  openWindow: openWindow
                                              )
                      }
