@@ -38,6 +38,7 @@ struct ImageView: View {
     
     private var title: String;
     private var directories: [String] = []
+    private var ratio: Double?
 
     var body: some View {
         ZStack {
@@ -124,20 +125,36 @@ struct ImageView: View {
                     }
                 }
                 
-                VStack {
+                Group {
                     FloatingLabelView(
                         text: sideShowController.fastLoading.fileInfos[viewSetting.currentIndex].filename,
-                        isDisplay: $viewSetting.displayFilename,position: .halfTop,
+                        isDisplay: $viewSetting.displayNumImage,
+                        position: .halfTop,
                         opacityMinimale: 0.01
                     )
-                }
-                
-                VStack {
+
+                    if let ratio = self.ratio {
+                        FloatingLabelView(
+                            text: "\(ratio) r",
+                            isDisplay: $viewSetting.displayNumImage,
+                            position: .leftBottom,
+                            opacityMinimale: 0.01
+                        )
+                    }
+                    
                     FloatingLabelView(
-                        text: "\(viewSetting.currentIndex + 1) sur \(sideShowController.fastLoading.fileInfos.count)",
+                        text: "\(viewSetting.currentIndex + 1) / \(sideShowController.fastLoading.fileInfos.count)",
                         isDisplay: $viewSetting.displayNumImage,
+                        position: .halfBottom,
                         opacityMinimale: 0.01
-                    );
+                    )
+                    
+                    FloatingLabelView(
+                        text: "\(viewSetting.intervalTimer) s",
+                        isDisplay: $viewSetting.displayNumImage,
+                        position: .rightBottom,
+                        opacityMinimale: 0.01
+                    )
                 }
             } else {
                 Text("Initiation des images...").onAppear { displayImage = true }
@@ -173,6 +190,7 @@ struct ImageView: View {
         self._imageController = StateObject(wrappedValue: ImageController(dataSource: presenterDataSource,  viewSetting: setting, fastLoading: fastLoading))
         self.viewSetting = setting
         self.title = title
+        self.ratio = presenterDataSource.ratio
     }
     
     private mutating func getDirectoryIndex(_ path: String) -> Int {
