@@ -10,6 +10,7 @@ import AppKit
 import Combine
 
 public class FileInfo: ObservableObject, Codable, Hashable {
+    
     @Published public var filename: String
     @Published public var directoryIndex: Int
     @Published public var width: Int

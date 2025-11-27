@@ -9,22 +9,6 @@ import SwiftUI
 import AppKit  // Nécessaire pour NSImage
 import SwiftUtilities
 
-struct WindowAccessor: NSViewRepresentable {
-    var callback: (NSWindow) -> Void
-
-    func makeNSView(context: Context) -> NSView {
-        let view = NSView()
-        DispatchQueue.main.async {
-            if let window = view.window {
-                callback(window)
-            }
-        }
-        return view
-    }
-
-    func updateNSView(_ nsView: NSView, context: Context) {}
-}
-
 struct ImageView: View {
     
     @ObservedObject private var viewSetting: ViewSetting
@@ -50,12 +34,17 @@ struct ImageView: View {
                 // To do - exception si currentIndex dépasse le tableau
                 // tableau vide plante
 
-                Image(
-                   nsImage: imageController.getImage()
-                )
-                .resizable()
-                .scaledToFit()
-//                .scaledToFill()
+                Group {
+                    if viewSetting.displayFilename {
+                        Image(nsImage: imageController.getImage())
+                            .resizable()
+                          //  .scaledToFill()
+                    } else {
+                        Image(nsImage: imageController.getImage())
+                            .resizable()
+                            .scaledToFit()
+                    }
+                }
                 .onAppear {
                     sideShowController.start()
                 }

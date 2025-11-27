@@ -9,20 +9,21 @@ import SwiftUI
 import SwiftUtilities
 
 struct PhotoPresenterView: View {
-    @ObservedObject private var dataPresenter: DataPresenterHelp
+    @ObservedObject private var helper: DataPresenterHelp
+    
     @Binding private var dataPresenters: DataPresenterMap
     @Binding private var windowIdentifier: Set<String>
     
     var body: some View {
         Group {
-            switch dataPresenter.displayView {
+            switch helper.displayView {
             case .information:
-                PhotoPresenterInfo(presenter: dataPresenter.presenter)
+                PhotoPresenterInfo(presenter: helper.presenter)
                 
             case .multiImageView:
                 MultiImageView(
-                    presenter: dataPresenter.presenter,
-                    displaySpaceId: dataPresenter.displaySpaceId
+                    presenter: helper.presenter,
+                    displaySpaceId: helper.displaySpaceId
                 )
                 .frame(maxWidth: .infinity, maxHeight:.infinity)
                 .background(Color.black).onDisappear {
@@ -37,7 +38,7 @@ struct PhotoPresenterView: View {
                     if components[0] == "photoPresenterWindows"  {
                         if !windowIdentifier.contains(windowId) {
                             windowIdentifier.insert(windowId)
-                            dataPresenter.windowId = windowId
+                            helper.windowId = windowId
                             break;
                         }
                     }
@@ -54,7 +55,7 @@ struct PhotoPresenterView: View {
         dataPresenters: Binding<DataPresenterMap>,
         windowIdentifier: Binding<Set<String>>
     ) {
-        self.dataPresenter = dataHelper
+        self.helper = dataHelper
         self._dataPresenters = dataPresenters
         self._windowIdentifier = windowIdentifier
     }

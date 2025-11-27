@@ -48,6 +48,9 @@ struct PhotoPresenterApp: App {
                     window.title = displaySpace.displaySpaceHeader.name
                 }
             }
+            .background(WindowAccessor { window in
+                 window.level = .floating        // Mettre la fenêtre au-dessus
+            })
         }.commands {
             CommandGroup(after: .newItem) {
                 Button("New") {
@@ -169,6 +172,19 @@ struct PhotoPresenterApp: App {
                     dataPresenters[helper.windowId!] = helper
                     loadingInProgress = false
                 }
+                .background(WindowAccessor { window in
+                    if let isOnTop = helper.windowPos?.isOnTop {
+                        if isOnTop {
+                            window.level = .floating        // Mettre la fenêtre au-dessus
+                        }
+                        else {
+                            window.level = .normal
+                        }
+                    } else {
+                        helper.windowPos?.isOnTop = false
+                        window.level = .normal
+                    }
+                })
             }
         }
     }
@@ -448,7 +464,7 @@ struct PhotoPresenterApp: App {
                                      filename: url.path(),
                                      name: pp.photoPresenterHeader.name,
                                      presenter: presenter!,
-                                     displaySpaceId: displaySpace.fileHeader.id!,
+                                     displaySpaceId: displaySpace.fileHeader.id!
                                   )
                                              
                      openWindow(id: "photoPresenterWindows", value: helper)

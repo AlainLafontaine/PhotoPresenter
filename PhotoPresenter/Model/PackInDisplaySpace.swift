@@ -11,18 +11,18 @@ class PackInDisplaySpace: ObservableObject, Codable, Hashable {
     @Published var displaySpaceId: UUID
     @Published var viewSettings: [ViewSetting]
     
-    // MARK: - Coding Keys
-    enum CodingKeys: String, CodingKey {
-        case displaySpaceId, viewSettings
-    }
-    
-    // MARK: - Initializers
-    init(displaySpaceId: UUID, viewSettings: [ViewSetting]) {
+    // MARK: - Init
+    init(displaySpaceId: UUID = UUID(),
+         viewSettings: [ViewSetting] = []) {
         self.displaySpaceId = displaySpaceId
         self.viewSettings = viewSettings
     }
     
     // MARK: - Codable
+    enum CodingKeys: String, CodingKey {
+        case displaySpaceId, viewSettings
+    }
+    
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         displaySpaceId = try container.decode(UUID.self, forKey: .displaySpaceId)
@@ -37,8 +37,8 @@ class PackInDisplaySpace: ObservableObject, Codable, Hashable {
     
     // MARK: - Hashable
     static func == (lhs: PackInDisplaySpace, rhs: PackInDisplaySpace) -> Bool {
-        return lhs.displaySpaceId == rhs.displaySpaceId &&
-               lhs.viewSettings == rhs.viewSettings
+        lhs.displaySpaceId == rhs.displaySpaceId &&
+        lhs.viewSettings == rhs.viewSettings
     }
     
     func hash(into hasher: inout Hasher) {

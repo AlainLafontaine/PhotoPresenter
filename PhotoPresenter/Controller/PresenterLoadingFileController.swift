@@ -51,7 +51,7 @@ class PresenterLoadingFileController: ObservableObject {
                     if screenIsAvailable(viewPosition.screenName) {
                         if let presenter = presenter.load(fullpath: viewPosition.pathFile) {
                             loadingInProgress = true
-
+                            
                             for grView in presenter.groupedViews {
                                 if grView.fastLoaddings == nil {
                                     grView.fastLoaddings = (0..<grView.nbOfView).map { _ in FastLoading() }
@@ -125,6 +125,8 @@ class PresenterLoadingFileController: ObservableObject {
             }
         }
         
-        return false
+        print("screen not available: \(String(describing: screenName))")
+        return true
+        //return false
     }
 }

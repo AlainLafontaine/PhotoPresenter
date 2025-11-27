@@ -16,7 +16,10 @@ struct DisplaySpaceView: View {
     var body: some View {
         switch displayView {
         case .LibraryView:
-            Text("LibraryView")
+            LibraryView(
+                displaySpace: displaySpace,
+                sharedRessources: sharedRessources
+            )
             
         case .DashboardView:
             DashboardView(

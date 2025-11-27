@@ -20,55 +20,7 @@ class DataPresenterHelp: ObservableObject, Identifiable, Codable, Hashable {
     var windowPos: WindowPosition?
     var windowId: String?
     
-    // MARK: - Coding Keys
-    enum CodingKeys: String, CodingKey {
-        case windowId, filename, name, windowPos, displayView, presenter, displaySpaceId
-    }
-
-    // MARK: - Codable
-    required init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        windowId = try container.decodeIfPresent(String.self, forKey: .windowId)
-        filename = try container.decode(String.self, forKey: .filename)
-        name = try container.decode(String.self, forKey: .name)
-        windowPos = try container.decodeIfPresent(WindowPosition.self, forKey: .windowPos)
-        displayView = try container.decode(PhotoPresenterViewType.self, forKey: .displayView)
-        presenter = try container.decode(PhotoPresenter.self, forKey: .presenter)
-        displaySpaceId = try container.decodeIfPresent(UUID.self, forKey: .displaySpaceId) ?? UUID()
-    }
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encodeIfPresent(windowId, forKey: .windowId)
-        try container.encode(filename, forKey: .filename)
-        try container.encode(name, forKey: .name)
-        try container.encodeIfPresent(windowPos, forKey: .windowPos)
-        try container.encode(displayView, forKey: .displayView)
-        try container.encode(presenter, forKey: .presenter)
-        try container.encode(displaySpaceId, forKey: .displaySpaceId)
-    }
-
-    // MARK: - Hashable
-    static func == (lhs: DataPresenterHelp, rhs: DataPresenterHelp) -> Bool {
-        return lhs.windowId == rhs.windowId &&
-               lhs.filename == rhs.filename &&
-               lhs.name == rhs.name &&
-               lhs.windowPos == rhs.windowPos &&
-               lhs.displayView == rhs.displayView &&
-               lhs.presenter == rhs.presenter &&
-               lhs.displaySpaceId == rhs.displaySpaceId
-    }
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(windowId)
-        hasher.combine(filename)
-        hasher.combine(name)
-        hasher.combine(windowPos)
-        hasher.combine(displayView)
-        hasher.combine(presenter)
-        hasher.combine(displaySpaceId)
-    }
-
+    
     // MARK: - Initializer
     init(
         windowId: String? = nil,
@@ -87,5 +39,53 @@ class DataPresenterHelp: ObservableObject, Identifiable, Codable, Hashable {
         self.displayView = displayView
         self.presenter = presenter
         self.displaySpaceId = displaySpaceId
+    }
+    
+    // MARK: - Codable
+    enum CodingKeys: String, CodingKey {
+        case displayView, presenter, filename, name, displaySpaceId, windowPos, windowId
+    }
+    
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        displayView = try container.decode(PhotoPresenterViewType.self, forKey: .displayView)
+        presenter = try container.decode(PhotoPresenter.self, forKey: .presenter)
+        filename = try container.decode(String.self, forKey: .filename)
+        name = try container.decode(String.self, forKey: .name)
+        displaySpaceId = try container.decode(UUID.self, forKey: .displaySpaceId)
+        windowPos = try container.decodeIfPresent(WindowPosition.self, forKey: .windowPos)
+        windowId = try container.decodeIfPresent(String.self, forKey: .windowId)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(displayView, forKey: .displayView)
+        try container.encode(presenter, forKey: .presenter)
+        try container.encode(filename, forKey: .filename)
+        try container.encode(name, forKey: .name)
+        try container.encode(displaySpaceId, forKey: .displaySpaceId)
+        try container.encode(windowPos, forKey: .windowPos)
+        try container.encode(windowId, forKey: .windowId)
+    }
+
+    // MARK: - Hashable
+    static func == (lhs: DataPresenterHelp, rhs: DataPresenterHelp) -> Bool {
+        lhs.displayView == rhs.displayView &&
+        lhs.presenter == rhs.presenter &&
+        lhs.filename == rhs.filename &&
+        lhs.name == rhs.name &&
+        lhs.displaySpaceId == rhs.displaySpaceId &&
+        lhs.windowPos == rhs.windowPos &&
+        lhs.windowId == rhs.windowId
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(displayView)
+        hasher.combine(presenter)
+        hasher.combine(filename)
+        hasher.combine(name)
+        hasher.combine(displaySpaceId)
+        hasher.combine(windowPos)
+        hasher.combine(windowId)
     }
 }

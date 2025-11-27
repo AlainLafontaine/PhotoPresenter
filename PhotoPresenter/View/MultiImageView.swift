@@ -11,6 +11,8 @@ import SwiftUtilities
 
 struct MultiImageView: View {
     @ObservedObject private var photoPresenter: PhotoPresenter
+    
+    //@Binding private var isOnTop: Bool
                     
     private let displaySpaceId: UUID
     
@@ -69,7 +71,9 @@ struct MultiImageView: View {
         }
     }
 
-    init(presenter: PhotoPresenter, displaySpaceId: UUID) {
+    init(
+        presenter: PhotoPresenter,
+        displaySpaceId: UUID) {
         self.photoPresenter = presenter
         self.displaySpaceId = displaySpaceId
     }

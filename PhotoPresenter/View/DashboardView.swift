@@ -11,6 +11,8 @@ struct DashboardView: View {
     @ObservedObject var displaySpace: DisplaySpace
     @ObservedObject var sharedRessources: SharedRessources
     
+    var presenters: [PhotoPresenter] = []
+    
     var body: some View {
         GeometryReader { geometry in
             VStack() {
@@ -42,8 +44,16 @@ struct DashboardView: View {
                         }
                         HStack {
                             Text(getFriendlyName(for: viewPosition.screenName ?? "Inconnue"))
-                                .font(.system(size: 10)) // taille plus petite que le standard
-                        }
+                             //   .font(.system(size: 10)) // taille plus petite que le standard
+                                                        
+                            Spacer()
+                            
+                            if let isOnTop = viewPosition.windowPosition.isOnTop {
+                                if isOnTop {
+                                    Text("Toujour sur le dessus")
+                                }
+                            }
+                        }.font(.system(size: 10)) // taille plus petite que le standard
                     }
                     .padding(8) // marge intérieure de tous les côtés
                     .background(index % 2 == 0 ? Color.blue.opacity(0.1) : Color.green.opacity(0.1))
