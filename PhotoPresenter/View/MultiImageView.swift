@@ -38,7 +38,8 @@ struct MultiImageView: View {
                             )
                         }
                     }
-                }.frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 //.ignoresSafeArea()
             }
             
@@ -58,10 +59,12 @@ struct MultiImageView: View {
                                 fastLoading: photoPresenter.groupedViews[grViewIndex].fastLoaddings![viewSettingIndex]
                             )
                         }
-                    }.frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .ignoresSafeArea()
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    //.ignoresSafeArea()
                 }
-            }.frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             //.ignoresSafeArea()
             
         case .Free:

@@ -250,6 +250,79 @@ struct PhotoPresenterApp: App {
                         windowPos.height = window.frame.size.height
                     }
                     
+                    let presenter = dataPresenter.presenter
+                    
+                    if let _ = presenter.photoPresenterHeader.ratio {}
+                    else {
+                        var grpGrpRatios: [(ratio: RatioInfo, grpRatios: [RatioInfo])] = []
+                        
+                        for grpView in presenter.groupedViews {
+                            if let fastLoaddings = grpView.fastLoaddings {
+                                var grpRatios: [RatioInfo] = []
+                                
+                                for fastLoadding in fastLoaddings {
+                                    var height: Double = 0.0
+                                    var width: Double = 0.0
+                                    
+                                    for fileInfo in fastLoadding.fileInfos {
+                                        height += Double(fileInfo.height) / Double(fastLoadding.fileInfos.count)
+                                        width += Double(fileInfo.width) / Double(fastLoadding.fileInfos.count)
+                                    }
+                                    
+                                    grpRatios.append(RatioInfo(height: height, width: width))
+                                }
+                                
+                                grpGrpRatios.append((RatioInfo(height: 1.0, width: 1.0), grpRatios))
+                            }
+                        }
+                        
+                        switch(presenter.photoPresenterHeader.orientation) {
+                            
+                        case .Vertical: continue
+                        case .Horizontal:
+                            for grpGrpRatio: (ratio: RatioInfo, grpRatios: [RatioInfo]) in grpGrpRatios {
+                                var minHeight: Double = .greatestFiniteMagnitude
+                                
+                                for grpRatio in grpGrpRatio.grpRatios {
+                                    if minHeight > grpRatio.Height {
+                                        minHeight = grpRatio.Height
+                                    }
+                                }
+                                
+                                let height: Double = minHeight
+                                var width: Double = 0.0
+                                
+                                for grpRatio in grpGrpRatio.grpRatios {
+                                    width += grpRatio.Width * height / grpRatio.Height
+                                }
+                                
+                                grpGrpRatio.ratio.Width = width
+                                grpGrpRatio.ratio.Height = height
+                            }
+                            
+                            var width: Double = .greatestFiniteMagnitude
+                            for grpGrpRatio: (ratio: RatioInfo, grpRatios: [RatioInfo])  in grpGrpRatios {
+                                let ratio = grpGrpRatio.ratio
+
+                                if width > ratio.Width {
+                                    width = ratio.Width
+                                }
+                            }
+                            
+                            var height: Double = 0.0
+                            for grpGrpRatio: (ratio: RatioInfo, grpRatios: [RatioInfo])  in grpGrpRatios {
+                                let ratio = grpGrpRatio.ratio
+                                
+                                height += ratio.Height * width / ratio.Width
+                            }
+                            
+                            presenter.photoPresenterHeader.ratio = (presenter.photoPresenterHeader.orientation == .Horizontal) ? width / height : height / width
+                            
+                        default:
+                            presenter.photoPresenterHeader.ratio = 16.0 / 9.0
+                        }
+                    }
+                    
                     saveToJSONFile(dataPresenter.presenter, filename: dataPresenter.filename)
                 }
             }

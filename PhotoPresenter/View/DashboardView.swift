@@ -39,6 +39,12 @@ struct DashboardView: View {
                             if let presenter = displaySpace.presenters?.first(where:{ $0.fileHeader.id == viewPosition.id }) {
                                 Text(presenter.photoPresenterHeader.name)
                                 Spacer()
+                                
+                                if let ratio = presenter.photoPresenterHeader.ratio {
+                                    Text("Ratio: \(String(format: "%.3f", ratio))")
+                                    Spacer()
+                                }
+                                
                                 Text("\(NumberOfPhotos(presenter.groupedViews)) photos")
                             }
                         }
