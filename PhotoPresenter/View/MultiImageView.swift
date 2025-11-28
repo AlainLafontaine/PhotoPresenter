@@ -23,24 +23,19 @@ struct MultiImageView: View {
             ForEach(0..<photoPresenter.groupedViews.count, id: \.self) { grViewIndex in
                 HStack(spacing: 0) {
                     ForEach(0..<photoPresenter.groupedViews[grViewIndex].nbOfView, id: \.self) { viewSettingIndex in
-                        VStack(spacing: 0) {
-                            
-                            
-                            ImageView(
-                                name: photoPresenter.photoPresenterHeader.name,
-                                presenterDataSource: photoPresenter.groupedViews[grViewIndex].photoPresenterDataSources[viewSettingIndex],
-                                setting: getViewSetting(
-                                    displaySpaceId: displaySpaceId,
-                                    packInDisplaySpaces: photoPresenter.groupedViews[grViewIndex].packInDisplaySpaces ?? [],
-                                    viewSettingIndex: viewSettingIndex
-                                ),
-                                fastLoading: photoPresenter.groupedViews[grViewIndex].fastLoaddings![viewSettingIndex]
-                            )
-                        }
+                        ImageView(
+                            name: photoPresenter.photoPresenterHeader.name,
+                            presenterDataSource: photoPresenter.groupedViews[grViewIndex].photoPresenterDataSources[viewSettingIndex],
+                            setting: getViewSetting(
+                                displaySpaceId: displaySpaceId,
+                                packInDisplaySpaces: photoPresenter.groupedViews[grViewIndex].packInDisplaySpaces ?? [],
+                                viewSettingIndex: viewSettingIndex
+                            ),
+                            fastLoading: photoPresenter.groupedViews[grViewIndex].fastLoaddings![viewSettingIndex]
+                        )  
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                //.ignoresSafeArea()
             }
             
         case .Vertical:
@@ -61,11 +56,9 @@ struct MultiImageView: View {
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    //.ignoresSafeArea()
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            //.ignoresSafeArea()
             
         case .Free:
             VStack {

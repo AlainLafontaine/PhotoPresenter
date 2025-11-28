@@ -35,30 +35,31 @@ struct DashboardView: View {
                 
                 List(Array(displaySpace.viewPositions.enumerated()), id: \.element.id) { index, viewPosition in
                     VStack(alignment: .leading, spacing: 0) {
-                        HStack {
-                            if let presenter = displaySpace.presenters?.first(where:{ $0.fileHeader.id == viewPosition.id }) {
+                        if let presenter = displaySpace.presenters?.first(where:{ $0.fileHeader.id == viewPosition.id }) {
+                            HStack {
                                 Text(presenter.photoPresenterHeader.name)
                                 Spacer()
                                 
-                                if let ratio = presenter.photoPresenterHeader.ratio {
-                                    Text("Ratio: \(String(format: "%.3f", ratio))")
-                                    Spacer()
-                                }
-                                
                                 Text("\(NumberOfPhotos(presenter.groupedViews)) photos")
                             }
+                            
+                            if let ratio = presenter.photoPresenterHeader.ratio {
+                                HStack {
+                                    if let isOnTop = viewPosition.windowPosition.isOnTop {
+                                        if isOnTop {
+                                            Text("Toujour sur le dessus")
+                                                .foregroundColor(.red)
+                                        }
+                                    }
+                                    Spacer()
+                                    Text("Ratio: \(String(format: "%.3f", ratio))")
+                                }.font(.system(size: 10)) // taille plus petite que le standard
+                            }
                         }
+                        
                         HStack {
                             Text(getFriendlyName(for: viewPosition.screenName ?? "Inconnue"))
-                             //   .font(.system(size: 10)) // taille plus petite que le standard
-                                                        
                             Spacer()
-                            
-                            if let isOnTop = viewPosition.windowPosition.isOnTop {
-                                if isOnTop {
-                                    Text("Toujour sur le dessus")
-                                }
-                            }
                         }.font(.system(size: 10)) // taille plus petite que le standard
                     }
                     .padding(8) // marge intérieure de tous les côtés
