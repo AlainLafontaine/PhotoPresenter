@@ -6,8 +6,12 @@
 //
 
 import SwiftUI
+import SwiftUtilities
 
 struct DisplaySpaceView: View {
+    
+    public static var slideShowControllers: [SlideShowController] = []
+    
     @ObservedObject var displaySpace: DisplaySpace
     @ObservedObject var sharedRessources: SharedRessources
     
@@ -40,6 +44,12 @@ struct DisplaySpaceView: View {
         self.displaySpace = displaySpace
         self.sharedRessources = sharedRessources
         self._displayView = displayView
+        
+        KeyCatcherView.globalKeyDown = { event in
+            DisplaySpaceView.slideShowControllers.forEach { slideShowController in
+                slideShowController.CommunityKeyDown(with: event)
+            }
+        }
     }
 }
 

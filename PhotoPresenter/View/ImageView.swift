@@ -13,7 +13,7 @@ struct ImageView: View {
     
     @ObservedObject private var viewSetting: ViewSetting
     
-    @StateObject private var sideShowController: SlideShowController
+    @StateObject private var slideShowController: SlideShowController
     @StateObject private var imageController : ImageController
 
     @State private var displayImage = false
@@ -27,15 +27,16 @@ struct ImageView: View {
     var body: some View {
         ZStack {
             if displayImage {
-                KeyCatcherView { event, isShiftPressed in
-                    sideShowController.keyDown(with: event)
+                
+                KeyCatcherView { event in
+                    slideShowController.keyDown(with: event)
                 }
                 
                 // To do - exception si currentIndex dépasse le tableau
                 // tableau vide plante
 
                 Group {
-                    if viewSetting.displayFilename {
+                    if viewSetting.isExpansionMode ?? false{
                         Image(nsImage: imageController.getImage())
                             .resizable()
                           //  .scaledToFill()
@@ -46,7 +47,10 @@ struct ImageView: View {
                     }
                 }
                 .onAppear {
-                    sideShowController.start()
+                    slideShowController.start()
+                    if !DisplaySpaceView.slideShowControllers.contains(where: { $0 === self.slideShowController }) {
+                        DisplaySpaceView.slideShowControllers.append(self.slideShowController)
+                    }
                 }
                 .background(WindowAccessor { window in
                     window.title = "\(title)"
@@ -87,15 +91,21 @@ struct ImageView: View {
                     Divider() // ⬅️ Séparateur visuel
                     
                     Button(action: {
-                        viewSetting.displayFilename.toggle()
+                        viewSetting.isExpansionMode?.toggle()
                     }) {
-                        Label("Nom du fichier", systemImage: viewSetting.displayFilename ? "checkmark.circle.fill" : "circle")
+                        Label("Expension", systemImage: viewSetting.isExpansionMode! ? "checkmark.circle.fill" : "circle")
                     }
                     
                     Button(action: {
-                        viewSetting.displayNumImage.toggle()
+                        viewSetting.isOverlayDisplayInfo?.toggle()
                     }) {
-                        Label("# Image", systemImage: viewSetting.displayNumImage ? "checkmark.circle.fill" : "circle")
+                        Label("Information", systemImage: viewSetting.isOverlayDisplayInfo! ? "checkmark.circle.fill" : "circle")
+                    }
+                    
+                    Button(action: {
+                        viewSetting.isInCommunity?.toggle()
+                    }) {
+                        Label("Liée à la communauté", systemImage: viewSetting.isInCommunity! ? "checkmark.circle.fill" : "circle")
                     }
                     
                     Divider() // ⬅️ Séparateur visuel
@@ -116,8 +126,11 @@ struct ImageView: View {
                 
                 Group {
                     FloatingLabelView(
-                        text: sideShowController.fastLoading.fileInfos[viewSetting.currentIndex].filename,
-                        isDisplay: $viewSetting.displayNumImage,
+                        text: slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].filename,
+                        isDisplay: Binding(
+                            get: { viewSetting.isOverlayDisplayInfo ?? false },
+                            set: { viewSetting.isOverlayDisplayInfo = $0 }
+                        ),
                         position: .halfTop,
                         opacityMinimale: 0.01
                     )
@@ -125,22 +138,31 @@ struct ImageView: View {
                     if let ratio = self.ratio {
                         FloatingLabelView(
                             text: "\(ratio) r",
-                            isDisplay: $viewSetting.displayNumImage,
+                            isDisplay: Binding(
+                                get: { viewSetting.isOverlayDisplayInfo ?? false },
+                                set: { viewSetting.isOverlayDisplayInfo = $0 }
+                            ),
                             position: .leftBottom,
                             opacityMinimale: 0.01
                         )
                     }
                     
                     FloatingLabelView(
-                        text: "\(viewSetting.currentIndex + 1) / \(sideShowController.fastLoading.fileInfos.count)",
-                        isDisplay: $viewSetting.displayNumImage,
+                        text: "\(viewSetting.currentIndex + 1) / \(slideShowController.fastLoading.fileInfos.count)",
+                        isDisplay: Binding(
+                            get: { viewSetting.isOverlayDisplayInfo ?? false },
+                            set: { viewSetting.isOverlayDisplayInfo = $0 }
+                        ),
                         position: .halfBottom,
                         opacityMinimale: 0.01
                     )
                     
                     FloatingLabelView(
                         text: "\(viewSetting.intervalTimer) s",
-                        isDisplay: $viewSetting.displayNumImage,
+                        isDisplay: Binding(
+                            get: { viewSetting.isOverlayDisplayInfo ?? false },
+                            set: { viewSetting.isOverlayDisplayInfo = $0 }
+                        ),
                         position: .rightBottom,
                         opacityMinimale: 0.01
                     )
@@ -156,12 +178,12 @@ struct ImageView: View {
                         viewSetting.intervalTimer = viewSetting.intervalTimer
                         displayParameters.toggle()
                         displayImage.toggle()
-                        sideShowController.start()
+                        slideShowController.start()
                         viewSetting.isPaused = savePauseState
                     } else {
                         displayParameters.toggle()
                         displayImage.toggle()
-                        sideShowController.start()
+                        slideShowController.start()
                         viewSetting.isPaused = savePauseState
                     }
                 }
@@ -175,7 +197,7 @@ struct ImageView: View {
         setting: ViewSetting,
         fastLoading: FastLoading
     ) {
-        self._sideShowController = StateObject(wrappedValue: SlideShowController(viewSetting: setting, fastLoading: fastLoading))
+        self._slideShowController = StateObject(wrappedValue: SlideShowController(viewSetting: setting, fastLoading: fastLoading))
         self._imageController = StateObject(wrappedValue: ImageController(dataSource: presenterDataSource,  viewSetting: setting, fastLoading: fastLoading))
         self.viewSetting = setting
         self.title = title

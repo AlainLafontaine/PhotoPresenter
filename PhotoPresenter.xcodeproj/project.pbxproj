@@ -44,6 +44,7 @@
 
 /* Begin PBXFileReference section */
 		F337078A2E93F61F00C04025 /* SwiftUtilities.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SwiftUtilities.xcodeproj; path = ../SwiftUtilities/SwiftUtilities.xcodeproj; sourceTree = SOURCE_ROOT; };
+		F3AA6A2A2EF873540008899D /* SwiftUtilities.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SwiftUtilities.xcodeproj; path = ../SwiftUtilities/SwiftUtilities.xcodeproj; sourceTree = SOURCE_ROOT; };
 		F3D552DA2E85A09C00B41F74 /* PhotoPresenter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PhotoPresenter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -75,9 +76,17 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		F39049422EF8D51D0043665A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		F3D552D12E85A09C00B41F74 = {
 			isa = PBXGroup;
 			children = (
+				F3AA6A2A2EF873540008899D /* SwiftUtilities.xcodeproj */,
 				F3D552DC2E85A09C00B41F74 /* PhotoPresenter */,
 				F337078A2E93F61F00C04025 /* SwiftUtilities.xcodeproj */,
 				F3D552DB2E85A09C00B41F74 /* Products */,
@@ -147,6 +156,10 @@
 			productRefGroup = F3D552DB2E85A09C00B41F74 /* Products */;
 			projectDirPath = "";
 			projectReferences = (
+				{
+					ProductGroup = F39049422EF8D51D0043665A /* Products */;
+					ProjectRef = F3AA6A2A2EF873540008899D /* SwiftUtilities.xcodeproj */;
+				},
 				{
 					ProductGroup = F33707A52E93F61F00C04025 /* Products */;
 					ProjectRef = F337078A2E93F61F00C04025 /* SwiftUtilities.xcodeproj */;

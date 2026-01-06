@@ -55,12 +55,21 @@ struct DashboardView: View {
                                     Text("Ratio: \(String(format: "%.3f", ratio))")
                                 }.font(.system(size: 10)) // taille plus petite que le standard
                             }
+                            
+                            HStack {
+                                Text(getFriendlyName(for: viewPosition.screenName ?? "Inconnue"))
+                                Spacer()
+/*
+                                if let settings = getViewSetting(displaySpaceId: displaySpace.fileHeader.id, presenter: presenter) {
+                                    if settings.isInCommunity {
+                                        Text("Communauté: oui")
+                                    } else {
+                                        Text("Communauté: non")
+                                    }
+                                }
+*/
+                            }.font(.system(size: 10)) // taille plus petite que le standard
                         }
-                        
-                        HStack {
-                            Text(getFriendlyName(for: viewPosition.screenName ?? "Inconnue"))
-                            Spacer()
-                        }.font(.system(size: 10)) // taille plus petite que le standard
                     }
                     .padding(8) // marge intérieure de tous les côtés
                     .background(index % 2 == 0 ? Color.blue.opacity(0.1) : Color.green.opacity(0.1))
@@ -102,6 +111,20 @@ struct DashboardView: View {
         
         // Si aucun mapping n'est trouvé, retourne le screenName original
         return screenName
+    }
+    
+    private func getViewSetting(displaySpaceId: UUID, presenter: PhotoPresenter) -> ViewSetting? {
+        var viewSetting: ViewSetting?
+        
+        for i in 0..<presenter.groupedViews.count {
+            presenter.groupedViews[i].packInDisplaySpaces?.forEach { pack in
+                if pack.displaySpaceId == displaySpaceId {
+                    viewSetting = pack.viewSettings[0]
+                }
+            }
+        }
+
+        return viewSetting
     }
     
 }

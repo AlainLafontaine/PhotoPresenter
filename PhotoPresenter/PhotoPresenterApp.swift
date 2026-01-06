@@ -439,6 +439,7 @@ struct PhotoPresenterApp: App {
                  
                  if pathDisplaySpace != nil {
                      saveAllPhotoPresenter()
+                     DisplaySpaceView.slideShowControllers = []
                      
                      // Libére les fenêtres du chargement précédent
                      for window in NSApp.windows {

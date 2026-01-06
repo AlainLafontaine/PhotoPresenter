@@ -48,6 +48,20 @@ class SlideShowController: ObservableObject {
         }
     }
     
+    func CommunityKeyDown(with event: NSEvent) {
+        if NSEvent.modifierFlags.contains(.capsLock) && viewSetting.isInCommunity ?? false {
+            switch event.keyCode {
+            case 49:
+                viewSetting.isPaused.toggle()
+                
+            case 123...126:
+                navigationByKeyboard(event: event)
+                
+            default: break
+            }
+        }
+    }
+    
     private func navigationByKeyboard(event: NSEvent) {
         if !viewSetting.isPaused {
             viewSetting.isPaused.toggle()
