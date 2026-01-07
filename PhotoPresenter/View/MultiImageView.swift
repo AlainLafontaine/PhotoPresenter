@@ -26,6 +26,7 @@ struct MultiImageView: View {
                         ImageView(
                             name: photoPresenter.photoPresenterHeader.name,
                             presenterDataSource: photoPresenter.groupedViews[grViewIndex].photoPresenterDataSources[viewSettingIndex],
+                            viewPosition: helper.windowPos!,
                             setting: getViewSetting(
                                 displaySpaceId: displaySpaceId,
                                 packInDisplaySpaces: photoPresenter.groupedViews[grViewIndex].packInDisplaySpaces ?? [],
@@ -46,6 +47,7 @@ struct MultiImageView: View {
                             ImageView(
                                 name: photoPresenter.photoPresenterHeader.name,
                                 presenterDataSource: photoPresenter.groupedViews[grViewIndex].photoPresenterDataSources[viewSettingIndex],
+                                viewPosition: helper.windowPos!,
                                 setting: getViewSetting(
                                     displaySpaceId: displaySpaceId,
                                     packInDisplaySpaces: photoPresenter.groupedViews[grViewIndex].packInDisplaySpaces ?? [],
