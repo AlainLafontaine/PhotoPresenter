@@ -12,6 +12,7 @@ import SwiftUtilities
 struct ImageView: View {
     
     @ObservedObject private var viewSetting: ViewSetting
+    @ObservedObject private var viewPosition: WindowPosition
     
     @StateObject private var slideShowController: SlideShowController
     @StateObject private var imageController : ImageController
@@ -56,6 +57,15 @@ struct ImageView: View {
                     window.title = "\(title)"
                 })
                 .contextMenu {
+
+                    Button(action: {
+                        viewPosition.isOnTop!.toggle()
+                    }) {
+                        Label("Toujours visible", systemImage: (viewPosition.isOnTop ?? false) ? "checkmark.circle.fill" : "circle")
+                    }
+
+                    Divider() // ⬅️ Séparateur visuel
+                    
                     Button(action: {
                         viewSetting.isPaused.toggle()
                     }) {
@@ -194,12 +204,14 @@ struct ImageView: View {
     init(
         name title: String,
         presenterDataSource: PhotoPresenterDataSource,
+        viewPosition: WindowPosition,
         setting: ViewSetting,
         fastLoading: FastLoading
     ) {
         self._slideShowController = StateObject(wrappedValue: SlideShowController(viewSetting: setting, fastLoading: fastLoading))
         self._imageController = StateObject(wrappedValue: ImageController(dataSource: presenterDataSource,  viewSetting: setting, fastLoading: fastLoading))
         self.viewSetting = setting
+        self.viewPosition = viewPosition
         self.title = title
         self.ratio = presenterDataSource.ratio
     }
