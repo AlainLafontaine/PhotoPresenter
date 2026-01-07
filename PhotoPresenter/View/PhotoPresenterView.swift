@@ -21,10 +21,7 @@ struct PhotoPresenterView: View {
                 PhotoPresenterInfo(presenter: helper.presenter)
                 
             case .multiImageView:
-                MultiImageView(
-                    presenter: helper.presenter,
-                    displaySpaceId: helper.displaySpaceId
-                )
+                MultiImageView(dataHelper: helper)
                 .frame(maxWidth: .infinity, maxHeight:.infinity)
                 .background(Color.black).onDisappear {
                     

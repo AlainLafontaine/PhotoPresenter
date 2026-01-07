@@ -10,9 +10,9 @@ import AppKit  // Nécessaire pour NSImage
 import SwiftUtilities
 
 struct MultiImageView: View {
-    @ObservedObject private var photoPresenter: PhotoPresenter
     
-    //@Binding private var isOnTop: Bool
+    @ObservedObject private var photoPresenter: PhotoPresenter
+    @ObservedObject private var helper: DataPresenterHelp
                     
     private let displaySpaceId: UUID
     
@@ -68,10 +68,11 @@ struct MultiImageView: View {
     }
 
     init(
-        presenter: PhotoPresenter,
-        displaySpaceId: UUID) {
-        self.photoPresenter = presenter
-        self.displaySpaceId = displaySpaceId
+        dataHelper: DataPresenterHelp
+    ) {
+        self.helper = dataHelper
+        self.photoPresenter = dataHelper.presenter
+        self.displaySpaceId = dataHelper.displaySpaceId
     }
     
     private func getViewSetting(
