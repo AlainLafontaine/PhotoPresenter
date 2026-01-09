@@ -20,6 +20,7 @@ struct PhotoPresenterApp: App {
     @State private var pathDisplaySpace: String? = nil
     @State private var displaySpaceViewType: DisplaySpaceViewType = .DashboardView
     @State private var screensInfo: ScreensInfo = getScreenInfo()
+    @State private var showTitleBar: Bool = false
 
     @State private var windowIdentifier: Set<String> = []
     @State private var dataPresenters: DataPresenterMap = DataPresenterMap()
@@ -185,8 +186,13 @@ struct PhotoPresenterApp: App {
                         window.level = .normal
                     }
                 })
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .clipped()
+                .ignoresSafeArea()
             }
         }
+        .windowStyle(.hiddenTitleBar)
+        .windowToolbarStyle(.unified)
     }
     
     private func openFileDialog() -> URL? {
