@@ -33,7 +33,7 @@ struct MultiImageView: View {
                                 viewSettingIndex: viewSettingIndex
                             ),
                             fastLoading: photoPresenter.groupedViews[grViewIndex].fastLoaddings![viewSettingIndex]
-                        )  
+                        )
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)

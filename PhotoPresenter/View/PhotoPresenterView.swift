@@ -23,9 +23,8 @@ struct PhotoPresenterView: View {
             case .multiImageView:
                 MultiImageView(dataHelper: helper)
                 .frame(maxWidth: .infinity, maxHeight:.infinity)
-                .background(Color.black).onDisappear {
-                    
-                }
+                .background(Color.black)
+                .onDisappear {}
             }
         }.onAppear {
             for win in NSApp.windows {

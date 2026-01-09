@@ -52,7 +52,7 @@ class ImageController: ObservableObject {
                 return nsImage
             } else {
                 // To do - Afficher une image d'erreur
-                return fastLoading.fileInfos[viewSetting.currentIndex].nsImage!
+                return NSImage()
             }
             
         case .WebServiceSelected:
