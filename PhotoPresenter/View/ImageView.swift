@@ -16,10 +16,11 @@ struct ImageView: View {
     
     @StateObject private var slideShowController: SlideShowController
     @StateObject private var imageController : ImageController
-
+    
     @State private var displayImage = false
     @State private var displayParameters: Bool = false
     @State private var savePauseState = false
+    @State private var isResizing = false
     
     private var title: String;
     private var directories: [String] = []
@@ -37,10 +38,9 @@ struct ImageView: View {
                 // tableau vide plante
 
                 Group {
-                    if viewSetting.isExpansionMode ?? false{
+                    if !isResizing &&  viewSetting.isExpansionMode ?? false  {
                         Image(nsImage: imageController.getImage())
                             .resizable()
-                          //  .scaledToFill()
                     } else {
                         Image(nsImage: imageController.getImage())
                             .resizable()
@@ -198,7 +198,12 @@ struct ImageView: View {
                     }
                 }
             }
-        }
+        }.background(
+            WindowResizeObserver(
+                onStart: { isResizing = true },
+                onEnd: { isResizing = false }
+            )
+        )
     }
 
     init(
