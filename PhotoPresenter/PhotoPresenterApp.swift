@@ -503,6 +503,11 @@ struct PhotoPresenterApp: App {
              case .PhotoPresenter:
                  let presenter: PhotoPresenter? = presenterLoader.load(fullpath: url.path())
               
+                 if displaySpace.viewPositions.contains(where: { $0.id == presenter?.fileHeader.id }) == true {
+                     break
+                 }
+                 
+                 
                  if let groupedViews = presenter?.groupedViews {
                      for grView in groupedViews  {
                          if grView.fastLoaddings == nil {
