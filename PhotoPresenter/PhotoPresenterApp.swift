@@ -43,7 +43,8 @@ struct PhotoPresenterApp: App {
             DisplaySpaceView(
                 displaySpace: displaySpace,
                 sharedRessources: sharedRessources,
-                displayView: $displaySpaceViewType
+                displayView: $displaySpaceViewType,
+                requestOpeningPresenter: openFile
             ).onAppear() {
                 if let window = getDisplaySpaceView() {
                     window.title = displaySpace.displaySpaceHeader.name

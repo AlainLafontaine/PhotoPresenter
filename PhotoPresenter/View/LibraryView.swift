@@ -12,6 +12,7 @@ struct LibraryView: View {
     @ObservedObject var sharedRessources: SharedRessources
     
     private var photoPresenterInfos: [PhotoPresenterInfo] = []
+    private let requestOpeningPresenter: (URL) -> Bool
     
     var body: some View {
         VStack() {
@@ -48,11 +49,13 @@ struct LibraryView: View {
     
     init (
         displaySpace: DisplaySpace,
-        sharedRessources: SharedRessources
+        sharedRessources: SharedRessources,
+        requestOpeningPresenter: @escaping (URL) -> Bool
     )
     {
         self.displaySpace = displaySpace
         self.sharedRessources = sharedRessources
+        self.requestOpeningPresenter = requestOpeningPresenter
         
         for path in sharedRessources.paths2PresenterDirectory {
             let ppInfos: [PhotoPresenterInfo] = GetAllPresenters(path: path)

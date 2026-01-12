@@ -17,12 +17,15 @@ struct DisplaySpaceView: View {
     
     @Binding private var displayView: DisplaySpaceViewType
     
+    private let requestOpeningPresenter: (URL) -> Bool
+    
     var body: some View {
         switch displayView {
         case .LibraryView:
             LibraryView(
                 displaySpace: displaySpace,
-                sharedRessources: sharedRessources
+                sharedRessources: sharedRessources,
+                requestOpeningPresenter: requestOpeningPresenter
             )
             
         case .DashboardView:
@@ -39,11 +42,13 @@ struct DisplaySpaceView: View {
     init(
         displaySpace: DisplaySpace,
         sharedRessources: SharedRessources,
-        displayView: Binding<DisplaySpaceViewType>
+        displayView: Binding<DisplaySpaceViewType>,
+        requestOpeningPresenter: @escaping (URL) -> Bool
     ) {
         self.displaySpace = displaySpace
         self.sharedRessources = sharedRessources
         self._displayView = displayView
+        self.requestOpeningPresenter = requestOpeningPresenter
         
         KeyCatcherView.globalKeyDown = { event in
             DisplaySpaceView.slideShowControllers.forEach { slideShowController in
