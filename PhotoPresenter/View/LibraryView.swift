@@ -23,21 +23,37 @@ struct LibraryView: View {
             List(Array(photoPresenterInfos.enumerated()), id: \.element.id) { index, photoPresenterInfo in
                 VStack(alignment: .leading, spacing: 0) {
                     HStack {
-                        if photoPresenterInfo.isInclusInDisplaySpace {
-                            Text("\(photoPresenterInfo.name)").foregroundColor(.red)
+                        VStack {
+                            Text(
+                                "\(photoPresenterInfo.isInclusInDisplaySpace ? "O" : "N")"
+                            )
+                            .onTapGesture {
+                                if !photoPresenterInfo.isInclusInDisplaySpace {
+                                    if self.requestOpeningPresenter(photoPresenterInfo.url) {
+                                        photoPresenterInfo.isInclusInDisplaySpace = true
+                                    }
+                                }
+                            }
                         }
-                        else {
-                            Text("\(photoPresenterInfo.name)")
+                        VStack {
+                            HStack {
+                                if photoPresenterInfo.isInclusInDisplaySpace {
+                                    Text("\(photoPresenterInfo.name)").foregroundColor(.red)
+                                }
+                                else {
+                                    Text("\(photoPresenterInfo.name)")
+                                }
+                                Spacer()
+                                
+                                Text("\(photoPresenterInfo.nbPhotos) photos")
+                            }
+                            HStack {
+                                Text("\(photoPresenterInfo.description)")
+                                Spacer()
+                                Text("Ratio: \(String(format: "%.3f", photoPresenterInfo.ratio))")
+                            }.font(.system(size: 10)) // taille plus petite que le standard
                         }
-                        Spacer()
-                        
-                        Text("\(photoPresenterInfo.nbPhotos) photos")
-                    }
-                    HStack {
-                        Text("\(photoPresenterInfo.description)")
-                        Spacer()
-                        Text("Ratio: \(String(format: "%.3f", photoPresenterInfo.ratio))")
-                    }.font(.system(size: 10)) // taille plus petite que le standard
+                    }.foregroundColor((photoPresenterInfo.isInclusInDisplaySpace ? .red : .white))
                 }
                 .padding(8) // marge intérieure de tous les côtés
                 .background(index % 2 == 0 ? Color.blue.opacity(0.1) : Color.green.opacity(0.1))
