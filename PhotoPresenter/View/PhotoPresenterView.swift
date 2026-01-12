@@ -18,7 +18,7 @@ struct PhotoPresenterView: View {
         Group {
             switch helper.displayView {
             case .information:
-                PhotoPresenterInfo(presenter: helper.presenter)
+                PhotoPresenterInfoView(presenter: helper.presenter)
                 
             case .multiImageView:
                 MultiImageView(dataHelper: helper)

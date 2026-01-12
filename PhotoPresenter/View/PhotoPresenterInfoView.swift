@@ -8,7 +8,7 @@
 import SwiftUI
 import SwiftUtilities
 
-struct PhotoPresenterInfo: View {
+struct PhotoPresenterInfoView: View {
     @ObservedObject private var photoPresenter: PhotoPresenter
 
     var body: some View {

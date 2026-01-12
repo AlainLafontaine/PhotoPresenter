@@ -10,7 +10,7 @@ import SwiftUtilities
 
 struct DisplaySpaceView: View {
     
-    public static var slideShowControllers: [SlideShowController] = []
+    public  static var slideShowControllers: [SlideShowController] = []
     
     @ObservedObject var displaySpace: DisplaySpace
     @ObservedObject var sharedRessources: SharedRessources
