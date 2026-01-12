@@ -15,7 +15,7 @@ class PhotoPresenterInfo {
     let nbPhotos: Int
     let ratio: Double
     let orientation: Orientation
-    let isInclusInDisplaySpace: Bool
+    var isInclusInDisplaySpace: Bool
     
     init(
         url: URL,
