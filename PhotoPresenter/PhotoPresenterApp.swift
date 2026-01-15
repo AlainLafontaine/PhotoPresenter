@@ -51,7 +51,7 @@ struct PhotoPresenterApp: App {
                 }
             }
             .background(WindowAccessor { window in
-                 window.level = .floating        // Mettre la fenêtre au-dessus
+//                 window.level = .floating        // Mettre la fenêtre au-dessus
             })
         }.commands {
             CommandGroup(after: .newItem) {
