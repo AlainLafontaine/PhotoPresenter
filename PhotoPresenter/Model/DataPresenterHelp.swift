@@ -35,7 +35,7 @@ class DataPresenterHelp: ObservableObject, Identifiable, Codable, Hashable {
         self.windowId = windowId
         self.filename = filename
         self.name = name
-        self.windowPos = windowPos ?? WindowPosition()
+        self.windowPos = windowPos ?? WindowPosition(x: 0, y: 0, width: 400, height: 400)
         self.displayView = displayView
         self.presenter = presenter
         self.displaySpaceId = displaySpaceId
