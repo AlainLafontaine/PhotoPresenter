@@ -6,67 +6,104 @@
 //
 
 import SwiftUI
+import SwiftUtilities
 
 struct LibraryView: View {
     @ObservedObject var displaySpace: DisplaySpace
     @ObservedObject var sharedRessources: SharedRessources
     
+    @State private var isSuggestionActived: Bool = false
+    @State private var isResizing = false
+    
     private var photoPresenterInfos: [PhotoPresenterInfo] = []
-    private let requestOpeningPresenter: (URL) -> Bool
+    private let requestOpeningPresenter: (URL, WindowPosition) -> Bool
     
     var body: some View {
-        VStack() {
-            Text("L'offre de notre bibliothèque")
+        
+        GeometryReader { geometry in
+            let width = geometry.size.width
+            let height = geometry.size.height
+            let frame = geometry.frame(in: .local)
             
-            Spacer()
-            
-            List(Array(photoPresenterInfos.enumerated()), id: \.element.id) { index, photoPresenterInfo in
-                VStack(alignment: .leading, spacing: 0) {
-                    HStack {
-                        VStack {
-                            Text(
-                                "\(photoPresenterInfo.isInclusInDisplaySpace ? "O" : "N")"
-                            )
-                            .onTapGesture {
-                                if !photoPresenterInfo.isInclusInDisplaySpace {
-                                    if self.requestOpeningPresenter(photoPresenterInfo.url) {
-                                        photoPresenterInfo.isInclusInDisplaySpace = true
+            VStack() {
+                Text("L'offre de notre bibliothèque")
+                HStack() {
+                    if isSuggestionActived {
+                        let ratio = width / height
+                        Text("Ratio est de \(String(format: "%.3f", ratio))")
+                    } else {
+                        Text(" ")
+                    }
+                    Spacer()
+                    Toggle("Suggestion activée", isOn: $isSuggestionActived)
+                        .toggleStyle(.checkbox)
+                }
+                .padding([.top, .bottom], 10)
+                .padding(.horizontal, 20)
+                
+                Spacer()
+                
+                if !isSuggestionActived ||  !isResizing  {
+                    let ratioMin = width / height - 0.05
+                    let ratioMax = width / height + 0.05
+                    List(Array(photoPresenterInfos.filter{ isSuggestionActived ? !$0.isInclusInDisplaySpace && ratioMin < $0.ratio && $0.ratio < ratioMax : true  }.enumerated()), id: \.element.id) { index, photoPresenterInfo in
+                        VStack(alignment: .leading, spacing: 0) {
+                            HStack {
+                                VStack {
+                                    Text(
+                                        "\(photoPresenterInfo.isInclusInDisplaySpace ? "O" : "N")"
+                                    )
+                                    .padding(.horizontal, 10)
+                                    .onTapGesture {
+                                        if !photoPresenterInfo.isInclusInDisplaySpace {
+                                            if self.requestOpeningPresenter(
+                                                photoPresenterInfo.url,
+                                                isSuggestionActived ? WindowPosition(x: frame.minX, y: frame.minY, width: width, height: height) : WindowPosition(x: 0, y: 0, width: 400, height: 400)
+                                            ) {
+                                                photoPresenterInfo.isInclusInDisplaySpace = true
+                                            }
+                                        }
                                     }
                                 }
-                            }
-                        }
-                        VStack {
-                            HStack {
-                                if photoPresenterInfo.isInclusInDisplaySpace {
-                                    Text("\(photoPresenterInfo.name)").foregroundColor(.red)
+                                VStack {
+                                    HStack {
+                                        if photoPresenterInfo.isInclusInDisplaySpace {
+                                            Text("\(photoPresenterInfo.name)").foregroundColor(.red)
+                                        }
+                                        else {
+                                            Text("\(photoPresenterInfo.name)")
+                                        }
+                                        Spacer()
+                                        
+                                        Text("\(photoPresenterInfo.nbPhotos) photos")
+                                    }
+                                    HStack {
+                                        Text("\(photoPresenterInfo.description)")
+                                        Spacer()
+                                        Text("Ratio: \(String(format: "%.3f", photoPresenterInfo.ratio))")
+                                    }.font(.system(size: 10)) // taille plus petite que le standard
                                 }
-                                else {
-                                    Text("\(photoPresenterInfo.name)")
-                                }
-                                Spacer()
-                                
-                                Text("\(photoPresenterInfo.nbPhotos) photos")
-                            }
-                            HStack {
-                                Text("\(photoPresenterInfo.description)")
-                                Spacer()
-                                Text("Ratio: \(String(format: "%.3f", photoPresenterInfo.ratio))")
-                            }.font(.system(size: 10)) // taille plus petite que le standard
+                            }.foregroundColor((photoPresenterInfo.isInclusInDisplaySpace ? .red : .white))
                         }
-                    }.foregroundColor((photoPresenterInfo.isInclusInDisplaySpace ? .red : .white))
+                        .padding(8) // marge intérieure de tous les côtés
+                        .background(index % 2 == 0 ? Color.blue.opacity(0.1) : Color.green.opacity(0.1))
+                        .listRowSeparator(.hidden) // supprime la ligne de séparation
+                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)) // supprime l'espacement
+                    }
                 }
-                .padding(8) // marge intérieure de tous les côtés
-                .background(index % 2 == 0 ? Color.blue.opacity(0.1) : Color.green.opacity(0.1))
-                .listRowSeparator(.hidden) // supprime la ligne de séparation
-                .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)) // supprime l'espacement
-            }
-        }.frame(maxWidth: .infinity, maxHeight: .infinity)
+            }.frame(maxWidth: .infinity, maxHeight: .infinity)
+        }.background(
+            WindowResizeObserver(
+                onStart: { isResizing = true },
+                onEnd: { isResizing = false }
+            )
+        )
     }
     
     init (
         displaySpace: DisplaySpace,
         sharedRessources: SharedRessources,
-        requestOpeningPresenter: @escaping (URL) -> Bool
+        requestOpeningPresenter: @escaping (URL, WindowPosition) -> Bool
     )
     {
         self.displaySpace = displaySpace
