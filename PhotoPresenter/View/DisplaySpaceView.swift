@@ -17,7 +17,7 @@ struct DisplaySpaceView: View {
     
     @Binding private var displayView: DisplaySpaceViewType
     
-    private let requestOpeningPresenter: (URL) -> Bool
+    private let requestOpeningPresenter: (URL, WindowPosition) -> Bool
     
     var body: some View {
         switch displayView {
@@ -43,7 +43,7 @@ struct DisplaySpaceView: View {
         displaySpace: DisplaySpace,
         sharedRessources: SharedRessources,
         displayView: Binding<DisplaySpaceViewType>,
-        requestOpeningPresenter: @escaping (URL) -> Bool
+        requestOpeningPresenter: @escaping (URL, WindowPosition) -> Bool
     ) {
         self.displaySpace = displaySpace
         self.sharedRessources = sharedRessources

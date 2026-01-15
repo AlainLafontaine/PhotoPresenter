@@ -436,7 +436,10 @@ struct PhotoPresenterApp: App {
         return window
     }
     
-    private func openFile(_ url: URL) -> Bool {
+    private func openFile(
+        _ url: URL,
+        pos suggestionPos: WindowPosition = WindowPosition(x: 0, y: 0, width: 400, height: 400)
+    ) -> Bool {
     
         let path: String = url.path()
         
@@ -522,8 +525,8 @@ struct PhotoPresenterApp: App {
                          PresenterViewPosition(
                              id: pp.fileHeader.id!,
                              pathFile: url.path(),
-                             screenName: getScreenName(for: WindowPosition(x: 0, y: 0, width: 400, height: 400), in: self.screensInfo),
-                             windowPosition: WindowPosition(x: 0, y: 0, width: 400, height: 400)
+                             screenName: getScreenName(for: suggestionPos, in: self.screensInfo),
+                             windowPosition: suggestionPos
                          )
                      )
                      
@@ -549,6 +552,7 @@ struct PhotoPresenterApp: App {
                      let helper = DataPresenterHelp(
                                      filename: url.path(),
                                      name: pp.photoPresenterHeader.name,
+                                     windowPos: suggestionPos,
                                      presenter: presenter!,
                                      displaySpaceId: displaySpace.fileHeader.id!
                                   )
