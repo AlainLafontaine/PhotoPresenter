@@ -21,8 +21,8 @@ struct ImageView: View {
     @State private var displayParameters: Bool = false
     @State private var savePauseState = false
     @State private var isResizing = false
+    @State private var title: String;
     
-    private var title: String;
     private var directories: [String] = []
     private var ratio: Double?
 
@@ -174,6 +174,16 @@ struct ImageView: View {
                             set: { viewSetting.isOverlayDisplayInfo = $0 }
                         ),
                         position: .rightBottom,
+                        opacityMinimale: 0.01
+                    )
+                    
+                    FloatingLabelView(
+                        text: "\(title)",
+                        isDisplay: Binding(
+                            get: { viewSetting.isOverlayDisplayInfo ?? false },
+                            set: { viewSetting.isOverlayDisplayInfo = $0 }
+                        ),
+                        position: .leftTop,
                         opacityMinimale: 0.01
                     )
                 }
