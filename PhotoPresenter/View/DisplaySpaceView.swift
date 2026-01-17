@@ -36,6 +36,9 @@ struct DisplaySpaceView: View {
             
         case .RatioSimulatorView:
             RatioSimulatorView()
+        
+        case .FactoryView:
+            PhotoPresenterFactoryView()
         }
     }
     

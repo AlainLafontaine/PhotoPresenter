@@ -18,7 +18,7 @@ struct PhotoPresenterApp: App {
     @State private var loadingInProgress: Bool = false
     @State private var loadingController: PresenterLoadingFileController? = nil
     @State private var pathDisplaySpace: String? = nil
-    @State private var displaySpaceViewType: DisplaySpaceViewType = .DashboardView
+    @State private var displaySpaceViewType: DisplaySpaceViewType = .FactoryView  //.DashboardView
     @State private var screensInfo: ScreensInfo = getScreenInfo()
     @State private var showTitleBar: Bool = false
 
@@ -128,6 +128,11 @@ struct PhotoPresenterApp: App {
                     displaySpaceViewType = .RatioSimulatorView
                 }
                 .keyboardShortcut("R", modifiers: [.command])
+                
+                Button("Factory") {
+                    displaySpaceViewType = .FactoryView
+                }
+                .keyboardShortcut("F", modifiers: [.command])
                 
                 Divider() // 🔹 Séparateur visuel dans le menu principal
 
@@ -444,112 +449,111 @@ struct PhotoPresenterApp: App {
         let path: String = url.path()
         
         if let fileType = checkFileType(path: path) {
-             switch fileType {
-             case .DisplaySpace:
-                 
-                 if pathDisplaySpace != nil {
-                     saveAllPhotoPresenter()
-                     DisplaySpaceView.slideShowControllers = []
-                     
-                     // Libére les fenêtres du chargement précédent
-                     for window in NSApp.windows {
-                         if let windowId = window.identifier?.rawValue {
-                             let components = windowId.split(separator: "-")
-                             
-                             if components[0] == "photoPresenterWindows"  {
-                                 window.close()
-                             }
-                         }
-                     }
-                     
-                     windowIdentifier.removeAll()
-                     dataPresenters.removeAll()
-                 }
+            switch fileType {
+            case .DisplaySpace:
+                if pathDisplaySpace != nil {
+                    saveAllPhotoPresenter()
+                    DisplaySpaceView.slideShowControllers = []
 
-                 pathDisplaySpace = path
-                 
-                 if let ds = displaySpaceLoader.load(fullpath: path)
-                 {
-                     displaySpace.fileHeader = ds.fileHeader
-                     displaySpace.displaySpaceHeader = ds.displaySpaceHeader
-                     displaySpace.windowPosition = ds.windowPosition
-                     displaySpace.viewPositions = ds.viewPositions
-                     displaySpace.presenters = [PhotoPresenter]()
-                     displaySpace.emergencyDisplaySpace = ds.emergencyDisplaySpace
-                     
-                     if loadingController == nil {
-                         loadingController = PresenterLoadingFileController(
-                                                 loadingInProgress: $loadingInProgress,
-                                                 screensInfo: $screensInfo,
-                                                 sharedRessources: sharedRessources,
-                                                 openWindow: openWindow
-                                             )
-                     }
+                    // Libére les fenêtres du chargement précédent
+                    for window in NSApp.windows {
+                        if let windowId = window.identifier?.rawValue {
+                            let components = windowId.split(separator: "-")
 
-                     loadingController?.start(with: ds.viewPositions, for: displaySpace.fileHeader.id!)
+                            if components[0] == "photoPresenterWindows"  {
+                                window.close()
+                            }
+                        }
+                    }
+
+                    windowIdentifier.removeAll()
+                    dataPresenters.removeAll()
+                }
+
+                pathDisplaySpace = path
+                 
+                if let ds = displaySpaceLoader.load(fullpath: path)
+                {
+                    displaySpace.fileHeader = ds.fileHeader
+                    displaySpace.displaySpaceHeader = ds.displaySpaceHeader
+                    displaySpace.windowPosition = ds.windowPosition
+                    displaySpace.viewPositions = ds.viewPositions
+                    displaySpace.presenters = [PhotoPresenter]()
+                    displaySpace.emergencyDisplaySpace = ds.emergencyDisplaySpace
                      
-                     if let window = getDisplaySpaceView() {
-                         if let windowPosition = displaySpace.windowPosition {
-                             let frame = NSRect(
-                                 x: windowPosition.x,
-                                 y: windowPosition.y,
-                                 width: windowPosition.width,
-                                 height: windowPosition.height
-                              )
+                    if loadingController == nil {
+                       loadingController = PresenterLoadingFileController(
+                                               loadingInProgress: $loadingInProgress,
+                                               screensInfo: $screensInfo,
+                                               sharedRessources: sharedRessources,
+                                               openWindow: openWindow
+                                           )
+                    }
+
+                    loadingController?.start(with: ds.viewPositions, for: displaySpace.fileHeader.id!)
+                     
+                    if let window = getDisplaySpaceView() {
+                        if let windowPosition = displaySpace.windowPosition {
+                            let frame = NSRect(
+                                x: windowPosition.x,
+                                y: windowPosition.y,
+                                width: windowPosition.width,
+                                height: windowPosition.height
+                            )
                               
-                              window.setFrame(frame, display: true)
-                         }
+                            window.setFrame(frame, display: true)
+                        }
                          
-                         window.title = displaySpace.displaySpaceHeader.name
-                     }
-                  }
+                        window.title = displaySpace.displaySpaceHeader.name
+                    }
+                }
                                          
-             case .PhotoPresenter:
-                 let presenter: PhotoPresenter? = presenterLoader.load(fullpath: url.path())
+            case .PhotoPresenter:
+                let presenter: PhotoPresenter? = presenterLoader.load(fullpath: url.path())
               
-                 if displaySpace.viewPositions.contains(where: { $0.id == presenter?.fileHeader.id }) == true {
-                     break
-                 }
+                if displaySpace.viewPositions.contains(where: { $0.id == presenter?.fileHeader.id }) == true {
+                    break
+                }
                  
                  
-                 if let groupedViews = presenter?.groupedViews {
-                     for grView in groupedViews  {
-                         if grView.fastLoaddings == nil {
-                             grView.fastLoaddings = (0..<grView.nbOfView).map { _ in FastLoading() }
-                         }
-                     }
-                 }
+                if let groupedViews = presenter?.groupedViews {
+                    for grView in groupedViews  {
+                        if grView.fastLoaddings == nil {
+                            grView.fastLoaddings = (0..<grView.nbOfView).map { _ in FastLoading() }
+                        }
+                    }
+                }
                  
-                 if let pp = presenter {
-                     displaySpace.viewPositions.append(
-                         PresenterViewPosition(
-                             id: pp.fileHeader.id!,
-                             pathFile: url.path(),
-                             screenName: getScreenName(for: suggestionPos, in: self.screensInfo),
-                             windowPosition: suggestionPos
-                         )
-                     )
+                if let pp = presenter {
+                    displaySpace.viewPositions.append(
+                        PresenterViewPosition(
+                            id: pp.fileHeader.id!,
+                            pathFile: url.path(),
+                            screenName: getScreenName(for: suggestionPos, in: self.screensInfo),
+                            windowPosition: suggestionPos
+                        )
+                    )
                      
-                     for groupedView in pp.groupedViews {
-                         if groupedView.packInDisplaySpaces == nil {
-                             groupedView.packInDisplaySpaces = []
-                         }
+                    for groupedView in pp.groupedViews {
+                        if groupedView.packInDisplaySpaces == nil {
+                            groupedView.packInDisplaySpaces = []
+                        }
                          
-                         var viewSettings2: [ViewSetting] = [ViewSetting]()
+                        var viewSettings2: [ViewSetting] = [ViewSetting]()
                          
-                         for _ in 0..<groupedView.nbOfView {
-                             viewSettings2.append(ViewSetting())
-                         }
+                        for _ in 0..<groupedView.nbOfView {
+                            viewSettings2.append(ViewSetting())
+                        }
                          
-                         let packInDisplaySpace = PackInDisplaySpace(
-                             displaySpaceId: displaySpace.fileHeader.id!,
-                             viewSettings: viewSettings2
-                         )
+                        let packInDisplaySpace = PackInDisplaySpace(
+                            displaySpaceId: displaySpace.fileHeader.id!,
+                            viewSettings: viewSettings2
+                        )
                          
-                         groupedView.packInDisplaySpaces?.append(packInDisplaySpace)
-                     }
+                        groupedView.packInDisplaySpaces?.append(packInDisplaySpace)
+                    }
                      
-                     let helper = DataPresenterHelp(
+                    let helper = DataPresenterHelp(
                                      filename: url.path(),
                                      name: pp.photoPresenterHeader.name,
                                      windowPos: suggestionPos,
@@ -557,9 +561,13 @@ struct PhotoPresenterApp: App {
                                      displaySpaceId: displaySpace.fileHeader.id!
                                   )
                                              
-                     openWindow(id: "photoPresenterWindows", value: helper)
-                 }
-             }
+                    openWindow(id: "photoPresenterWindows", value: helper)
+                }
+                
+            default:
+            break;
+            }
+            
         }
         
         return true

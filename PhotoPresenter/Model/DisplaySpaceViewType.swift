@@ -11,4 +11,5 @@ enum DisplaySpaceViewType: String, Codable, Hashable {
     case LibraryView
     case DashboardView
     case RatioSimulatorView
+    case FactoryView
 }
