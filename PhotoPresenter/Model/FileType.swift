@@ -10,4 +10,5 @@ import Foundation
 enum FileType: String, Codable, Hashable {
     case PhotoPresenter
     case DisplaySpace
+    case PresenterFileIndex
 }
