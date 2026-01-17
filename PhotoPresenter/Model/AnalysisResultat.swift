@@ -13,19 +13,19 @@ struct AnalysisResultat: Identifiable, Codable, Hashable {
     var isChecked: Bool
     let ratio: Double
     let resultats: [FileDirectoryInfo]
-    var suffixe: String
+    var suffix: String
     
     init(
         id: UUID = UUID(),
         isChecked: Bool,
         ratio: Double,
         resultats: [FileDirectoryInfo],
-        suffixe: String
+        suffix: String
     ) {
         self.id = id
         self.isChecked = isChecked
         self.ratio = ratio
         self.resultats = resultats
-        self.suffixe = suffixe
+        self.suffix = suffix
     }
 }

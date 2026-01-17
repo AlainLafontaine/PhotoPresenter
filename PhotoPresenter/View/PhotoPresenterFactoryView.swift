@@ -7,9 +7,7 @@
 
 
 /*
- "fileType" : "PhotoPresenter",
-    "id" : "AA3C5B08-0DFC-4042-B7DB-8374D5E4A60F",
-    "version" : "0.1.0003"
+ 
  
  "photoPresenterHeader" : {
     "description" : "3 photos de Christiane en lingegerie",
@@ -103,15 +101,15 @@ struct PhotoPresenterFactoryView: View {
                                         // --- En-tête ---
                                         HStack {
                                             Text("✓")
-                                                .frame(width: 40, alignment: .leading)
+                                                .frame(width: 40, alignment: .center)
                                             Text("Ratio")
-                                                .frame(width: 50, alignment: .leading)
+                                                .frame(width: 50, alignment: .center)
 
                                             Text("Photos")
-                                                .frame(width: 80, alignment: .leading)
+                                                .frame(width: 80, alignment: .center)
 
                                             Text("Suffixe")
-                                                .frame(width: 80, alignment: .leading)
+                                                .frame(width: 80, alignment: .center)
                                         }
                                         .font(.headline)
                                         .padding(.bottom, 4)
@@ -134,7 +132,7 @@ struct PhotoPresenterFactoryView: View {
                                                         .frame(width: 80, alignment: .trailing)
 
                                                     // Colonne 4 : Suffixe éditable
-                                                    TextField("Suffixe", text: $item.suffixe)
+                                                    TextField("Suffix", text: $item.suffix)
                                                         .textFieldStyle(.roundedBorder)
                                                         .frame(width: 80, alignment: .leading)
                                                 }
@@ -154,7 +152,7 @@ struct PhotoPresenterFactoryView: View {
                         HStack() {
                             Spacer()
                             Button("Création du presenter") {
-                                
+                                CreatePresenter()
                             }
                             .disabled(analysisResultats.isEmpty)
                         }
@@ -250,6 +248,63 @@ struct PhotoPresenterFactoryView: View {
         }
     }
     
+    private func CreatePresenter() {
+        analysisResultats.forEach { analysisResultat in
+            if analysisResultat.isChecked {
+                let fileHeader =  FileHeader(version: "0.1.0003", fileType: FileType.PhotoPresenter)
+                let photoPresenterHeader = PhotoPresenterHeader(
+                                                name: "\(self.name) volume \(analysisResultat.suffix)",
+                                                description: self.description,
+                                                orientation: Orientation.Horizontal,
+                                           )
+                var groupedViews: [GroupedView] = []
+                var photoPresenterDataSources: [PhotoPresenterDataSource] = []
+                var directorySelected: [String] = []
+                var fastLoaddings: [FastLoading] = []
+                
+                directoriesInfo.forEach { directoryInfo in
+                    if directoryInfo.isChecked {
+                        directorySelected.append(directoryInfo.path)
+                    }
+                }
+                
+                photoPresenterDataSources.append(
+                    PhotoPresenterDataSource(
+                        type: .DirectorySelected,
+                        directorySelected: directorySelected,
+                        ratio: analysisResultat.ratio,
+                        tolerance: self.tolerance
+                    )
+                )
+
+                analysisResultat.resultats.forEach { fileDirectoryInfo in
+                    fastLoaddings.append(
+                        FastLoading(
+                            
+                        )
+                    )
+                }
+                
+                groupedViews.append(
+                    GroupedView(
+                        nbOfView: 1,
+                        photoPresenterDataSources: photoPresenterDataSources,
+                        packInDisplaySpaces: []//,
+                        //fastLoaddings: [FastLoading]? = nil
+                    )
+                )
+                
+                let photoPresenter = PhotoPresenter(
+                    fileHeader: fileHeader,
+                    photoPresenterHeader: photoPresenterHeader,
+                    groupedViews: groupedViews
+                )
+                
+                saveToJSONFile(photoPresenter, filename: "/Volumes/Image_Mac/Config/\(self.name)_\(analysisResultat.suffix).json")
+            }
+        }
+    }
+    
     private func ProcessAnalysisPhoto() {
         var count: Int = 1
         analysisResultats.removeAll()
@@ -257,10 +312,10 @@ struct PhotoPresenterFactoryView: View {
         ratios.forEach { ratio in
             let borneMin: Double = ratio - tolerance
             let borneMax: Double = ratio + tolerance
-
+            var resultForRatio: [FileDirectoryInfo] = []
+            
             directoriesInfo.forEach { directoryInfo in
                 if directoryInfo.isChecked {
-                    var resultForRatio: [FileDirectoryInfo] = []
                     let fileInfos = directoryInfo.fileInfos
                     
                     for fileInfo in fileInfos {
@@ -268,16 +323,16 @@ struct PhotoPresenterFactoryView: View {
                             resultForRatio.append(fileInfo)
                         }
                     }
-                    
-                    analysisResultats.append(AnalysisResultat(
-                        isChecked: true,
-                        ratio: ratio,
-                        resultats: resultForRatio,
-                        suffixe: "\(count)"
-                    ))
-                    count += 1
                 }
             }
+            
+            analysisResultats.append(AnalysisResultat(
+                isChecked: true,
+                ratio: ratio,
+                resultats: resultForRatio,
+                suffix: "\(count)"
+            ))
+            count += 1
         }
     }
     
