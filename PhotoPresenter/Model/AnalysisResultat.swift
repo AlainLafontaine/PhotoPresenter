@@ -12,14 +12,14 @@ struct AnalysisResultat: Identifiable, Codable, Hashable {
     let id: UUID
     var isChecked: Bool
     let ratio: Double
-    let resultats: [FileDirectoryInfo]
+    let resultats: [LinkDirectoryToFileDirectoryInfo]
     var suffix: String
     
     init(
         id: UUID = UUID(),
         isChecked: Bool,
         ratio: Double,
-        resultats: [FileDirectoryInfo],
+        resultats: [LinkDirectoryToFileDirectoryInfo],
         suffix: String
     ) {
         self.id = id
@@ -27,5 +27,9 @@ struct AnalysisResultat: Identifiable, Codable, Hashable {
         self.ratio = ratio
         self.resultats = resultats
         self.suffix = suffix
+    }
+    
+    func NbOfFiles() -> Int {
+        resultats.reduce(0) { $0 + $1.fileInfos.count }
     }
 }

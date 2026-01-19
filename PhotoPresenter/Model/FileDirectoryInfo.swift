@@ -8,13 +8,20 @@
 import SwiftUI
 
 struct FileDirectoryInfo: Identifiable, Codable, Hashable {
+    
     let id: UUID
     let filename: String
     let width: Int
     let height: Int
     let ratio: Double
     
-    init(id: UUID = UUID(), filename: String, width: Int, height: Int, ratio: Double) {
+    init(
+        id: UUID = UUID(),
+        filename: String,
+        width: Int,
+        height: Int,
+        ratio: Double
+    ) {
         self.id = id
         self.filename = filename
         self.width = width

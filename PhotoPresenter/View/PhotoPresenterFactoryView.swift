@@ -41,7 +41,7 @@ struct PhotoPresenterFactoryView: View {
             HStack() {
                 GroupBox("Paramètres pour la création du presenter") {
                     VStack(alignment: .leading, spacing: 8) {
-                        // Nom du presenter
+                        // Nom des presenter
                         HStack() {
                             Text("Nom: ").padding(.bottom, 4)
                             TextField("Entre le nom du presenter", text: $name).frame(width: 200)
@@ -128,7 +128,7 @@ struct PhotoPresenterFactoryView: View {
                                                         .frame(width: 50, alignment: .leading)
 
                                                     // Colonne 3 : Nombre d’items
-                                                    Text("\(item.resultats.count)")
+                                                    Text("\(item.NbOfFiles())")
                                                         .frame(width: 80, alignment: .trailing)
 
                                                     // Colonne 4 : Suffixe éditable
@@ -260,11 +260,15 @@ struct PhotoPresenterFactoryView: View {
                 var groupedViews: [GroupedView] = []
                 var photoPresenterDataSources: [PhotoPresenterDataSource] = []
                 var directorySelected: [String] = []
-                var fastLoaddings: [FastLoading] = []
+                var fastLoadings: [FastLoading] = []
+                var fastLoading: FastLoading = FastLoading()
+                
+                fastLoadings.append(fastLoading)
                 
                 directoriesInfo.forEach { directoryInfo in
                     if directoryInfo.isChecked {
                         directorySelected.append(directoryInfo.path)
+                        fastLoading.directories.append(directoryInfo.path)
                     }
                 }
                 
@@ -276,21 +280,31 @@ struct PhotoPresenterFactoryView: View {
                         tolerance: self.tolerance
                     )
                 )
-
-                analysisResultat.resultats.forEach { fileDirectoryInfo in
-                    fastLoaddings.append(
-                        FastLoading(
-                            
-                        )
-                    )
+                
+                var ratio: Double = 0
+                analysisResultat.resultats.forEach { linkDirToFileDirectoryInfo in
+                    let directoryIndex = linkDirToFileDirectoryInfo.directoryIndex
+                    
+                    linkDirToFileDirectoryInfo.fileInfos.forEach { fileDirectoryInfo in
+                        fastLoading.fileInfos.append(
+                                                FileInfo(
+                                                    filename: fileDirectoryInfo.filename,
+                                                    directoryIndex: directoryIndex,
+                                                    width: fileDirectoryInfo.width,
+                                                    height: fileDirectoryInfo.height
+                                                )
+                                            )
+                        ratio += fileDirectoryInfo.ratio
+                    }
                 }
+                photoPresenterHeader.ratio = ratio / Double(analysisResultat.resultats.count)
                 
                 groupedViews.append(
                     GroupedView(
                         nbOfView: 1,
                         photoPresenterDataSources: photoPresenterDataSources,
-                        packInDisplaySpaces: []//,
-                        //fastLoaddings: [FastLoading]? = nil
+                        packInDisplaySpaces: [],
+                        fastLoaddings: fastLoadings
                     )
                 )
                 
@@ -312,17 +326,25 @@ struct PhotoPresenterFactoryView: View {
         ratios.forEach { ratio in
             let borneMin: Double = ratio - tolerance
             let borneMax: Double = ratio + tolerance
-            var resultForRatio: [FileDirectoryInfo] = []
+            var resultForRatio: [LinkDirectoryToFileDirectoryInfo] = []
+            var directoryIndex: Int = 0
             
             directoriesInfo.forEach { directoryInfo in
                 if directoryInfo.isChecked {
                     let fileInfos = directoryInfo.fileInfos
-                    
+                    var link = LinkDirectoryToFileDirectoryInfo(
+                        directoryIndex: directoryIndex,
+                        fileInfos: []
+                    )
+                                        
                     for fileInfo in fileInfos {
                         if borneMin < fileInfo.ratio && borneMax >= fileInfo.ratio {
-                            resultForRatio.append(fileInfo)
+                            link.fileInfos.append(fileInfo)
                         }
                     }
+                    
+                    resultForRatio.append(link)
+                    directoryIndex += 1
                 }
             }
             
@@ -409,7 +431,7 @@ struct PhotoPresenterFactoryView: View {
 
         analysisResultats.forEach { analysisResultat in
             if analysisResultat.isChecked {
-                nbPhoto += analysisResultat.resultats.count
+                nbPhoto += analysisResultat.NbOfFiles()
             }
         }
         
