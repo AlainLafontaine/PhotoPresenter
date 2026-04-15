@@ -21,7 +21,7 @@ struct ImageView: View {
     @State private var displayParameters: Bool = false
     @State private var savePauseState = false
     @State private var isResizing = false
-    @State private var title: String;
+    @State private var title: String
     
     private var directories: [String] = []
     private var ratio: Double?
@@ -31,7 +31,25 @@ struct ImageView: View {
             if displayImage {
                 
                 KeyCatcherView { event in
-                    slideShowController.keyDown(with: event)
+                    switch event.keyCode {
+                    case 24, 69: // + (plus) - Augmenter la transparence
+                        if let currentFactor = viewSetting.transparentFactor {
+                            viewSetting.transparentFactor = min(currentFactor + 0.05, 1.0)
+                        } else {
+                            viewSetting.transparentFactor = 0.05
+                        }
+                        
+                    case 27, 78: // - (moins) - Diminuer la transparence
+                        if let currentFactor = viewSetting.transparentFactor {
+                            viewSetting.transparentFactor = max(currentFactor - 0.05, 0.0)
+                        } else {
+                            viewSetting.transparentFactor = 0.95
+                        }
+                        
+                    default:
+                        slideShowController.keyDown(with: event)
+                        break
+                    }
                 }
                 
                 // To do - exception si currentIndex dépasse le tableau
@@ -56,12 +74,37 @@ struct ImageView: View {
                 .background(WindowAccessor { window in
                     window.title = "\(title)"
                 })
+                .onChange(of: viewSetting.isTransparent) { _, isTransparent in
+                    // Mettre à jour la transparence de la fenêtre
+                    if let window = NSApp.keyWindow {
+                        if isTransparent ?? false {
+                            window.isOpaque = false
+                            window.backgroundColor = NSColor.clear
+                            window.alphaValue = viewSetting.transparentFactor ?? 1.0
+                        } else {
+                            window.isOpaque = true
+                            window.backgroundColor = NSColor.windowBackgroundColor
+                            window.alphaValue = 1.0
+                        }
+                    }
+                }
+                .onChange(of: viewSetting.transparentFactor) { _, factor in
+                    // Mettre à jour le niveau de transparence
+                    if viewSetting.isTransparent ?? false, let window = NSApp.keyWindow {
+                        window.alphaValue = factor ?? 1.0
+                    }
+                }
                 .contextMenu {
-
                     Button(action: {
                         viewPosition.isOnTop!.toggle()
                     }) {
                         Label("Toujours visible", systemImage: (viewPosition.isOnTop ?? false) ? "checkmark.circle.fill" : "circle")
+                    }
+
+                    Button(action: {
+                        viewSetting.isTransparent!.toggle()
+                    }) {
+                        Label("Transparence", systemImage: (viewSetting.isTransparent ?? false) ? "checkmark.circle.fill" : "circle")
                     }
 
                     Divider() // ⬅️ Séparateur visuel
@@ -213,7 +256,36 @@ struct ImageView: View {
                 onStart: { isResizing = true },
                 onEnd: { isResizing = false }
             )
-        )
+        ).onHover { (entered) in
+            if entered {
+                if NSEvent.modifierFlags.contains(.control) {
+/*
+                    let width = viewPosition.width * 2
+                    let height = viewPosition.height * 2
+                    
+                    let newFrame = NSRect(
+                        x: viewPosition.x,
+                        y: viewPosition.y,
+                        width: width,
+                        height: height
+                    )
+*/
+//                    NSWorkspace.shared.frontmostApplication?.setValue(newFrame, forKey: "windowFrame")
+                }
+                
+               // viewPosition
+            } else {
+/*
+                let newFrame = NSRect(
+                    x: viewPosition.x,
+                    y: viewPosition.y,
+                    width: viewPosition.width,
+                    height: viewPosition.height
+                )
+ */
+//                NSWorkspace.shared.frontmostApplication?.setValue(newFrame, forKey: "windowFrame")
+            }
+        }
     }
 
     init(
@@ -221,9 +293,10 @@ struct ImageView: View {
         presenterDataSource: PhotoPresenterDataSource,
         viewPosition: WindowPosition,
         setting: ViewSetting,
-        fastLoading: FastLoading
+        fastLoading: FastLoading,
+        communityParameter: Binding<CommunityParameter>
     ) {
-        self._slideShowController = StateObject(wrappedValue: SlideShowController(viewSetting: setting, fastLoading: fastLoading))
+        self._slideShowController = StateObject(wrappedValue: SlideShowController(viewSetting: setting, fastLoading: fastLoading, communityParameter: communityParameter))
         self._imageController = StateObject(wrappedValue: ImageController(dataSource: presenterDataSource,  viewSetting: setting, fastLoading: fastLoading))
         self.viewSetting = setting
         self.viewPosition = viewPosition

@@ -10,33 +10,68 @@ import SwiftUI
 import AppKit  // Nécessaire pour NSImage
 
 class SlideShowController: ObservableObject {
+    
+    @Binding var communityParam: CommunityParameter
     @ObservedObject var viewSetting: ViewSetting
     @ObservedObject var fastLoading: FastLoading
-    
+     
     var timer: Timer?
     
-    init(viewSetting setting: ViewSetting, fastLoading: FastLoading) {
+    
+    init(
+        viewSetting setting: ViewSetting,
+        fastLoading: FastLoading,
+        communityParameter: Binding<CommunityParameter>
+    ) {
         self.viewSetting = setting
         self.fastLoading = fastLoading
+        self._communityParam = communityParameter
     }
     
     func start() {
         timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: viewSetting.intervalTimer, repeats: true) { [weak self] _ in
+        timer = Timer.scheduledTimer(
+            withTimeInterval: viewSetting.intervalTimer,
+            repeats: true
+        ) { [weak self] _ in
             guard let self = self else { return }
-            if !viewSetting.isPaused {
-                if viewSetting.isRandomizing {
-                    viewSetting.currentIndex = Int.random(in: 0..<fastLoading.fileInfos.count)
-                } else if viewSetting.isReverse {
-                    viewSetting.currentIndex = (viewSetting.currentIndex - 1 + fastLoading.fileInfos.count) % fastLoading.fileInfos.count
-                } else {
-                    viewSetting.currentIndex = (viewSetting.currentIndex + 1) % fastLoading.fileInfos.count
+            
+            let isCapsLockActive = NSEvent.modifierFlags.contains(.capsLock)
+            
+            if isCapsLockActive {
+                if !communityParam.isCommunityModeActived {
+                    communityParam.isCommunityModeActived = true
+                    DisplaySpaceView.startCommunityTimer(intervalTimer: self.communityParam.intervalTimer)
                 }
+            } else {
+                self.advanceSlide()
             }
         }
     }
     
+    func stop() {
+        timer?.invalidate()
+    }
+    
+    func advanceSlide() {
+        guard !viewSetting.isPaused else { return }
+        
+        if viewSetting.isRandomizing {
+            viewSetting.currentIndex = Int.random(in: 0..<fastLoading.fileInfos.count)
+        } else if viewSetting.isReverse {
+            viewSetting.currentIndex = (viewSetting.currentIndex - 1 + fastLoading.fileInfos.count) % fastLoading.fileInfos.count
+        } else {
+            viewSetting.currentIndex = (viewSetting.currentIndex + 1) % fastLoading.fileInfos.count
+        }
+    }
+    
     func keyDown(with event: NSEvent) {
+        
+        if communityParam.isCommunityModeActived {
+            communityParam.isCommunityModeActived.toggle()
+            DisplaySpaceView.stopCommunityTime()
+        }
+        
         switch event.keyCode {
         case 49:
             viewSetting.isPaused.toggle()
@@ -50,6 +85,11 @@ class SlideShowController: ObservableObject {
     
     func CommunityKeyDown(with event: NSEvent) {
         if NSEvent.modifierFlags.contains(.capsLock) && viewSetting.isInCommunity ?? false {
+        
+            if !communityParam.isCommunityModeActived {
+                communityParam.isCommunityModeActived.toggle()
+            }
+            
             switch event.keyCode {
             case 49:
                 viewSetting.isPaused.toggle()

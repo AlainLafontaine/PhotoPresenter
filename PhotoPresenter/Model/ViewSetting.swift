@@ -19,6 +19,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
     @Published var isOverlayDisplayInfo: Bool?
     @Published var isExpansionMode: Bool?
     @Published var isInCommunity: Bool?
+    @Published var isTransparent: Bool?
+    @Published var transparentFactor: Double?
 
     // MARK: - Init
     init(
@@ -31,7 +33,9 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         displayFilename: Bool? = nil,
         isOverlayDisplayInfo: Bool? = true,
         isExpansionMode: Bool? = false,
-        isInCommunity: Bool? = true
+        isInCommunity: Bool? = true,
+        isTransparent: Bool? = false,
+        transparentFactor: Double? = 50.0
     ) {
         self.isPaused = isPaused
         self.isReverse = isReverse
@@ -43,6 +47,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         self.isOverlayDisplayInfo = isOverlayDisplayInfo
         self.isExpansionMode = isExpansionMode
         self.isInCommunity = isInCommunity
+        self.isTransparent = isTransparent
+        self.transparentFactor = transparentFactor
     }
 
     // MARK: - Codable
@@ -57,6 +63,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         case isOverlayDisplayInfo
         case isExpansionMode
         case isInCommunity
+        case isTransparent
+        case transparentFactor
     }
 
     required init(from decoder: Decoder) throws {
@@ -74,6 +82,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         isOverlayDisplayInfo = try container.decodeIfPresent(Bool.self, forKey: .isOverlayDisplayInfo) ?? true
         isExpansionMode = try container.decodeIfPresent(Bool.self, forKey: .isExpansionMode) ?? false
         isInCommunity = try container.decodeIfPresent(Bool.self, forKey: .isInCommunity) ?? true
+        isTransparent = try container.decodeIfPresent(Bool.self, forKey: .isTransparent) ?? true
+        transparentFactor = try container.decodeIfPresent(Double.self, forKey: .transparentFactor)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -91,6 +101,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         try container.encodeIfPresent(isOverlayDisplayInfo, forKey: .isOverlayDisplayInfo)
         try container.encodeIfPresent(isExpansionMode, forKey: .isExpansionMode)
         try container.encodeIfPresent(isInCommunity, forKey: .isInCommunity)
+        try container.encodeIfPresent(isTransparent, forKey: .isTransparent)
+        try container.encodeIfPresent(transparentFactor, forKey: .transparentFactor)
     }
 
     // MARK: - Hashable
@@ -104,7 +116,9 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         lhs.displayFilename == rhs.displayFilename &&
         lhs.isOverlayDisplayInfo == rhs.isOverlayDisplayInfo &&
         lhs.isExpansionMode == rhs.isExpansionMode &&
-        lhs.isInCommunity == rhs.isInCommunity
+        lhs.isInCommunity == rhs.isInCommunity &&
+        lhs.isTransparent == rhs.isTransparent &&
+        lhs.transparentFactor == rhs.transparentFactor
     }
 
     func hash(into hasher: inout Hasher) {
@@ -118,5 +132,7 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         hasher.combine(isOverlayDisplayInfo)
         hasher.combine(isExpansionMode)
         hasher.combine(isInCommunity)
+        hasher.combine(isTransparent)
+        hasher.combine(transparentFactor)
     }
 }

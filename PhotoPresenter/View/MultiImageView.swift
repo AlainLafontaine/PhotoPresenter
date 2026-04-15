@@ -13,6 +13,7 @@ struct MultiImageView: View {
     
     @ObservedObject private var photoPresenter: PhotoPresenter
     @ObservedObject private var helper: DataPresenterHelp
+    @Binding private var communityParam: CommunityParameter
                     
     private let displaySpaceId: UUID
     
@@ -20,23 +21,28 @@ struct MultiImageView: View {
         switch photoPresenter.photoPresenterHeader.orientation
         {
         case .Horizontal:
-            ForEach(0..<photoPresenter.groupedViews.count, id: \.self) { grViewIndex in
-                HStack(spacing: 0) {
-                    ForEach(0..<photoPresenter.groupedViews[grViewIndex].nbOfView, id: \.self) { viewSettingIndex in
-                        ImageView(
-                            name: photoPresenter.photoPresenterHeader.name,
-                            presenterDataSource: photoPresenter.groupedViews[grViewIndex].photoPresenterDataSources[viewSettingIndex],
-                            viewPosition: helper.windowPos!,
-                            setting: getViewSetting(
-                                displaySpaceId: displaySpaceId,
-                                packInDisplaySpaces: photoPresenter.groupedViews[grViewIndex].packInDisplaySpaces ?? [],
-                                viewSettingIndex: viewSettingIndex
-                            ),
-                            fastLoading: photoPresenter.groupedViews[grViewIndex].fastLoaddings![viewSettingIndex]
-                        )
+            VStack(spacing: 0) {
+                ForEach(0..<photoPresenter.groupedViews.count, id: \.self) { grViewIndex in
+                    HStack(spacing: 0) {
+                        
+                        
+                        ForEach (0..<photoPresenter.groupedViews[grViewIndex].nbOfView, id: \.self) { viewSettingIndex in
+                            ImageView(
+                                name: photoPresenter.photoPresenterHeader.name,
+                                presenterDataSource: photoPresenter.groupedViews[grViewIndex].photoPresenterDataSources[viewSettingIndex],
+                                viewPosition: helper.windowPos!,
+                                setting: getViewSetting(
+                                    displaySpaceId: displaySpaceId,
+                                    packInDisplaySpaces: photoPresenter.groupedViews[grViewIndex].packInDisplaySpaces ?? [],
+                                    viewSettingIndex: viewSettingIndex
+                                ),
+                                fastLoading: photoPresenter.groupedViews[grViewIndex].fastLoaddings![viewSettingIndex],
+                                communityParameter: _communityParam
+                            )
+                        }
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             
         case .Vertical:
@@ -53,7 +59,8 @@ struct MultiImageView: View {
                                     packInDisplaySpaces: photoPresenter.groupedViews[grViewIndex].packInDisplaySpaces ?? [],
                                     viewSettingIndex: viewSettingIndex
                                 ),
-                                fastLoading: photoPresenter.groupedViews[grViewIndex].fastLoaddings![viewSettingIndex]
+                                fastLoading: photoPresenter.groupedViews[grViewIndex].fastLoaddings![viewSettingIndex],
+                                communityParameter: _communityParam
                             )
                         }
                     }
@@ -70,11 +77,13 @@ struct MultiImageView: View {
     }
 
     init(
-        dataHelper: DataPresenterHelp
+        dataHelper: DataPresenterHelp,
+        communityParemeter: Binding<CommunityParameter>
     ) {
         self.helper = dataHelper
         self.photoPresenter = dataHelper.presenter
         self.displaySpaceId = dataHelper.displaySpaceId
+        self._communityParam = communityParemeter
     }
     
     private func getViewSetting(

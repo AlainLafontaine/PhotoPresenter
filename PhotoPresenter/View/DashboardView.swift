@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct DashboardView: View {
+    
     @ObservedObject var displaySpace: DisplaySpace
     @ObservedObject var sharedRessources: SharedRessources
     
@@ -76,7 +77,7 @@ struct DashboardView: View {
                     .listRowSeparator(.hidden) // supprime la ligne de séparation
                     .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)) // supprime l'espacement
                 }
-            }.frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
         }
     }
     

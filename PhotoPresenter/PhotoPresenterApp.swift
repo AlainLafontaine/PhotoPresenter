@@ -15,6 +15,8 @@ import SwiftUtilities
 struct PhotoPresenterApp: App {
     @Environment(\.openWindow) private var openWindow
     
+    @State private var communityParam = CommunityParameter()
+    
     @State private var loadingInProgress: Bool = false
     @State private var loadingController: PresenterLoadingFileController? = nil
     @State private var pathDisplaySpace: String? = nil
@@ -36,7 +38,7 @@ struct PhotoPresenterApp: App {
     
     private let presenterLoader: PhotoPresenterLoader = PhotoPresenterLoader()
     private let displaySpaceLoader: DisplaySpaceLoader = DisplaySpaceLoader()
-    
+        
     var body: some Scene {
 
         WindowGroup(id: "displaySpaceWindows") {
@@ -44,14 +46,16 @@ struct PhotoPresenterApp: App {
                 displaySpace: displaySpace,
                 sharedRessources: sharedRessources,
                 displayView: $displaySpaceViewType,
-                requestOpeningPresenter: openFile
-            ).onAppear() {
+                requestOpeningPresenter: openFile,
+                communityParameter: $communityParam
+            )
+            .onAppear() {
                 if let window = getDisplaySpaceView() {
                     window.title = displaySpace.displaySpaceHeader.name
                 }
             }
             .background(WindowAccessor { window in
-//                 window.level = .floating        // Mettre la fenêtre au-dessus
+                 window.level = .floating        // Mettre la fenêtre au-dessus
             })
         }.commands {
             CommandGroup(after: .newItem) {
@@ -133,6 +137,11 @@ struct PhotoPresenterApp: App {
                     displaySpaceViewType = .FactoryView
                 }
                 .keyboardShortcut("F", modifiers: [.command])
+
+                Button("Community parameters") {
+                    displaySpaceViewType = .CommunityParamView
+                }
+                .keyboardShortcut("C", modifiers: [.command])
                 
                 Divider() // 🔹 Séparateur visuel dans le menu principal
 
@@ -169,7 +178,8 @@ struct PhotoPresenterApp: App {
                 PhotoPresenterView(
                     dataHelper: helper,
                     dataPresenters: $dataPresenters,
-                    windowIdentifier: $windowIdentifier
+                    windowIdentifier: $windowIdentifier,
+                    communityParam: $communityParam
                 ).onAppear {
                     if displaySpace.presenters == nil {
                         displaySpace.presenters = []
@@ -185,11 +195,13 @@ struct PhotoPresenterApp: App {
                             window.level = .floating        // Mettre la fenêtre au-dessus
                         }
                         else {
-                            window.level = .normal
+                            window.level = .floating        // Mettre la fenêtre au-dessus - temporaire
+                            //window.level = .normal
                         }
                     } else {
                         helper.windowPos?.isOnTop = false
-                        window.level = .normal
+                        window.level = .floating        // Mettre la fenêtre au-dessus - temporaire
+                        //window.level = .normal
                     }
                 })
                 .frame(maxWidth: .infinity, maxHeight: .infinity)

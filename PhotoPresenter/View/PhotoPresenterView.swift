@@ -9,10 +9,13 @@ import SwiftUI
 import SwiftUtilities
 
 struct PhotoPresenterView: View {
+    
     @ObservedObject private var helper: DataPresenterHelp
     
+    @Binding private var communityParam: CommunityParameter
     @Binding private var dataPresenters: DataPresenterMap
     @Binding private var windowIdentifier: Set<String>
+    
     
     var body: some View {
         Group {
@@ -21,7 +24,7 @@ struct PhotoPresenterView: View {
                 PhotoPresenterInfoView(presenter: helper.presenter)
                 
             case .multiImageView:
-                MultiImageView(dataHelper: helper)
+                MultiImageView(dataHelper: helper, communityParemeter: _communityParam)
                 .frame(maxWidth: .infinity, maxHeight:.infinity)
                 .background(Color.black)
                 .onDisappear {}
@@ -49,10 +52,12 @@ struct PhotoPresenterView: View {
     init(
         dataHelper: DataPresenterHelp,
         dataPresenters: Binding<DataPresenterMap>,
-        windowIdentifier: Binding<Set<String>>
+        windowIdentifier: Binding<Set<String>>,
+        communityParam: Binding<CommunityParameter>
     ) {
         self.helper = dataHelper
         self._dataPresenters = dataPresenters
         self._windowIdentifier = windowIdentifier
+        self._communityParam = communityParam
     }
 }
