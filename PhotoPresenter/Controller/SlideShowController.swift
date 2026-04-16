@@ -56,6 +56,7 @@ class SlideShowController: ObservableObject {
     
     func advanceSlide() {
         guard !viewSetting.isPaused else { return }
+        guard isWindowVisible else { return }
         
         if viewSetting.isRandomizing {
             viewSetting.currentIndex = Int.random(in: 0..<fastLoading.fileInfos.count)
