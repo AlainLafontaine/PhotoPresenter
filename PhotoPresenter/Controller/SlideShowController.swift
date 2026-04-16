@@ -16,8 +16,9 @@ class SlideShowController: ObservableObject {
     @ObservedObject var fastLoading: FastLoading
      
     var timer: Timer?
-    
-    
+    var isWindowVisible: Bool = true
+
+
     init(
         viewSetting setting: ViewSetting,
         fastLoading: FastLoading,
