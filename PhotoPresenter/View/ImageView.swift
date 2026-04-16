@@ -256,6 +256,10 @@ struct ImageView: View {
                 onStart: { isResizing = true },
                 onEnd: { isResizing = false }
             )
+        ).background(
+            WindowOcclusionObserver { isVisible in
+                slideShowController.isWindowVisible = isVisible
+            }
         ).onHover { (entered) in
             if entered {
                 if NSEvent.modifierFlags.contains(.control) {
