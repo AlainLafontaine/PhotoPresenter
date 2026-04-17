@@ -189,21 +189,8 @@ struct PhotoPresenterApp: App {
                     dataPresenters[helper.windowId!] = helper
                     loadingInProgress = false
                 }
-                .background(WindowAccessor { window in
-                    if let isOnTop = helper.windowPos?.isOnTop {
-                        if isOnTop {
-                            window.level = .floating        // Mettre la fenêtre au-dessus
-                        }
-                        else {
-                            window.level = .floating        // Mettre la fenêtre au-dessus - temporaire
-                            //window.level = .normal
-                        }
-                    } else {
-                        helper.windowPos?.isOnTop = false
-                        window.level = .floating        // Mettre la fenêtre au-dessus - temporaire
-                        //window.level = .normal
-                    }
-                })
+                // Le niveau de la fenêtre (floating/normal) est géré de façon réactive
+                // par WindowLevelController dans ImageView, branché sur viewPosition.isOnTop.
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .clipped()
                 .ignoresSafeArea()

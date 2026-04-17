@@ -260,6 +260,8 @@ struct ImageView: View {
             WindowOcclusionObserver { isVisible in
                 slideShowController.isWindowVisible = isVisible
             }
+        ).background(
+            WindowLevelController(isOnTop: viewPosition.isOnTop ?? false)
         ).onHover { (entered) in
             if entered {
                 if NSEvent.modifierFlags.contains(.control) {
