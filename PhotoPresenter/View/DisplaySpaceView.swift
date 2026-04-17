@@ -63,14 +63,25 @@ struct DisplaySpaceView: View {
         self._communityParam = communityParameter
         
         KeyCatcherView.globalKeyDown = { event in
-            
+
             if !communityParameter.wrappedValue.isCommunityModeActived {
                 communityParameter.wrappedValue.isCommunityModeActived = true
                 DisplaySpaceView.startCommunityTimer(intervalTimer: communityParameter.wrappedValue.intervalTimer)
             }
-            
-            DisplaySpaceView.slideShowControllers.forEach { slideShowController in
-                slideShowController.CommunityKeyDown(with: event)
+
+            switch event.keyCode {
+            case 24, 69: // + augmenter l'opacité de tous les membres
+                communityParameter.wrappedValue.isTransparent = true
+                let current = min(communityParameter.wrappedValue.transparentFactor, 1.0)
+                communityParameter.wrappedValue.transparentFactor = min(current + 0.05, 1.0)
+            case 27, 78: // - diminuer l'opacité de tous les membres
+                communityParameter.wrappedValue.isTransparent = true
+                let current = min(communityParameter.wrappedValue.transparentFactor, 1.0)
+                communityParameter.wrappedValue.transparentFactor = max(current - 0.05, 0.0)
+            default:
+                DisplaySpaceView.slideShowControllers.forEach { slideShowController in
+                    slideShowController.CommunityKeyDown(with: event)
+                }
             }
         }
     }

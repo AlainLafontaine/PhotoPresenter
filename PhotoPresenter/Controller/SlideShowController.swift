@@ -105,6 +105,7 @@ class SlideShowController: ObservableObject {
     }
     
     private func navigationByKeyboard(event: NSEvent) {
+        guard isWindowVisible else { return }
         if !viewSetting.isPaused {
             viewSetting.isPaused.toggle()
         }

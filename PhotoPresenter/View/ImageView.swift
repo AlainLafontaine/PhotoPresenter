@@ -13,7 +13,8 @@ struct ImageView: View {
     
     @ObservedObject private var viewSetting: ViewSetting
     @ObservedObject private var viewPosition: WindowPosition
-    
+    @ObservedObject private var communityParam: CommunityParameter
+
     @StateObject private var slideShowController: SlideShowController
     @StateObject private var imageController : ImageController
     
@@ -22,6 +23,8 @@ struct ImageView: View {
     @State private var savePauseState = false
     @State private var isResizing = false
     @State private var title: String
+    @State private var capturedWindow: NSWindow? = nil
+    @State private var savedExpansionMode: Bool = false
     
     private var directories: [String] = []
     private var ratio: Double?
@@ -32,19 +35,25 @@ struct ImageView: View {
                 
                 KeyCatcherView { event in
                     switch event.keyCode {
-                    case 24, 69: // + (plus) - Augmenter la transparence
-                        if let currentFactor = viewSetting.transparentFactor {
-                            viewSetting.transparentFactor = min(currentFactor + 0.05, 1.0)
-                        } else {
-                            viewSetting.transparentFactor = 0.05
+                    case 24, 69: // + (plus) - Augmenter l'opacité
+                        if !(viewSetting.isTransparent ?? false) {
+                            viewSetting.isTransparent = true
+                            capturedWindow?.isOpaque = false
+                            capturedWindow?.backgroundColor = .clear
                         }
-                        
-                    case 27, 78: // - (moins) - Diminuer la transparence
-                        if let currentFactor = viewSetting.transparentFactor {
-                            viewSetting.transparentFactor = max(currentFactor - 0.05, 0.0)
-                        } else {
-                            viewSetting.transparentFactor = 0.95
+                        let newFactorPlus = min((min(viewSetting.transparentFactor ?? 1.0, 1.0)) + 0.05, 1.0)
+                        viewSetting.transparentFactor = newFactorPlus
+                        capturedWindow?.alphaValue = newFactorPlus
+
+                    case 27, 78: // - (moins) - Diminuer l'opacité
+                        if !(viewSetting.isTransparent ?? false) {
+                            viewSetting.isTransparent = true
+                            capturedWindow?.isOpaque = false
+                            capturedWindow?.backgroundColor = .clear
                         }
+                        let newFactorMinus = max((min(viewSetting.transparentFactor ?? 1.0, 1.0)) - 0.05, 0.0)
+                        viewSetting.transparentFactor = newFactorMinus
+                        capturedWindow?.alphaValue = newFactorMinus
                         
                     default:
                         slideShowController.keyDown(with: event)
@@ -73,27 +82,56 @@ struct ImageView: View {
                 }
                 .background(WindowAccessor { window in
                     window.title = "\(title)"
+                    window.collectionBehavior.insert(.fullScreenPrimary)
+                    capturedWindow = window
                 })
                 .onChange(of: viewSetting.isTransparent) { _, isTransparent in
-                    // Mettre à jour la transparence de la fenêtre
-                    if let window = NSApp.keyWindow {
-                        if isTransparent ?? false {
-                            window.isOpaque = false
-                            window.backgroundColor = NSColor.clear
-                            window.alphaValue = viewSetting.transparentFactor ?? 1.0
-                        } else {
-                            window.isOpaque = true
-                            window.backgroundColor = NSColor.windowBackgroundColor
-                            window.alphaValue = 1.0
-                        }
+                    guard let window = capturedWindow else { return }
+                    if isTransparent ?? false {
+                        window.isOpaque = false
+                        window.backgroundColor = .clear
+                        window.alphaValue = min(viewSetting.transparentFactor ?? 1.0, 1.0)
+                    } else {
+                        window.isOpaque = true
+                        window.backgroundColor = .windowBackgroundColor
+                        window.alphaValue = 1.0
                     }
                 }
                 .onChange(of: viewSetting.transparentFactor) { _, factor in
-                    // Mettre à jour le niveau de transparence
-                    if viewSetting.isTransparent ?? false, let window = NSApp.keyWindow {
-                        window.alphaValue = factor ?? 1.0
+                    guard viewSetting.isTransparent ?? false,
+                          let window = capturedWindow,
+                          let f = factor else { return }
+                    window.alphaValue = min(f, 1.0)
+                }
+                .onChange(of: communityParam.transparentFactor) { _, factor in
+                    guard viewSetting.isInCommunity ?? false,
+                          let window = capturedWindow else { return }
+                    if !(viewSetting.isTransparent ?? false) {
+                        viewSetting.isTransparent = true
+                        window.isOpaque = false
+                        window.backgroundColor = .clear
+                    }
+                    viewSetting.transparentFactor = factor
+                    window.alphaValue = factor
+                }
+                .onTapGesture(count: 2) {
+                    guard let window = capturedWindow else { return }
+                    if viewPosition.isFullPage {
+                        let frame = NSRect(x: viewPosition.x, y: viewPosition.y,
+                                          width: viewPosition.width, height: viewPosition.height)
+                        window.setFrame(frame, display: true, animate: true)
+                        viewSetting.isExpansionMode = savedExpansionMode
+                        viewPosition.isFullPage = false
+                    } else {
+                        if let screenFrame = window.screen?.frame {
+                            savedExpansionMode = viewSetting.isExpansionMode ?? false
+                            viewSetting.isExpansionMode = false
+                            window.setFrame(screenFrame, display: true, animate: true)
+                            viewPosition.isFullPage = true
+                        }
                     }
                 }
+                .contentShape(Rectangle())
                 .contextMenu {
                     Button(action: {
                         viewPosition.isOnTop!.toggle()
@@ -308,6 +346,7 @@ struct ImageView: View {
         self.viewPosition = viewPosition
         self.title = title
         self.ratio = presenterDataSource.ratio
+        self.communityParam = communityParameter.wrappedValue
     }
     
     private mutating func getDirectoryIndex(_ path: String) -> Int {

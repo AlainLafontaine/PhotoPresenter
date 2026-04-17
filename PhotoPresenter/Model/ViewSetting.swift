@@ -35,7 +35,7 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         isExpansionMode: Bool? = false,
         isInCommunity: Bool? = true,
         isTransparent: Bool? = false,
-        transparentFactor: Double? = 50.0
+        transparentFactor: Double? = 1.0
     ) {
         self.isPaused = isPaused
         self.isReverse = isReverse
@@ -83,7 +83,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         isExpansionMode = try container.decodeIfPresent(Bool.self, forKey: .isExpansionMode) ?? false
         isInCommunity = try container.decodeIfPresent(Bool.self, forKey: .isInCommunity) ?? true
         isTransparent = try container.decodeIfPresent(Bool.self, forKey: .isTransparent) ?? true
-        transparentFactor = try container.decodeIfPresent(Double.self, forKey: .transparentFactor)
+        let rawFactor = try container.decodeIfPresent(Double.self, forKey: .transparentFactor)
+        transparentFactor = rawFactor.map { min(max($0, 0.0), 1.0) } ?? 1.0
     }
 
     func encode(to encoder: Encoder) throws {

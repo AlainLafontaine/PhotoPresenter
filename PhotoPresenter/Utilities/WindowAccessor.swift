@@ -37,6 +37,7 @@ struct WindowLevelController: NSViewRepresentable {
     func updateNSView(_ nsView: NSView, context: Context) {
         DispatchQueue.main.async {
             guard let window = nsView.window else { return }
+            guard !window.styleMask.contains(.fullScreen) else { return }
             window.level = isOnTop ? .floating : .normal
         }
     }

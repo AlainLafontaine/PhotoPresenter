@@ -254,7 +254,7 @@ struct PhotoPresenterApp: App {
         for (id, dataPresenter) in dataPresenters {
             for window in NSApp.windows {
                 if window.identifier?.rawValue == id {
-                    if let windowPos = dataPresenter.windowPos {
+                    if let windowPos = dataPresenter.windowPos, !windowPos.isFullPage {
                         windowPos.x = window.frame.origin.x
                         windowPos.y = window.frame.origin.y
                         windowPos.width = window.frame.size.width
@@ -365,12 +365,12 @@ struct PhotoPresenterApp: App {
         for (id, dataPresenter) in dataPresenters {
             for window in NSApp.windows {
                 if window.identifier?.rawValue == id {
-                    if let windowPos = dataPresenter.windowPos {
+                    if let windowPos = dataPresenter.windowPos, !windowPos.isFullPage {
                         windowPos.x = window.frame.origin.x
                         windowPos.y = window.frame.origin.y
                         windowPos.width = window.frame.size.width
                         windowPos.height = window.frame.size.height
-                    } else {
+                    } else if dataPresenter.windowPos == nil {
                         dataPresenter.windowPos = WindowPosition(
                             x: window.frame.origin.x,
                             y: window.frame.origin.y,
