@@ -26,6 +26,9 @@ struct ImageView: View {
     @State private var capturedWindow: NSWindow? = nil
     @State private var savedExpansionMode: Bool = false
     @State private var favoriteRefresh: Bool = false
+    @State private var fKeyActive: Bool = false
+    @State private var keyDownMonitor: Any? = nil
+    @State private var keyUpMonitor: Any? = nil
     
     private var directories: [String] = []
     private var ratio: Double?
@@ -226,7 +229,13 @@ struct ImageView: View {
                         Text("Parametres")
                     }
                 }
-                
+                .onTapGesture(count: 1) {
+                    guard fKeyActive else { return }
+                    let currentFileInfo = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex]
+                    currentFileInfo.isFavorite.toggle()
+                    favoriteRefresh.toggle()
+                }
+
                 Group {
                     FloatingLabelView(
                         text: slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].filename,
@@ -282,18 +291,22 @@ struct ImageView: View {
                 }
 
                 let _ = favoriteRefresh
-                if slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].isFavorite {
+                if !slideShowController.fastLoading.fileInfos.isEmpty &&
+                   slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].isFavorite {
                     VStack {
                         HStack {
                             Spacer()
                             Image(systemName: "heart.fill")
                                 .font(.system(size: 18, weight: .regular))
                                 .foregroundColor(.red)
-                                .opacity(1.00)
+                                .opacity(0.55)
                                 .padding(10)
                         }
                         Spacer()
                     }
+                    Rectangle()
+                        .stroke(Color.red.opacity(0.4), lineWidth: 15)
+                        .allowsHitTesting(false)
                 }
             } else {
                 Text("Initiation des images...").onAppear { displayImage = true }
@@ -327,7 +340,25 @@ struct ImageView: View {
             }
         ).background(
             WindowLevelController(isOnTop: viewPosition.isOnTop ?? false)
-        ).onHover { (entered) in
+        ).onAppear {
+            keyDownMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+                if event.keyCode == 3 { fKeyActive = true }
+                return event
+            }
+            keyUpMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyUp) { event in
+                if event.keyCode == 3 { fKeyActive = false }
+                return event
+            }
+        }.onDisappear {
+            if let monitor = keyDownMonitor {
+                NSEvent.removeMonitor(monitor)
+                keyDownMonitor = nil
+            }
+            if let monitor = keyUpMonitor {
+                NSEvent.removeMonitor(monitor)
+                keyUpMonitor = nil
+            }
+        }.onHover { (entered) in
             if entered {
                 if NSEvent.modifierFlags.contains(.control) {
 /*

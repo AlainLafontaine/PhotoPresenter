@@ -10,11 +10,11 @@ import SwiftUI
 import AppKit  // Nécessaire pour NSImage
 
 class SlideShowController: ObservableObject {
-    
+
     @Binding var communityParam: CommunityParameter
     @ObservedObject var viewSetting: ViewSetting
     @ObservedObject var fastLoading: FastLoading
-     
+
     var timer: Timer?
     var isWindowVisible: Bool = true
 
@@ -53,11 +53,11 @@ class SlideShowController: ObservableObject {
     func stop() {
         timer?.invalidate()
     }
-    
+
     func advanceSlide() {
         guard !viewSetting.isPaused else { return }
         guard isWindowVisible else { return }
-        
+
         if viewSetting.isRandomizing {
             viewSetting.currentIndex = Int.random(in: 0..<fastLoading.fileInfos.count)
         } else if viewSetting.isReverse {
@@ -117,22 +117,22 @@ class SlideShowController: ObservableObject {
             } else {
                 viewSetting.currentIndex = fastLoading.fileInfos.count - 1
             }
-                
+
         case 124: // Right
             if viewSetting.currentIndex < fastLoading.fileInfos.count - 1 {
                 viewSetting.currentIndex += 1
             } else {
                 viewSetting.currentIndex = 0
             }
-            
+
         case 125: // Down
             viewSetting.currentIndex = 0
-            
+
         case 126: // Up
             viewSetting.currentIndex = fastLoading.fileInfos.count - 1
-            
+
         default:
-            break;
+            break
         }
     }
 }
