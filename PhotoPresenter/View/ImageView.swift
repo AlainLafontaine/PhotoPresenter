@@ -25,6 +25,7 @@ struct ImageView: View {
     @State private var title: String
     @State private var capturedWindow: NSWindow? = nil
     @State private var savedExpansionMode: Bool = false
+    @State private var favoriteRefresh: Bool = false
     
     private var directories: [String] = []
     private var ratio: Double?
@@ -200,11 +201,22 @@ struct ImageView: View {
                     }
                     
                     Divider() // ⬅️ Séparateur visuel
-                    
+
+                    Button(action: {
+                        let currentFileInfo = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex]
+                        currentFileInfo.isFavorite.toggle()
+                        favoriteRefresh.toggle()
+                    }) {
+                        let isFav = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].isFavorite
+                        Label("Favori", systemImage: isFav ? "heart.fill" : "heart")
+                    }
+
+                    Divider() // ⬅️ Séparateur visuel
+
                     Button(action: {
                         viewSetting.intervalTimer = viewSetting.intervalTimer
                         savePauseState = viewSetting.isPaused
-                        
+
                         if (!viewSetting.isPaused) {
                             viewSetting.isPaused.toggle()
                         }
@@ -267,6 +279,21 @@ struct ImageView: View {
                         position: .leftTop,
                         opacityMinimale: 0.01
                     )
+                }
+
+                let _ = favoriteRefresh
+                if slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].isFavorite {
+                    VStack {
+                        HStack {
+                            Spacer()
+                            Image(systemName: "heart.fill")
+                                .font(.system(size: 18, weight: .regular))
+                                .foregroundColor(.red)
+                                .opacity(1.00)
+                                .padding(10)
+                        }
+                        Spacer()
+                    }
                 }
             } else {
                 Text("Initiation des images...").onAppear { displayImage = true }

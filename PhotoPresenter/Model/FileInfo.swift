@@ -10,21 +10,23 @@ import AppKit
 import Combine
 
 public class FileInfo: ObservableObject, Codable, Hashable {
-    
+
     @Published public var filename: String
     @Published public var directoryIndex: Int
     @Published public var width: Int
     @Published public var height: Int
-              
+    @Published public var isFavorite: Bool
+
                public var nsImage: NSImage?
 
     // MARK: - Initializer
 
-    public init(filename: String, directoryIndex: Int, width: Int, height: Int, nsImage: NSImage? = nil) {
+    public init(filename: String, directoryIndex: Int, width: Int, height: Int, isFavorite: Bool = false, nsImage: NSImage? = nil) {
         self.filename = filename
         self.directoryIndex = directoryIndex
         self.width = width
         self.height = height
+        self.isFavorite = isFavorite
         self.nsImage = nsImage
     }
 
@@ -35,6 +37,7 @@ public class FileInfo: ObservableObject, Codable, Hashable {
         case directoryIndex
         case width
         case height
+        case isFavorite
         // nsImage is intentionally excluded
     }
 
@@ -44,7 +47,8 @@ public class FileInfo: ObservableObject, Codable, Hashable {
         let directoryIndex = try container.decode(Int.self, forKey: .directoryIndex)
         let width = try container.decode(Int.self, forKey: .width)
         let height = try container.decode(Int.self, forKey: .height)
-        self.init(filename: filename, directoryIndex: directoryIndex, width: width, height: height)
+        let isFavorite = (try? container.decode(Bool.self, forKey: .isFavorite)) ?? false
+        self.init(filename: filename, directoryIndex: directoryIndex, width: width, height: height, isFavorite: isFavorite)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -53,6 +57,7 @@ public class FileInfo: ObservableObject, Codable, Hashable {
         try container.encode(directoryIndex, forKey: .directoryIndex)
         try container.encode(width, forKey: .width)
         try container.encode(height, forKey: .height)
+        try container.encode(isFavorite, forKey: .isFavorite)
         // nsImage intentionally not encoded
     }
 
@@ -62,7 +67,8 @@ public class FileInfo: ObservableObject, Codable, Hashable {
         lhs.filename == rhs.filename &&
         lhs.directoryIndex == rhs.directoryIndex &&
         lhs.width == rhs.width &&
-        lhs.height == rhs.height
+        lhs.height == rhs.height &&
+        lhs.isFavorite == rhs.isFavorite
     }
 
     public func hash(into hasher: inout Hasher) {
@@ -70,5 +76,6 @@ public class FileInfo: ObservableObject, Codable, Hashable {
         hasher.combine(directoryIndex)
         hasher.combine(width)
         hasher.combine(height)
+        hasher.combine(isFavorite)
     }
 }
