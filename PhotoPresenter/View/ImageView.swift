@@ -26,7 +26,9 @@ struct ImageView: View {
     @State private var capturedWindow: NSWindow? = nil
     @State private var savedExpansionMode: Bool = false
     @State private var favoriteRefresh: Bool = false
+    @State private var uninterestingRefresh: Bool = false
     @State private var fKeyActive: Bool = false
+    @State private var iKeyActive: Bool = false
     @State private var keyDownMonitor: Any? = nil
     @State private var keyUpMonitor: Any? = nil
     
@@ -214,6 +216,15 @@ struct ImageView: View {
                         Label("Favori", systemImage: isFav ? "heart.fill" : "heart")
                     }
 
+                    Button(action: {
+                        let currentFileInfo = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex]
+                        currentFileInfo.isUninteresting.toggle()
+                        uninterestingRefresh.toggle()
+                    }) {
+                        let isUnint = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].isUninteresting
+                        Label("Inintéressant", systemImage: isUnint ? "hand.thumbsdown.fill" : "hand.thumbsdown")
+                    }
+
                     Divider() // ⬅️ Séparateur visuel
 
                     Button(action: {
@@ -230,10 +241,15 @@ struct ImageView: View {
                     }
                 }
                 .onTapGesture(count: 1) {
-                    guard fKeyActive else { return }
-                    let currentFileInfo = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex]
-                    currentFileInfo.isFavorite.toggle()
-                    favoriteRefresh.toggle()
+                    if fKeyActive {
+                        let currentFileInfo = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex]
+                        currentFileInfo.isFavorite.toggle()
+                        favoriteRefresh.toggle()
+                    } else if iKeyActive {
+                        let currentFileInfo = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex]
+                        currentFileInfo.isUninteresting.toggle()
+                        uninterestingRefresh.toggle()
+                    }
                 }
 
                 Group {
@@ -305,8 +321,34 @@ struct ImageView: View {
                         Spacer()
                     }
                     Rectangle()
-                        .stroke(Color.red.opacity(0.4), lineWidth: 15)
+                        .strokeBorder(Color.red.opacity(1.0), lineWidth: 7)
                         .allowsHitTesting(false)
+                }
+
+                let _ = uninterestingRefresh
+                if !slideShowController.fastLoading.fileInfos.isEmpty &&
+                   slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].isUninteresting {
+                    VStack {
+                        HStack {
+                            Spacer()
+                            Image(systemName: "hand.thumbsdown.fill")
+                                .font(.system(size: 72, weight: .regular))
+                                .foregroundColor(Color(red: 0.6, green: 0.0, blue: 0.0))
+                                .opacity(1.0)
+                                .padding(10)
+                        }
+                        Spacer()
+                    }
+                    GeometryReader { geo in
+                        Path { path in
+                            path.move(to: CGPoint(x: 0, y: 0))
+                            path.addLine(to: CGPoint(x: geo.size.width, y: geo.size.height))
+                            path.move(to: CGPoint(x: geo.size.width, y: 0))
+                            path.addLine(to: CGPoint(x: 0, y: geo.size.height))
+                        }
+                        .stroke(Color.red.opacity(0.68), lineWidth: 30)
+                    }
+                    .allowsHitTesting(false)
                 }
             } else {
                 Text("Initiation des images...").onAppear { displayImage = true }
@@ -343,10 +385,12 @@ struct ImageView: View {
         ).onAppear {
             keyDownMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
                 if event.keyCode == 3 { fKeyActive = true }
+                if event.keyCode == 34 { iKeyActive = true }
                 return event
             }
             keyUpMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyUp) { event in
                 if event.keyCode == 3 { fKeyActive = false }
+                if event.keyCode == 34 { iKeyActive = false }
                 return event
             }
         }.onDisappear {
