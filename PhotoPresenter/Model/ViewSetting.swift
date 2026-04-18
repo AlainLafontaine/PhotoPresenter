@@ -21,6 +21,7 @@ class ViewSetting: ObservableObject, Codable, Hashable {
     @Published var isInCommunity: Bool?
     @Published var isTransparent: Bool?
     @Published var transparentFactor: Double?
+    @Published var isShowPictograms: Bool?
 
     // MARK: - Init
     init(
@@ -35,7 +36,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         isExpansionMode: Bool? = false,
         isInCommunity: Bool? = true,
         isTransparent: Bool? = false,
-        transparentFactor: Double? = 1.0
+        transparentFactor: Double? = 1.0,
+        isShowPictograms: Bool? = true
     ) {
         self.isPaused = isPaused
         self.isReverse = isReverse
@@ -49,6 +51,7 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         self.isInCommunity = isInCommunity
         self.isTransparent = isTransparent
         self.transparentFactor = transparentFactor
+        self.isShowPictograms = isShowPictograms
     }
 
     // MARK: - Codable
@@ -65,6 +68,7 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         case isInCommunity
         case isTransparent
         case transparentFactor
+        case isShowPictograms
     }
 
     required init(from decoder: Decoder) throws {
@@ -85,6 +89,7 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         isTransparent = try container.decodeIfPresent(Bool.self, forKey: .isTransparent) ?? true
         let rawFactor = try container.decodeIfPresent(Double.self, forKey: .transparentFactor)
         transparentFactor = rawFactor.map { min(max($0, 0.0), 1.0) } ?? 1.0
+        isShowPictograms = try container.decodeIfPresent(Bool.self, forKey: .isShowPictograms) ?? true
     }
 
     func encode(to encoder: Encoder) throws {
@@ -104,6 +109,7 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         try container.encodeIfPresent(isInCommunity, forKey: .isInCommunity)
         try container.encodeIfPresent(isTransparent, forKey: .isTransparent)
         try container.encodeIfPresent(transparentFactor, forKey: .transparentFactor)
+        try container.encodeIfPresent(isShowPictograms, forKey: .isShowPictograms)
     }
 
     // MARK: - Hashable
@@ -119,7 +125,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         lhs.isExpansionMode == rhs.isExpansionMode &&
         lhs.isInCommunity == rhs.isInCommunity &&
         lhs.isTransparent == rhs.isTransparent &&
-        lhs.transparentFactor == rhs.transparentFactor
+        lhs.transparentFactor == rhs.transparentFactor &&
+        lhs.isShowPictograms == rhs.isShowPictograms
     }
 
     func hash(into hasher: inout Hasher) {
@@ -135,5 +142,6 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         hasher.combine(isInCommunity)
         hasher.combine(isTransparent)
         hasher.combine(transparentFactor)
+        hasher.combine(isShowPictograms)
     }
 }

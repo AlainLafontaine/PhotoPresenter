@@ -78,6 +78,11 @@ struct DisplaySpaceView: View {
                 communityParameter.wrappedValue.isTransparent = true
                 let current = min(communityParameter.wrappedValue.transparentFactor, 1.0)
                 communityParameter.wrappedValue.transparentFactor = max(current - 0.05, 0.0)
+            case 44, 75: // / - opacité à 0 pour tous les membres
+                communityParameter.wrappedValue.isTransparent = true
+                communityParameter.wrappedValue.transparentFactor = 0.0
+            case 67: // * (pavé numérique) - opacité à 1 pour tous les membres
+                communityParameter.wrappedValue.transparentFactor = 1.0
             default:
                 DisplaySpaceView.slideShowControllers.forEach { slideShowController in
                     slideShowController.CommunityKeyDown(with: event)

@@ -60,7 +60,20 @@ struct ImageView: View {
                         let newFactorMinus = max((min(viewSetting.transparentFactor ?? 1.0, 1.0)) - 0.05, 0.0)
                         viewSetting.transparentFactor = newFactorMinus
                         capturedWindow?.alphaValue = newFactorMinus
-                        
+
+                    case 44, 75: // / - Opacité à 0 (invisible)
+                        if !(viewSetting.isTransparent ?? false) {
+                            viewSetting.isTransparent = true
+                            capturedWindow?.isOpaque = false
+                            capturedWindow?.backgroundColor = .clear
+                        }
+                        viewSetting.transparentFactor = 0.0
+                        capturedWindow?.alphaValue = 0.0
+
+                    case 67: // * (pavé numérique) - Opacité à 1 (plein)
+                        viewSetting.transparentFactor = 1.0
+                        capturedWindow?.alphaValue = 1.0
+
                     default:
                         slideShowController.keyDown(with: event)
                         break
@@ -204,6 +217,12 @@ struct ImageView: View {
                     }) {
                         Label("Liée à la communauté", systemImage: viewSetting.isInCommunity! ? "checkmark.circle.fill" : "circle")
                     }
+
+                    Button(action: {
+                        viewSetting.isShowPictograms = !(viewSetting.isShowPictograms ?? true)
+                    }) {
+                        Label("Pictogrammes", systemImage: (viewSetting.isShowPictograms ?? true) ? "checkmark.circle.fill" : "circle")
+                    }
                     
                     Divider() // ⬅️ Séparateur visuel
 
@@ -307,19 +326,45 @@ struct ImageView: View {
                 }
 
                 let _ = favoriteRefresh
-                if !slideShowController.fastLoading.fileInfos.isEmpty &&
-                   slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].isFavorite {
+                let isFav = !slideShowController.fastLoading.fileInfos.isEmpty &&
+                            slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].isFavorite
+                let isCommunity = viewSetting.isInCommunity ?? false
+                let isPaused = viewSetting.isPaused
+
+                if (isFav || isCommunity || isPaused) && (viewSetting.isShowPictograms ?? true) {
                     VStack {
-                        HStack {
+                        HStack(spacing: 4) {
                             Spacer()
-                            Image(systemName: "heart.fill")
-                                .font(.system(size: 18, weight: .regular))
-                                .foregroundColor(.red)
-                                .opacity(0.55)
-                                .padding(10)
+                            if isPaused {
+                                Image(systemName: "pause.fill")
+                                    .font(.system(size: 16, weight: .regular))
+                                    .foregroundColor(Color(red: 0.6, green: 0.35, blue: 0.0))
+                                    .padding(5)
+                                    .background(Circle().fill(Color.white))
+                                    .opacity(0.75)
+                            }
+                            if isCommunity {
+                                Image(systemName: "person.2.fill")
+                                    .font(.system(size: 16, weight: .regular))
+                                    .foregroundColor(Color(red: 0.0, green: 0.1, blue: 0.6))
+                                    .padding(5)
+                                    .background(Circle().fill(Color.white))
+                                    .opacity(0.75)
+                            }
+                            if isFav {
+                                Image(systemName: "heart.fill")
+                                    .font(.system(size: 16, weight: .regular))
+                                    .foregroundColor(Color(red: 0.6, green: 0.0, blue: 0.0))
+                                    .padding(5)
+                                    .background(Circle().fill(Color.white))
+                                    .opacity(0.75)
+                            }
                         }
+                        .padding(10)
                         Spacer()
                     }
+                }
+                if isFav {
                     Rectangle()
                         .strokeBorder(Color.red.opacity(1.0), lineWidth: 7)
                         .allowsHitTesting(false)
