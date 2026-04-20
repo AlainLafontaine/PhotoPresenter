@@ -54,16 +54,40 @@ class SlideShowController: ObservableObject {
         timer?.invalidate()
     }
 
+    private func passesDisplayFilter(at index: Int) -> Bool {
+        let showFav = viewSetting.isDisplayFavorite ?? false
+        let showUnint = viewSetting.isDisplayUninteresting ?? false
+        guard showFav || showUnint else { return true }
+        let info = fastLoading.fileInfos[index]
+        return (showFav && info.isFavorite) || (showUnint && info.isUninteresting)
+    }
+
+    private func nextFilteredIndex(from current: Int, reverse: Bool) -> Int {
+        let count = fastLoading.fileInfos.count
+        var next = reverse ? (current - 1 + count) % count : (current + 1) % count
+        var attempts = 0
+        while !passesDisplayFilter(at: next) && attempts < count {
+            next = reverse ? (next - 1 + count) % count : (next + 1) % count
+            attempts += 1
+        }
+        return next
+    }
+
     func advanceSlide() {
         guard !viewSetting.isPaused else { return }
         guard isWindowVisible else { return }
 
+        let count = fastLoading.fileInfos.count
         if viewSetting.isRandomizing {
-            viewSetting.currentIndex = Int.random(in: 0..<fastLoading.fileInfos.count)
+            var attempts = 0
+            repeat {
+                viewSetting.currentIndex = Int.random(in: 0..<count)
+                attempts += 1
+            } while !passesDisplayFilter(at: viewSetting.currentIndex) && attempts < count
         } else if viewSetting.isReverse {
-            viewSetting.currentIndex = (viewSetting.currentIndex - 1 + fastLoading.fileInfos.count) % fastLoading.fileInfos.count
+            viewSetting.currentIndex = nextFilteredIndex(from: viewSetting.currentIndex, reverse: true)
         } else {
-            viewSetting.currentIndex = (viewSetting.currentIndex + 1) % fastLoading.fileInfos.count
+            viewSetting.currentIndex = nextFilteredIndex(from: viewSetting.currentIndex, reverse: false)
         }
     }
     
@@ -112,18 +136,10 @@ class SlideShowController: ObservableObject {
         
         switch event.keyCode {
         case 123: // Left
-            if viewSetting.currentIndex > 0 {
-                viewSetting.currentIndex -= 1
-            } else {
-                viewSetting.currentIndex = fastLoading.fileInfos.count - 1
-            }
+            viewSetting.currentIndex = nextFilteredIndex(from: viewSetting.currentIndex, reverse: true)
 
         case 124: // Right
-            if viewSetting.currentIndex < fastLoading.fileInfos.count - 1 {
-                viewSetting.currentIndex += 1
-            } else {
-                viewSetting.currentIndex = 0
-            }
+            viewSetting.currentIndex = nextFilteredIndex(from: viewSetting.currentIndex, reverse: false)
 
         case 125: // Down
             viewSetting.currentIndex = 0

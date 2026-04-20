@@ -43,6 +43,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
     @Published var transparencyGradientDirection: TransparencyGradientDirection?
     @Published var opacityStart: Double?
     @Published var opacityEnd: Double?
+    @Published var isDisplayFavorite: Bool?
+    @Published var isDisplayUninteresting: Bool?
 
     // MARK: - Init
     init(
@@ -61,7 +63,9 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         isShowPictograms: Bool? = true,
         transparencyGradientDirection: TransparencyGradientDirection? = TransparencyGradientDirection.none,
         opacityStart: Double? = 1.0,
-        opacityEnd: Double? = 0.0
+        opacityEnd: Double? = 0.0,
+        isDisplayFavorite: Bool? = true,
+        isDisplayUninteresting: Bool? = false
     ) {
         self.isPaused = isPaused
         self.isReverse = isReverse
@@ -79,6 +83,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         self.transparencyGradientDirection = transparencyGradientDirection
         self.opacityStart = opacityStart
         self.opacityEnd = opacityEnd
+        self.isDisplayFavorite = isDisplayFavorite
+        self.isDisplayUninteresting = isDisplayUninteresting
     }
 
     // MARK: - Codable
@@ -99,6 +105,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         case transparencyGradientDirection
         case opacityStart
         case opacityEnd
+        case isDisplayFavorite
+        case isDisplayUninteresting
     }
 
     required init(from decoder: Decoder) throws {
@@ -123,6 +131,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         transparencyGradientDirection = try container.decodeIfPresent(TransparencyGradientDirection.self, forKey: .transparencyGradientDirection) ?? TransparencyGradientDirection.none
         opacityStart = try container.decodeIfPresent(Double.self, forKey: .opacityStart) ?? 1.0
         opacityEnd = try container.decodeIfPresent(Double.self, forKey: .opacityEnd) ?? 0.0
+        isDisplayFavorite = try container.decodeIfPresent(Bool.self, forKey: .isDisplayFavorite) ?? true
+        isDisplayUninteresting = try container.decodeIfPresent(Bool.self, forKey: .isDisplayUninteresting) ?? false
     }
 
     func encode(to encoder: Encoder) throws {
@@ -146,6 +156,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         try container.encodeIfPresent(transparencyGradientDirection, forKey: .transparencyGradientDirection)
         try container.encodeIfPresent(opacityStart, forKey: .opacityStart)
         try container.encodeIfPresent(opacityEnd, forKey: .opacityEnd)
+        try container.encodeIfPresent(isDisplayFavorite, forKey: .isDisplayFavorite)
+        try container.encodeIfPresent(isDisplayUninteresting, forKey: .isDisplayUninteresting)
     }
 
     // MARK: - Hashable
@@ -165,7 +177,9 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         lhs.isShowPictograms == rhs.isShowPictograms &&
         lhs.transparencyGradientDirection == rhs.transparencyGradientDirection &&
         lhs.opacityStart == rhs.opacityStart &&
-        lhs.opacityEnd == rhs.opacityEnd
+        lhs.opacityEnd == rhs.opacityEnd &&
+        lhs.isDisplayFavorite == rhs.isDisplayFavorite &&
+        lhs.isDisplayUninteresting == rhs.isDisplayUninteresting
     }
 
     func hash(into hasher: inout Hasher) {
@@ -185,5 +199,7 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         hasher.combine(transparencyGradientDirection)
         hasher.combine(opacityStart)
         hasher.combine(opacityEnd)
+        hasher.combine(isDisplayFavorite)
+        hasher.combine(isDisplayUninteresting)
     }
 }
