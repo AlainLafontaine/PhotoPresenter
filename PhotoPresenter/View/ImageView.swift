@@ -228,17 +228,17 @@ struct ImageView: View {
                     }) {
                         Label("Information", systemImage: viewSetting.isOverlayDisplayInfo! ? "checkmark.circle.fill" : "circle")
                     }
-                    
-                    Button(action: {
-                        viewSetting.isInCommunity?.toggle()
-                    }) {
-                        Label("Liée à la communauté", systemImage: viewSetting.isInCommunity! ? "checkmark.circle.fill" : "circle")
-                    }
 
                     Button(action: {
                         viewSetting.isShowPictograms = !(viewSetting.isShowPictograms ?? true)
                     }) {
                         Label("Pictogrammes", systemImage: (viewSetting.isShowPictograms ?? true) ? "checkmark.circle.fill" : "circle")
+                    }
+
+                    Button(action: {
+                        viewSetting.isInCommunity?.toggle()
+                    }) {
+                        Label("Liée à la communauté", systemImage: viewSetting.isInCommunity! ? "checkmark.circle.fill" : "circle")
                     }
                     
                     Divider() // ⬅️ Séparateur visuel
