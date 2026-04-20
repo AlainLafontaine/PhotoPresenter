@@ -263,6 +263,21 @@ struct ImageView: View {
 
                     Divider() // ⬅️ Séparateur visuel
 
+                    Menu {
+                        Button(action: {
+                            viewSetting.isDisplayFavorite = !(viewSetting.isDisplayFavorite ?? false)
+                        }) {
+                            Label("Favori", systemImage: (viewSetting.isDisplayFavorite ?? false) ? "heart.fill" : "heart")
+                        }
+                        Button(action: {
+                            viewSetting.isDisplayUninteresting = !(viewSetting.isDisplayUninteresting ?? false)
+                        }) {
+                            Label("Inintéressant", systemImage: (viewSetting.isDisplayUninteresting ?? false) ? "hand.thumbsdown.fill" : "hand.thumbsdown")
+                        }
+                    } label: {
+                        Label("Afficher", systemImage: "eye")
+                    }
+
                     Button(action: {
                         viewSetting.intervalTimer = viewSetting.intervalTimer
                         savePauseState = viewSetting.isPaused
