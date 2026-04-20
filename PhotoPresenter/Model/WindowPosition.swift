@@ -8,7 +8,7 @@
 import Foundation
  
 class WindowPosition: ObservableObject, Codable, Hashable {
-    @Published var isOnTop: Bool? = false
+    @Published var isOnTop: Bool? = true
     @Published var x: CGFloat
     @Published var y: CGFloat
     @Published var width: CGFloat

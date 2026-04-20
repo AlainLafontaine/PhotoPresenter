@@ -47,6 +47,7 @@ struct PhotoPresenterApp: App {
                 sharedRessources: sharedRessources,
                 displayView: $displaySpaceViewType,
                 requestOpeningPresenter: openFile,
+                requestRemovingPresenter: { id in removePresenter(id) },
                 communityParameter: $communityParam
             )
             .onAppear() {
@@ -185,9 +186,27 @@ struct PhotoPresenterApp: App {
                         displaySpace.presenters = []
                     }
                     displaySpace.presenters!.append(helper.presenter)
-                    
+
                     dataPresenters[helper.windowId!] = helper
                     loadingInProgress = false
+                }
+                .onDisappear {
+                    guard let presenterId = helper.presenter.fileHeader.id else { return }
+
+                    if let windowId = helper.windowId {
+                        windowIdentifier.remove(windowId)
+                        dataPresenters.removeValue(forKey: windowId)
+                    }
+
+                    displaySpace.viewPositions.removeAll { $0.id == presenterId }
+                    displaySpace.presenters?.removeAll { $0.fileHeader.id == presenterId }
+
+                    if let dsId = displaySpace.fileHeader.id {
+                        for groupedView in helper.presenter.groupedViews {
+                            groupedView.packInDisplaySpaces?.removeAll { $0.displaySpaceId == dsId }
+                        }
+                        saveToJSONFile(helper.presenter, filename: helper.filename)
+                    }
                 }
                 // Le niveau de la fenêtre (floating/normal) est géré de façon réactive
                 // par WindowLevelController dans ImageView, branché sur viewPosition.isOnTop.
@@ -572,6 +591,20 @@ struct PhotoPresenterApp: App {
         return true
     }
     
+    private func removePresenter(_ presenterId: UUID) {
+        for (windowId, dataPresenter) in dataPresenters {
+            if dataPresenter.presenter.fileHeader.id == presenterId {
+                for window in NSApp.windows {
+                    if window.identifier?.rawValue == windowId {
+                        window.close()  // onDisappear prend le relais pour le nettoyage
+                        break
+                    }
+                }
+                break
+            }
+        }
+    }
+
     private func getScreenName(for windowPosition: WindowPosition, in screensInfo: ScreensInfo) -> String? {
         let windowCenterX = windowPosition.x + windowPosition.width / 2
         let windowCenterY = windowPosition.y + windowPosition.height / 2

@@ -21,15 +21,17 @@ struct DisplaySpaceView: View {
     @Binding private var displayView: DisplaySpaceViewType
     
     private let requestOpeningPresenter: (URL, WindowPosition) -> Bool
-    
-    
+    private let requestRemovingPresenter: (UUID) -> Void
+
+
     var body: some View {
         switch displayView {
         case .LibraryView:
             LibraryView(
                 displaySpace: displaySpace,
                 sharedRessources: sharedRessources,
-                requestOpeningPresenter: requestOpeningPresenter
+                requestOpeningPresenter: requestOpeningPresenter,
+                requestRemovingPresenter: requestRemovingPresenter
             )
             
         case .DashboardView:
@@ -54,12 +56,14 @@ struct DisplaySpaceView: View {
         sharedRessources: SharedRessources,
         displayView: Binding<DisplaySpaceViewType>,
         requestOpeningPresenter: @escaping (URL, WindowPosition) -> Bool,
+        requestRemovingPresenter: @escaping (UUID) -> Void,
         communityParameter: Binding<CommunityParameter>
     ) {
         self.displaySpace = displaySpace
         self.sharedRessources = sharedRessources
         self._displayView = displayView
         self.requestOpeningPresenter = requestOpeningPresenter
+        self.requestRemovingPresenter = requestRemovingPresenter
         self._communityParam = communityParameter
         
         KeyCatcherView.globalKeyDown = { event in
