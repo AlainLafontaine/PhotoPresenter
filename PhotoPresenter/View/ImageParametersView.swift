@@ -34,7 +34,7 @@ struct ImageParametersView: View {
  
                 Tab("Presenter", systemImage: "") {
                     VStack(alignment: .leading, spacing: 0) {
-                        GroupBox("General") {
+                        GroupBox(label: Text("General").font(.title2).bold()) {
                             VStack(alignment: .leading) {
                                 Stepper("Interval timer : \(intervalTimer, specifier: "%.2f") sec", value: $intervalTimer, in: 0.25...60, step: 0.25)
                             }
@@ -42,14 +42,14 @@ struct ImageParametersView: View {
                         }
                         .padding(.horizontal, 16)
 
-                        GroupBox("Transition") {
+                        GroupBox(label: Text("Transition").font(.title2).bold()) {
                             VStack(alignment: .leading) {
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                         }
                         .padding(.horizontal, 16)
 
-                        GroupBox("Effet") {
+                        GroupBox(label: Text("Effet").font(.title2).bold()) {
                             VStack(alignment: .leading, spacing: 8) {
                                 HStack {
                                     Text("Dégradé de la transparence:")
