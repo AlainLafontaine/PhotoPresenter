@@ -42,3 +42,21 @@ struct WindowLevelController: NSViewRepresentable {
         }
     }
 }
+
+/// Rend la fenêtre transparente quand un dégradé de transparence est actif.
+/// updateNSView est rappelé à chaque re-render, garantissant que la propriété est maintenue.
+struct WindowGradientController: NSViewRepresentable {
+    var isGradientActive: Bool
+
+    func makeNSView(context: Context) -> NSView { NSView() }
+
+    func updateNSView(_ nsView: NSView, context: Context) {
+        DispatchQueue.main.async {
+            guard let window = nsView.window else { return }
+            if isGradientActive {
+                window.isOpaque = false
+                window.backgroundColor = .clear
+            }
+        }
+    }
+}

@@ -26,7 +26,6 @@ struct PhotoPresenterView: View {
             case .multiImageView:
                 MultiImageView(dataHelper: helper, communityParemeter: _communityParam)
                 .frame(maxWidth: .infinity, maxHeight:.infinity)
-                .background(Color.black)
                 .onDisappear {}
             }
         }.onAppear {

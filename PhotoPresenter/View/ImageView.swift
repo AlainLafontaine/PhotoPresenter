@@ -93,6 +93,7 @@ struct ImageView: View {
                             .scaledToFit()
                     }
                 }
+                .mask { gradientMask }
                 .onAppear {
                     slideShowController.start()
                     if !DisplaySpaceView.slideShowControllers.contains(where: { $0 === self.slideShowController }) {
@@ -103,6 +104,10 @@ struct ImageView: View {
                     window.title = "\(title)"
                     window.collectionBehavior.insert(.fullScreenPrimary)
                     capturedWindow = window
+                    if (viewSetting.transparencyGradientDirection ?? .none) != .none {
+                        window.isOpaque = false
+                        window.backgroundColor = .clear
+                    }
                 })
                 .onChange(of: viewSetting.isTransparent) { _, isTransparent in
                     guard let window = capturedWindow else { return }
@@ -111,6 +116,18 @@ struct ImageView: View {
                         window.backgroundColor = .clear
                         window.alphaValue = min(viewSetting.transparentFactor ?? 1.0, 1.0)
                     } else {
+                        window.isOpaque = true
+                        window.backgroundColor = .windowBackgroundColor
+                        window.alphaValue = 1.0
+                    }
+                }
+                .onChange(of: viewSetting.transparencyGradientDirection) { _, direction in
+                    guard !(viewSetting.isTransparent ?? false) else { return }
+                    guard let window = capturedWindow else { return }
+                    if (direction ?? .none) != .none {
+                        window.isOpaque = false
+                        window.backgroundColor = .clear
+                    } else if !(viewSetting.isTransparent ?? false) {
                         window.isOpaque = true
                         window.backgroundColor = .windowBackgroundColor
                         window.alphaValue = 1.0
@@ -401,7 +418,7 @@ struct ImageView: View {
             
             // Affichage pour la vue qui affiche les paramètres version
             if displayParameters {
-                ImageParametersView(intervalTimer: $viewSetting.intervalTimer) { didApply in
+                ImageParametersView(intervalTimer: $viewSetting.intervalTimer, transparencyGradientDirection: $viewSetting.transparencyGradientDirection, opacityStart: $viewSetting.opacityStart, opacityEnd: $viewSetting.opacityEnd) { didApply in
                     if didApply {
                         viewSetting.intervalTimer = viewSetting.intervalTimer
                         displayParameters.toggle()
@@ -418,8 +435,16 @@ struct ImageView: View {
             }
         }.background(
             WindowResizeObserver(
-                onStart: { isResizing = true },
-                onEnd: { isResizing = false }
+                onStart: {
+                    guard let window = capturedWindow else { return }
+                    window.backgroundColor = .windowBackgroundColor
+                    isResizing = true;
+                },
+                onEnd: {
+                    guard let window = capturedWindow else { return }
+                    window.backgroundColor =  (viewSetting.isTransparent ?? false) ? .clear : .windowBackgroundColor
+                    isResizing = false
+                }
             )
         ).background(
             WindowOcclusionObserver { isVisible in
@@ -427,6 +452,10 @@ struct ImageView: View {
             }
         ).background(
             WindowLevelController(isOnTop: viewPosition.isOnTop ?? false)
+        ).background(
+            WindowGradientController(
+                isGradientActive: (viewSetting.transparencyGradientDirection ?? TransparencyGradientDirection.none) != TransparencyGradientDirection.none
+            )
         ).onAppear {
             keyDownMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
                 if event.keyCode == 3 { fKeyActive = true }
@@ -477,6 +506,34 @@ struct ImageView: View {
 //                NSWorkspace.shared.frontmostApplication?.setValue(newFrame, forKey: "windowFrame")
             }
         }
+    }
+
+    private var gradientMask: some View {
+        let direction = viewSetting.transparencyGradientDirection ?? TransparencyGradientDirection.none
+        let start = viewSetting.opacityStart ?? 1.0
+        let end = viewSetting.opacityEnd ?? 0.0
+
+        let (startPoint, endPoint): (UnitPoint, UnitPoint) = {
+            switch direction {
+            case .none:        return (.leading, .trailing)
+            case .leftToRight: return (.leading, .trailing)
+            case .rightToLeft: return (.trailing, .leading)
+            case .topToBottom: return (.top, .bottom)
+            case .bottomToTop: return (.bottom, .top)
+            }
+        }()
+
+        let (startLuminance, endLuminance): (Double, Double) = direction == .none
+            ? (1.0, 1.0)
+            : (start, end)
+
+        // Color.black.opacity(x) : RGB=0 donc l'interpolation prémultipliée reste dans (0,0,0,x),
+        // seul l'alpha varie — aucun assombrissement. Le masque utilise uniquement l'alpha.
+        return LinearGradient(
+            gradient: Gradient(colors: [Color.black.opacity(startLuminance), Color.black.opacity(endLuminance)]),
+            startPoint: startPoint,
+            endPoint: endPoint
+        )
     }
 
     init(

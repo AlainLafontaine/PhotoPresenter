@@ -7,6 +7,24 @@
 
 import SwiftUI
 
+enum TransparencyGradientDirection: String, Codable, CaseIterable {
+    case none        = "none"
+    case leftToRight = "leftToRight"
+    case rightToLeft = "rightToLeft"
+    case topToBottom = "topToBottom"
+    case bottomToTop = "bottomToTop"
+
+    var label: String {
+        switch self {
+        case .none:        return "Aucun"
+        case .leftToRight: return "Gauche vers la droite"
+        case .rightToLeft: return "Droite vers la gauche"
+        case .topToBottom: return "Haut vers le bas"
+        case .bottomToTop: return "Bas vers le haut"
+        }
+    }
+}
+
 class ViewSetting: ObservableObject, Codable, Hashable {
 
     @Published var isPaused: Bool
@@ -22,6 +40,9 @@ class ViewSetting: ObservableObject, Codable, Hashable {
     @Published var isTransparent: Bool?
     @Published var transparentFactor: Double?
     @Published var isShowPictograms: Bool?
+    @Published var transparencyGradientDirection: TransparencyGradientDirection?
+    @Published var opacityStart: Double?
+    @Published var opacityEnd: Double?
 
     // MARK: - Init
     init(
@@ -37,7 +58,10 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         isInCommunity: Bool? = true,
         isTransparent: Bool? = false,
         transparentFactor: Double? = 1.0,
-        isShowPictograms: Bool? = true
+        isShowPictograms: Bool? = true,
+        transparencyGradientDirection: TransparencyGradientDirection? = TransparencyGradientDirection.none,
+        opacityStart: Double? = 1.0,
+        opacityEnd: Double? = 0.0
     ) {
         self.isPaused = isPaused
         self.isReverse = isReverse
@@ -52,6 +76,9 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         self.isTransparent = isTransparent
         self.transparentFactor = transparentFactor
         self.isShowPictograms = isShowPictograms
+        self.transparencyGradientDirection = transparencyGradientDirection
+        self.opacityStart = opacityStart
+        self.opacityEnd = opacityEnd
     }
 
     // MARK: - Codable
@@ -69,6 +96,9 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         case isTransparent
         case transparentFactor
         case isShowPictograms
+        case transparencyGradientDirection
+        case opacityStart
+        case opacityEnd
     }
 
     required init(from decoder: Decoder) throws {
@@ -90,6 +120,9 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         let rawFactor = try container.decodeIfPresent(Double.self, forKey: .transparentFactor)
         transparentFactor = rawFactor.map { min(max($0, 0.0), 1.0) } ?? 1.0
         isShowPictograms = try container.decodeIfPresent(Bool.self, forKey: .isShowPictograms) ?? true
+        transparencyGradientDirection = try container.decodeIfPresent(TransparencyGradientDirection.self, forKey: .transparencyGradientDirection) ?? TransparencyGradientDirection.none
+        opacityStart = try container.decodeIfPresent(Double.self, forKey: .opacityStart) ?? 1.0
+        opacityEnd = try container.decodeIfPresent(Double.self, forKey: .opacityEnd) ?? 0.0
     }
 
     func encode(to encoder: Encoder) throws {
@@ -110,6 +143,9 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         try container.encodeIfPresent(isTransparent, forKey: .isTransparent)
         try container.encodeIfPresent(transparentFactor, forKey: .transparentFactor)
         try container.encodeIfPresent(isShowPictograms, forKey: .isShowPictograms)
+        try container.encodeIfPresent(transparencyGradientDirection, forKey: .transparencyGradientDirection)
+        try container.encodeIfPresent(opacityStart, forKey: .opacityStart)
+        try container.encodeIfPresent(opacityEnd, forKey: .opacityEnd)
     }
 
     // MARK: - Hashable
@@ -126,7 +162,10 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         lhs.isInCommunity == rhs.isInCommunity &&
         lhs.isTransparent == rhs.isTransparent &&
         lhs.transparentFactor == rhs.transparentFactor &&
-        lhs.isShowPictograms == rhs.isShowPictograms
+        lhs.isShowPictograms == rhs.isShowPictograms &&
+        lhs.transparencyGradientDirection == rhs.transparencyGradientDirection &&
+        lhs.opacityStart == rhs.opacityStart &&
+        lhs.opacityEnd == rhs.opacityEnd
     }
 
     func hash(into hasher: inout Hasher) {
@@ -143,5 +182,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         hasher.combine(isTransparent)
         hasher.combine(transparentFactor)
         hasher.combine(isShowPictograms)
+        hasher.combine(transparencyGradientDirection)
+        hasher.combine(opacityStart)
+        hasher.combine(opacityEnd)
     }
 }

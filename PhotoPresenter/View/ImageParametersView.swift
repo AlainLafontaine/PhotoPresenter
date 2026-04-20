@@ -10,20 +10,108 @@ import SwiftUtilities
 
 struct ImageParametersView: View {
     @Binding var intervalTimer: Double
+    @Binding var transparencyGradientDirection: TransparencyGradientDirection?
+    @Binding var opacityStart: Double?
+    @Binding var opacityEnd: Double?
     var result: (_ applic: Bool) -> Void
     
     var body: some View {
         VStack {
-            Stepper("Interval timer : \(intervalTimer, specifier: "%.2f") sec", value: $intervalTimer, in: 0.25...60, step: 0.25)
-                .padding(.top, 48)
-            
-            Spacer()
-            
+            TabView {
+                Tab("Photo", systemImage: "") {
+                    VStack {
+                        GroupBox("General") {
+                            VStack(alignment: .leading) {
+                                Text("Zone pour Photo")
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .padding(.horizontal, 16)
+                    }
+                    .padding(.top, 64)
+                    Spacer()
+                }
+ 
+                Tab("Presenter", systemImage: "") {
+                    VStack(alignment: .leading, spacing: 0) {
+                        GroupBox("General") {
+                            VStack(alignment: .leading) {
+                                Stepper("Interval timer : \(intervalTimer, specifier: "%.2f") sec", value: $intervalTimer, in: 0.25...60, step: 0.25)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .padding(.horizontal, 16)
+
+                        GroupBox("Transition") {
+                            VStack(alignment: .leading) {
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .padding(.horizontal, 16)
+
+                        GroupBox("Effet") {
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Text("Dégradé de la transparence:")
+                                    Picker("", selection: Binding(
+                                        get: { transparencyGradientDirection ?? TransparencyGradientDirection.none },
+                                        set: { transparencyGradientDirection = $0 }
+                                    )) {
+                                        ForEach(TransparencyGradientDirection.allCases, id: \.self) { direction in
+                                            Text(direction.label).tag(direction)
+                                        }
+                                    }
+                                    .pickerStyle(.menu)
+                                    .fixedSize()
+                                    Spacer()
+                                }
+                                Stepper(
+                                    "Opacité de départ : \(opacityStart ?? 1.0, specifier: "%.1f")",
+                                    value: Binding(
+                                        get: { opacityStart ?? 1.0 },
+                                        set: { opacityStart = $0 }
+                                    ),
+                                    in: 0.0...1.0,
+                                    step: 0.1
+                                )
+                                Stepper(
+                                    "Opacité d'arrivée : \(opacityEnd ?? 0.0, specifier: "%.1f")",
+                                    value: Binding(
+                                        get: { opacityEnd ?? 0.0 },
+                                        set: { opacityEnd = $0 }
+                                    ),
+                                    in: 0.0...1.0,
+                                    step: 0.1
+                                )
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .padding(.horizontal, 16)
+                    }
+                    .padding(.top, 64)
+                    Spacer()
+                }
+
+                Tab("Communauté", systemImage: "") {
+                    VStack {
+                        GroupBox("General") {
+                            VStack(alignment: .leading) {
+                                Text("Zone pour Communauté")
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .padding(.horizontal, 16)
+                    }
+                    .padding(.top, 64)
+                    Spacer()
+                }
+            }
+
             HStack {
                 SecondaryButton(title: "Annuler") {
                     result(false);
                 }
-                
+
                 PrimaryButton(title: "Appliquer") {
                     result(true)
                 }
