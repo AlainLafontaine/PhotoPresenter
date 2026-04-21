@@ -52,7 +52,7 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         isReverse: Bool = false,
         isRandomizing: Bool = false,
         currentIndex: Int = 0,
-        intervalTimer: Double = 10.0,
+        intervalTimer: Double = 4.0,
         displayNumImage: Bool? = nil,
         displayFilename: Bool? = nil,
         isOverlayDisplayInfo: Bool? = true,
@@ -60,11 +60,11 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         isInCommunity: Bool? = true,
         isTransparent: Bool? = false,
         transparentFactor: Double? = 1.0,
-        isShowPictograms: Bool? = true,
+        isShowPictograms: Bool? = false,
         transparencyGradientDirection: TransparencyGradientDirection? = TransparencyGradientDirection.none,
         opacityStart: Double? = 1.0,
         opacityEnd: Double? = 0.0,
-        isDisplayFavorite: Bool? = true,
+        isDisplayFavorite: Bool? = false,
         isDisplayUninteresting: Bool? = false
     ) {
         self.isPaused = isPaused

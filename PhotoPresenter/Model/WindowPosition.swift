@@ -16,7 +16,7 @@ class WindowPosition: ObservableObject, Codable, Hashable {
     var isFullPage: Bool = false
 
     // MARK: - Init
-     init(isOnTop: Bool? = false,
+     init(isOnTop: Bool? = true,
           x: CGFloat = 0,
           y: CGFloat = 0,
           width: CGFloat = 800,
