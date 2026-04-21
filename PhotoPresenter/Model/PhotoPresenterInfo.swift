@@ -16,6 +16,7 @@ class PhotoPresenterInfo {
     let ratio: Double
     let orientation: Orientation
     var isInclusInDisplaySpace: Bool
+    let nbOfInclusionInDisplaySpace: Int
     
     init(
         url: URL,
@@ -25,7 +26,8 @@ class PhotoPresenterInfo {
         nbPhotos: Int,
         ratio: Double,
         orientation: Orientation,
-        isInclusInDisplaySpace: Bool
+        isInclusInDisplaySpace: Bool,
+        nbOfInclusionInDisplaySpace: Int
     ) {
         self.url = url
         self.id = id
@@ -35,5 +37,6 @@ class PhotoPresenterInfo {
         self.ratio = ratio
         self.orientation = orientation
         self.isInclusInDisplaySpace = isInclusInDisplaySpace
+        self.nbOfInclusionInDisplaySpace = nbOfInclusionInDisplaySpace
     }
 }

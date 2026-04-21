@@ -66,6 +66,7 @@ struct LibraryView: View {
                                     }
                                 }
                                 VStack {
+                                    // Première ligne
                                     HStack {
                                         if photoPresenterInfo.isInclusInDisplaySpace {
                                             Text("\(photoPresenterInfo.name)").foregroundColor(.red)
@@ -77,10 +78,18 @@ struct LibraryView: View {
                                         
                                         Text("\(photoPresenterInfo.nbPhotos) photos")
                                     }
+                                    
+                                    // Deuxipme ligne
                                     HStack {
                                         Text("\(photoPresenterInfo.description)")
                                         Spacer()
                                         Text("Ratio: \(String(format: "%.3f", photoPresenterInfo.ratio))")
+                                    }.font(.system(size: 10)) // taille plus petite que le standard
+                                    
+                                    // Troisième ligne
+                                    HStack {
+                                        Text("Nombre d'inclusion: \(photoPresenterInfo.nbOfInclusionInDisplaySpace)")
+                                        Spacer()
                                     }.font(.system(size: 10)) // taille plus petite que le standard
                                 }
                             }.foregroundColor((photoPresenterInfo.isInclusInDisplaySpace ? .red : .white))
@@ -117,8 +126,6 @@ struct LibraryView: View {
         }
         
         photoPresenterInfos.sort { $0.name < $1.name }
-        
-        print("Nom du fichier :")
     }
     
     private func GetAllPresenters(path: String) -> [PhotoPresenterInfo] {
@@ -143,7 +150,8 @@ struct LibraryView: View {
                             nbPhotos: NumberOfPhotos(photoPresenter.groupedViews),
                             ratio: photoPresenter.photoPresenterHeader.ratio ?? -1,
                             orientation: photoPresenter.photoPresenterHeader.orientation,
-                            isInclusInDisplaySpace: IsInclusInDisplaySpace(id: id)
+                            isInclusInDisplaySpace: IsInclusInDisplaySpace(id: id),
+                            nbOfInclusionInDisplaySpace: NumberOfInclusionInDisplaySpace(photoPresenter)
                         )
                     )
                 } catch {
@@ -173,5 +181,9 @@ struct LibraryView: View {
         }
         
         return count
+    }
+    
+    private func NumberOfInclusionInDisplaySpace(_ photoPresenter: PhotoPresenter) -> Int {
+        return photoPresenter.groupedViews[0].packInDisplaySpaces?.count ?? 0
     }
 }

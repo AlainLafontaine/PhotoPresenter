@@ -20,7 +20,7 @@ struct PhotoPresenterApp: App {
     @State private var loadingInProgress: Bool = false
     @State private var loadingController: PresenterLoadingFileController? = nil
     @State private var pathDisplaySpace: String? = nil
-    @State private var displaySpaceViewType: DisplaySpaceViewType = .FactoryView  //.DashboardView
+    @State private var displaySpaceViewType: DisplaySpaceViewType = .LibraryView
     @State private var screensInfo: ScreensInfo = getScreenInfo()
     @State private var showTitleBar: Bool = false
 
