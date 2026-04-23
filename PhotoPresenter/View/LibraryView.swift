@@ -13,6 +13,7 @@ struct LibraryView: View {
     @ObservedObject var sharedRessources: SharedRessources
     
     @State private var isSuggestionActived: Bool = false
+    @State private var isInclusionZeroFilter: Bool = false
     @State private var isResizing = false
     
     private var photoPresenterInfos: [PhotoPresenterInfo] = []
@@ -38,7 +39,15 @@ struct LibraryView: View {
                     Toggle("Suggestion activée", isOn: $isSuggestionActived)
                         .toggleStyle(.checkbox)
                 }
-                .padding([.top, .bottom], 10)
+                .padding([.top], 10)
+                .padding(.horizontal, 20)
+
+                HStack() {
+                    Spacer()
+                    Toggle("Inclusion: 0 (exclusif)", isOn: $isInclusionZeroFilter)
+                        .toggleStyle(.checkbox)
+                }
+                .padding([.bottom], 10)
                 .padding(.horizontal, 20)
                 
                 Spacer()
@@ -46,7 +55,10 @@ struct LibraryView: View {
                 if !isSuggestionActived ||  !isResizing  {
                     let ratioMin = width / height - 0.05
                     let ratioMax = width / height + 0.05
-                    List(Array(photoPresenterInfos.filter{ isSuggestionActived ? !$0.isInclusInDisplaySpace && ratioMin < $0.ratio && $0.ratio < ratioMax : true  }.enumerated()), id: \.element.id) { index, photoPresenterInfo in
+                    List(Array(photoPresenterInfos.filter{
+                        (isSuggestionActived ? !$0.isInclusInDisplaySpace && ratioMin < $0.ratio && $0.ratio < ratioMax : true) &&
+                        (isInclusionZeroFilter ? $0.nbOfInclusionInDisplaySpace == 0 : true)
+                    }.enumerated()), id: \.element.id) { index, photoPresenterInfo in
                         VStack(alignment: .leading, spacing: 0) {
                             HStack {
                                 VStack {
