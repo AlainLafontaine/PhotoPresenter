@@ -18,6 +18,7 @@ struct LibraryView: View {
     
     private var photoPresenterInfos: [PhotoPresenterInfo] = []
     private let requestOpeningPresenter: (URL, WindowPosition) -> Bool
+    private let requestRemovingPresenter: (UUID) -> Void
     
     var body: some View {
         
@@ -74,6 +75,9 @@ struct LibraryView: View {
                                             ) {
                                                 photoPresenterInfo.isInclusInDisplaySpace = true
                                             }
+                                        } else {
+                                            self.requestRemovingPresenter(photoPresenterInfo.id)
+                                            photoPresenterInfo.isInclusInDisplaySpace = false
                                         }
                                     }
                                 }
@@ -124,12 +128,14 @@ struct LibraryView: View {
     init (
         displaySpace: DisplaySpace,
         sharedRessources: SharedRessources,
-        requestOpeningPresenter: @escaping (URL, WindowPosition) -> Bool
+        requestOpeningPresenter: @escaping (URL, WindowPosition) -> Bool,
+        requestRemovingPresenter: @escaping (UUID) -> Void
     )
     {
         self.displaySpace = displaySpace
         self.sharedRessources = sharedRessources
         self.requestOpeningPresenter = requestOpeningPresenter
+        self.requestRemovingPresenter = requestRemovingPresenter
         
         for path in sharedRessources.paths2PresenterDirectory {
             let ppInfos: [PhotoPresenterInfo] = GetAllPresenters(path: path)
