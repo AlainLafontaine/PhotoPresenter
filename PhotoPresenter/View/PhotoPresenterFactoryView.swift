@@ -261,7 +261,7 @@ struct PhotoPresenterFactoryView: View {
                 var photoPresenterDataSources: [PhotoPresenterDataSource] = []
                 var directorySelected: [String] = []
                 var fastLoadings: [FastLoading] = []
-                var fastLoading: FastLoading = FastLoading()
+                let fastLoading: FastLoading = FastLoading()
                 
                 fastLoadings.append(fastLoading)
                 

@@ -10,6 +10,8 @@ import SwiftUtilities
 
 struct CommunityParamView: View {
     
+    @EnvironmentObject var appState: AppState
+    
     @Binding var communityParam: CommunityParameter
     @State var intervalTimer: Double = 5
     
@@ -20,7 +22,10 @@ struct CommunityParamView: View {
                 value: $intervalTimer,
                 in: 0.25...60, step: 0.25
             ).padding(.top, 48)
-            
+
+            Toggle("Full Presenter Mode", isOn: $appState.fullPresenterMode)
+                .padding(.top, 8)
+
             Spacer()
             
             HStack {
