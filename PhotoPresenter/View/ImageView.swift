@@ -11,6 +11,8 @@ import SwiftUtilities
 
 struct ImageView: View {
     
+    @EnvironmentObject var appState: AppState
+    
     @ObservedObject private var viewSetting: ViewSetting
     @ObservedObject private var viewPosition: WindowPosition
     @ObservedObject private var communityParam: CommunityParameter
@@ -31,9 +33,11 @@ struct ImageView: View {
     @State private var iKeyActive: Bool = false
     @State private var keyDownMonitor: Any? = nil
     @State private var keyUpMonitor: Any? = nil
-    
+    @State private var windowStyle: NSWindow.StyleMask? = nil
+
     private var directories: [String] = []
     private var ratio: Double?
+    
 
     var body: some View {
         ZStack {
@@ -103,12 +107,33 @@ struct ImageView: View {
                 .background(WindowAccessor { window in
                     window.title = "\(title)"
                     window.collectionBehavior.insert(.fullScreenPrimary)
+                    window.isMovableByWindowBackground = true
                     capturedWindow = window
                     if (viewSetting.transparencyGradientDirection ?? .none) != .none {
                         window.isOpaque = false
                         window.backgroundColor = .clear
                     }
                 })
+                .onChange(of: appState.fullPresenterMode) { _, isFullPresenterMode in
+                    guard let window = capturedWindow else { return }
+                    if isFullPresenterMode {
+                        windowStyle = window.styleMask
+                        window.styleMask = [.borderless, .resizable]
+                        
+                        if let isTransparent = viewSetting.isTransparent, let transparencyGradientDirection = viewSetting.transparencyGradientDirection {
+                            window.isMovableByWindowBackground = isTransparent || transparencyGradientDirection != TransparencyGradientDirection.none
+                        }
+                        else {
+                            window.isMovableByWindowBackground = false;
+                        }
+                    } else {
+                        if let windowStyle = windowStyle {
+                            window.styleMask = windowStyle
+                        }
+
+                        window.isMovableByWindowBackground = true
+                    }
+                }
                 .onChange(of: viewSetting.isTransparent) { _, isTransparent in
                     guard let window = capturedWindow else { return }
                     if isTransparent ?? false {
