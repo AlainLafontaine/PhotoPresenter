@@ -126,6 +126,8 @@ struct ImageView: View {
                         else {
                             window.isMovableByWindowBackground = false;
                         }
+                        
+                        viewSetting.isExpansionMode = true
                     } else {
                         if let windowStyle = windowStyle {
                             window.styleMask = windowStyle
