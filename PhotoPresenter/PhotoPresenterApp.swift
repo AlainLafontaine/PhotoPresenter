@@ -209,7 +209,6 @@ struct PhotoPresenterApp: App {
                         for groupedView in helper.presenter.groupedViews {
                             groupedView.packInDisplaySpaces?.removeAll { $0.displaySpaceId == dsId }
                         }
-                        saveToJSONFile(helper.presenter, filename: helper.filename)
                     }
                 }
                 // Le niveau de la fenêtre (floating/normal) est géré de façon réactive
