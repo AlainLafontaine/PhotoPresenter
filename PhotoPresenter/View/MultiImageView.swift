@@ -95,6 +95,11 @@ struct MultiImageView: View {
         // Chercher l'élément PackInDisplaySpace qui correspond au displaySpaceId
         let packInDisplaySpace = packInDisplaySpaces.first(where: { $0.displaySpaceId == displaySpaceId })
             
-        return packInDisplaySpace!.viewSettings[viewSettingIndex]
+        if packInDisplaySpace == nil {
+            return ViewSetting()
+        }
+        else {
+            return packInDisplaySpace!.viewSettings[viewSettingIndex]
+        }
     }
 }
