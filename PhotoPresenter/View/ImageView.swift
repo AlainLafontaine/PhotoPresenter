@@ -423,12 +423,6 @@ struct ImageView: View {
                         Spacer()
                     }
                 }
-                if isFav {
-                    Rectangle()
-                        .strokeBorder(Color.red.opacity(1.0), lineWidth: 7)
-                        .allowsHitTesting(false)
-                }
-
                 let _ = uninterestingRefresh
                 if !slideShowController.fastLoading.fileInfos.isEmpty &&
                    slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].isUninteresting {
