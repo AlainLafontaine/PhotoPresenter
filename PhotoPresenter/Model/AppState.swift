@@ -9,4 +9,5 @@ import SwiftUI
 
 class AppState: ObservableObject {
     @Published var fullPresenterMode: Bool = false
+    @Published var isDigitalSignageModeActive: Bool = false
 }
