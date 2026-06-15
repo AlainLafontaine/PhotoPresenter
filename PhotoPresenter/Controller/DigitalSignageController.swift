@@ -40,6 +40,7 @@ final class DigitalSignageController {
         let size: NSSize            // taille de la fenêtre (W × H)
         let screenMinX: CGFloat     // bord gauche du moniteur (global)
         let screenWidth: CGFloat    // largeur du moniteur (S)
+        let originalAlpha: CGFloat  // alpha d'origine, restauré à la désactivation
 
         var overlay: NSWindow?
         var tileMain: NSImageView?
@@ -52,6 +53,7 @@ final class DigitalSignageController {
             self.size = window.frame.size
             self.screenMinX = screenMinX
             self.screenWidth = screenWidth
+            self.originalAlpha = window.alphaValue
         }
     }
 
@@ -110,6 +112,7 @@ final class DigitalSignageController {
             t.overlay = nil
             t.tileMain = nil
             t.tileWrap = nil
+            t.window?.alphaValue = t.originalAlpha   // restaure l'originale
             t.window?.orderFront(nil)
         }
         tracked.removeAll()
@@ -146,8 +149,8 @@ final class DigitalSignageController {
             backing: .buffered,
             defer: false
         )
-        overlay.isOpaque = true
-        overlay.backgroundColor = .black
+        overlay.isOpaque = false
+        overlay.backgroundColor = .clear
         overlay.level = source.level
         overlay.ignoresMouseEvents = true
         overlay.collectionBehavior = [.transient, .ignoresCycle, .fullScreenAuxiliary]
@@ -174,6 +177,12 @@ final class DigitalSignageController {
         refreshSnapshot(t)
         layoutTiles(t)
         overlay.order(.above, relativeTo: source.windowNumber)
+
+        // L'originale reste en place (source du snapshot live) mais devient
+        // invisible : sinon elle réapparaîtrait en fantôme statique à travers
+        // le calque transparent. alphaValue = 0 la masque sans l'occlure, donc
+        // le système continue de la rendre et le snapshot reste à jour.
+        source.alphaValue = 0
     }
 
     // MARK: - Boucle d'animation
