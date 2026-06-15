@@ -39,6 +39,10 @@ struct CommunityParamView: View {
                 PrimaryButton(title: "Appliquer") {
                     _communityParam.wrappedValue.intervalTimer = intervalTimer
                     DisplaySpaceView.startCommunityTimer(intervalTimer: intervalTimer)
+                    // Resynchronise la vitesse du défilement Digital Signage si actif.
+                    if DigitalSignageController.shared.isRunning {
+                        DigitalSignageController.shared.updateInterval(intervalTimer)
+                    }
                 }
             }
             .padding(.bottom, 16)
