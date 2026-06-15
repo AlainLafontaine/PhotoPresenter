@@ -18,25 +18,40 @@ import QuartzCore
 /// un cycle complet = la largeur de l'écran parcourue en `intervalTimer` secondes.
 /// Temps court → vitesse élevée ; temps long → vitesse lente.
 ///
-/// Commit 2 : déplacement + boucle d'animation (sans clone, le wrap se fait par
-/// un simple modulo, ce qui provoque un saut visuel — corrigé au commit 3 par
-/// les clones miroir).
+/// Wrap-around (spec 5→9) : dès qu'une fenêtre commence à sortir par la gauche,
+/// un clone est créé une largeur d'écran plus à droite. Comme le clone est
+/// maintenu exactement à `S` (largeur d'écran) à droite de l'original, toute
+/// partie qui disparaît à gauche réapparaît à droite — sans trou. Le clone est
+/// un miroir live (snapshot du contenu rafraîchi à chaque frame). Quand la
+/// fenêtre revient à son origine (fin de cycle), le clone est détruit.
 final class DigitalSignageController {
 
     static let shared = DigitalSignageController()
 
-    /// Une fenêtre suivie + son point de départ (position d'origine).
-    private struct Tracked {
+    /// Une fenêtre suivie : son point de départ, sa taille, l'écran, et son clone.
+    private final class Tracked {
         weak var window: NSWindow?
         let originX: CGFloat
         let originY: CGFloat
+        let size: NSSize
+        let screenMinX: CGFloat
         let screenWidth: CGFloat
+        var clone: NSWindow?
+
+        init(window: NSWindow, screenMinX: CGFloat, screenWidth: CGFloat) {
+            self.window = window
+            self.originX = window.frame.origin.x
+            self.originY = window.frame.origin.y
+            self.size = window.frame.size
+            self.screenMinX = screenMinX
+            self.screenWidth = screenWidth
+        }
     }
 
     private var tracked: [String: Tracked] = [:]
     private var timer: Timer?
     private var lastTick: CFTimeInterval = 0
-    /// Progression du cycle, fraction dans [0, 1) d'une largeur d'écran parcourue.
+    /// Progression du cycle (fraction d'une largeur d'écran), accumulée sans borne.
     private var progress: Double = 0
     private var intervalTimer: Double = 3.0
 
@@ -70,11 +85,16 @@ final class DigitalSignageController {
         intervalTimer = max(interval, 0.25)
     }
 
-    /// Désactive le mode : arrête la boucle et ramène chaque fenêtre à son origine.
+    /// Désactive le mode : arrête la boucle, détruit les clones et ramène chaque
+    /// fenêtre à sa position d'origine.
     func stop() {
         timer?.invalidate()
         timer = nil
-        restoreOrigins()
+        for t in tracked.values {
+            t.clone?.orderOut(nil)
+            t.clone = nil
+            t.window?.setFrameOrigin(NSPoint(x: t.originX, y: t.originY))
+        }
         tracked.removeAll()
         progress = 0
     }
@@ -87,19 +107,13 @@ final class DigitalSignageController {
             guard let id = win.identifier?.rawValue,
                   id.hasPrefix("photoPresenterWindows") else { continue }
 
-            let screenWidth = (win.screen ?? NSScreen.main)?.frame.width ?? win.frame.width
+            let screen = win.screen ?? NSScreen.main
+            let screenFrame = screen?.frame ?? win.frame
             tracked[id] = Tracked(
                 window: win,
-                originX: win.frame.origin.x,
-                originY: win.frame.origin.y,
-                screenWidth: screenWidth
+                screenMinX: screenFrame.minX,
+                screenWidth: screenFrame.width
             )
-        }
-    }
-
-    private func restoreOrigins() {
-        for (_, t) in tracked {
-            t.window?.setFrameOrigin(NSPoint(x: t.originX, y: t.originY))
         }
     }
 
@@ -110,15 +124,80 @@ final class DigitalSignageController {
         let dt = now - lastTick
         lastTick = now
 
-        // Fraction d'une largeur d'écran à parcourir par seconde = 1 / intervalTimer.
+        // Fraction d'une largeur d'écran parcourue par seconde = 1 / intervalTimer.
         progress += dt / intervalTimer
-        // On garde la progression dans [0, 1) — modulo simple en attendant les clones.
-        if progress >= 1.0 { progress -= floor(progress) }
 
-        for (_, t) in tracked {
+        for t in tracked.values {
             guard let window = t.window else { continue }
-            let deltaX = CGFloat(progress) * t.screenWidth
-            window.setFrameOrigin(NSPoint(x: t.originX - deltaX, y: t.originY))
+
+            // Position de la fenêtre, wrappée sur une largeur d'écran.
+            let wrapped = (progress.truncatingRemainder(dividingBy: 1.0)) * Double(t.screenWidth)
+            let xMain = t.originX - CGFloat(wrapped)
+            window.setFrameOrigin(NSPoint(x: xMain, y: t.originY))
+
+            // Le bord gauche est sorti de l'écran → une partie a wrappé : on a
+            // besoin du clone, maintenu exactement une largeur d'écran à droite.
+            if xMain < t.screenMinX {
+                if t.clone == nil { t.clone = makeClone(for: t) }
+                refreshCloneImage(t)
+                t.clone?.setFrameOrigin(NSPoint(x: xMain + t.screenWidth, y: t.originY))
+            } else if let clone = t.clone {
+                // La fenêtre est revenue à l'origine : on remplace le clone par
+                // l'original (déjà en place) et on détruit le clone.
+                clone.orderOut(nil)
+                t.clone = nil
+            }
         }
+    }
+
+    // MARK: - Clones miroir
+
+    private func makeClone(for t: Tracked) -> NSWindow? {
+        guard let source = t.window else { return nil }
+
+        let frame = NSRect(
+            x: t.originX + t.screenWidth,
+            y: t.originY,
+            width: t.size.width,
+            height: t.size.height
+        )
+        let clone = NSWindow(
+            contentRect: frame,
+            styleMask: .borderless,
+            backing: .buffered,
+            defer: false
+        )
+        clone.isOpaque = false
+        clone.backgroundColor = .clear
+        clone.level = source.level
+        clone.alphaValue = source.alphaValue
+        clone.ignoresMouseEvents = true
+        clone.collectionBehavior = [.transient, .ignoresCycle, .fullScreenAuxiliary]
+        clone.hasShadow = source.hasShadow
+
+        let imageView = NSImageView(frame: NSRect(origin: .zero, size: frame.size))
+        imageView.imageScaling = .scaleAxesIndependently
+        imageView.imageAlignment = .alignCenter
+        clone.contentView = imageView
+
+        refreshCloneImage(t, into: clone)
+        clone.orderFront(nil)
+        return clone
+    }
+
+    /// Met à jour le contenu du clone à partir d'un snapshot de la fenêtre source
+    /// (miroir live, sans permission d'enregistrement d'écran).
+    private func refreshCloneImage(_ t: Tracked, into clone: NSWindow? = nil) {
+        guard let target = clone ?? t.clone,
+              let imageView = target.contentView as? NSImageView,
+              let source = t.window?.contentView,
+              source.bounds.width > 0, source.bounds.height > 0,
+              let rep = source.bitmapImageRepForCachingDisplay(in: source.bounds) else { return }
+
+        source.cacheDisplay(in: source.bounds, to: rep)
+        let image = NSImage(size: source.bounds.size)
+        image.addRepresentation(rep)
+        imageView.image = image
+        target.alphaValue = t.window?.alphaValue ?? 1.0
     }
 }
