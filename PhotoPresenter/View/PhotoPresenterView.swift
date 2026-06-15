@@ -36,7 +36,6 @@ struct PhotoPresenterView: View {
                 }
             }
             .onAppear {
-                assignWindowId()
                 if appState.isDigitalSignageModeActive {
                     startScrolling(width: width)
                 }
@@ -48,8 +47,13 @@ struct PhotoPresenterView: View {
             .onChange(of: communityParam.intervalTimer) { _ in
                 if appState.isDigitalSignageModeActive { startScrolling(width: width) }
             }
-            .onDisappear {}
         }
+        // assignWindowId() est attaché ici, sur le GeometryReader lui-même : son
+        // onAppear n'est pas différé par la passe de layout du contenu, ce qui
+        // préserve l'ordre attendu par PhotoPresenterApp (helper.windowId lu au
+        // onAppear de la WindowGroup).
+        .onAppear { assignWindowId() }
+        .onDisappear {}
     }
 
     @ViewBuilder
