@@ -26,7 +26,7 @@ struct CommunityParamView: View {
             Toggle("Full Presenter Mode", isOn: $appState.fullPresenterMode)
                 .padding(.top, 8)
 
-            Toggle("Digital Signage Mode", isOn: $appState.isDigitalSignageModeActive)
+            Toggle("Digital Signage Mode", isOn: $appState.digitalSignageMode)
                 .padding(.top, 8)
 
             Spacer()
