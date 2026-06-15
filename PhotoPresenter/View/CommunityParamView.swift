@@ -26,6 +26,9 @@ struct CommunityParamView: View {
             Toggle("Full Presenter Mode", isOn: $appState.fullPresenterMode)
                 .padding(.top, 8)
 
+            Toggle("Digital Signage Mode", isOn: $appState.isDigitalSignageModeActive)
+                .padding(.top, 8)
+
             Spacer()
             
             HStack {
