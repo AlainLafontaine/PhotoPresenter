@@ -44,6 +44,13 @@ struct CommunityParamView: View {
             .padding(.bottom, 16)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .onChange(of: appState.digitalSignageMode) { _, isOn in
+            if isOn {
+                DigitalSignageController.shared.start(intervalTimer: communityParam.intervalTimer)
+            } else {
+                DigitalSignageController.shared.stop()
+            }
+        }
     }
     
     init (communityParam: Binding<CommunityParameter>) {
