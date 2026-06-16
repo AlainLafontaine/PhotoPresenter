@@ -26,6 +26,9 @@ struct CommunityParamView: View {
             Toggle("Full Presenter Mode", isOn: $appState.fullPresenterMode)
                 .padding(.top, 8)
 
+            Toggle("Digital Signage Mode", isOn: $appState.digitalSignageMode)
+                .padding(.top, 8)
+
             Spacer()
             
             HStack {
@@ -36,11 +39,22 @@ struct CommunityParamView: View {
                 PrimaryButton(title: "Appliquer") {
                     _communityParam.wrappedValue.intervalTimer = intervalTimer
                     DisplaySpaceView.startCommunityTimer(intervalTimer: intervalTimer)
+                    // Resynchronise la vitesse du défilement Digital Signage si actif.
+                    if DigitalSignageController.shared.isRunning {
+                        DigitalSignageController.shared.updateInterval(intervalTimer)
+                    }
                 }
             }
             .padding(.bottom, 16)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .onChange(of: appState.digitalSignageMode) { _, isOn in
+            if isOn {
+                DigitalSignageController.shared.start(intervalTimer: communityParam.intervalTimer)
+            } else {
+                DigitalSignageController.shared.stop()
+            }
+        }
     }
     
     init (communityParam: Binding<CommunityParameter>) {
