@@ -418,34 +418,41 @@ struct PhotoPresenterApp: App {
             }
         }
         
-        let tmp = displaySpace.presenters
-        
-        displaySpace.presenters = nil
-        
         if let path = pathDisplaySpace {
+            // Sauvegarde synchrone : on neutralise `presenters` juste autour de
+            // l'écriture pour ne pas le persister dans le fichier DisplaySpace.
+            let tmp = displaySpace.presenters
+            displaySpace.presenters = nil
             saveToJSONFile(displaySpace, filename: path)
+            displaySpace.presenters = tmp
         } else {
             let panel = NSSavePanel()
-               
+
             panel.title = "Enregistrer l'espace d'affichage"
             panel.allowedContentTypes = [UTType.json]
             panel.nameFieldStringValue = "displayspace.json"
-           
+
             panel.begin { response in
                 if response == .OK, let url = panel.url {
                     let filename = URL(fileURLWithPath: url.path).deletingPathExtension().lastPathComponent
                     displaySpace.displaySpaceHeader.name = filename.replacingOccurrences(of: "_", with: " ")
+
+                    // `panel.begin` est asynchrone : la mise à nil/restauration
+                    // doit se faire ICI, autour de l'écriture réelle, sinon
+                    // `presenters` serait déjà restauré et sérialisé dans le fichier.
+                    let tmp = displaySpace.presenters
+                    displaySpace.presenters = nil
                     saveToJSONFile(displaySpace, filename: url.path)
+                    displaySpace.presenters = tmp
+
                     pathDisplaySpace = url.path
-                    
+
                     if let window = getDisplaySpaceView() {
                         window.title = displaySpace.displaySpaceHeader.name
                     }
                 }
             }
         }
-        
-        displaySpace.presenters = tmp
     }
     
     private func getDisplaySpaceView() -> NSWindow? {
