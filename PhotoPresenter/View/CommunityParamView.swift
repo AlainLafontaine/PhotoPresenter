@@ -56,9 +56,10 @@ struct CommunityParamView: View {
                     communityParam.loopDuration = loopDuration
                     communityParam.loopsPerImage = loopsPerImage
                     DisplaySpaceView.startCommunityTimer(intervalTimer: intervalTimer)
-                    // Resynchronise la vitesse du défilement Digital Signage si actif.
+                    // Resynchronise la vitesse du défilement Digital Signage si actif
+                    // (pilotée par loopDuration, plus par intervalTimer).
                     if DigitalSignageController.shared.isRunning {
-                        DigitalSignageController.shared.updateInterval(intervalTimer)
+                        DigitalSignageController.shared.updateInterval(loopDuration)
                     }
                 }
             }
@@ -67,7 +68,7 @@ struct CommunityParamView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onChange(of: communityParam.digitalSignageMode) { _, isOn in
             if isOn {
-                DigitalSignageController.shared.start(intervalTimer: communityParam.intervalTimer)
+                DigitalSignageController.shared.start(loopDuration: communityParam.loopDuration)
             } else {
                 DigitalSignageController.shared.stop()
             }

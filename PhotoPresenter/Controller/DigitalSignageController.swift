@@ -25,8 +25,8 @@ import QuartzCore
 /// rien ne sort de l'écran. La fenêtre originale reste à sa position et sert de
 /// source au snapshot.
 ///
-/// La vitesse vient de `intervalTimer` (`CommunityParameter`) : un cycle complet
-/// = une largeur d'écran parcourue en `intervalTimer` secondes. Temps court →
+/// La vitesse vient de `loopDuration` (`CommunityParameter`) : un cycle complet
+/// = une largeur d'écran parcourue en `loopDuration` secondes. Temps court →
 /// rapide ; temps long → lent.
 final class DigitalSignageController {
 
@@ -62,7 +62,8 @@ final class DigitalSignageController {
     private var lastTick: CFTimeInterval = 0
     /// Progression du cycle (fraction d'une largeur d'écran), accumulée sans borne.
     private var progress: Double = 0
-    private var intervalTimer: Double = 3.0
+    /// Durée (s) d'un tour complet de moniteur = une largeur d'écran parcourue.
+    private var loopDuration: Double = 60.0
     private var frameCounter: Int = 0
 
     private static let frameRate: Double = 1.0 / 60.0
@@ -77,8 +78,8 @@ final class DigitalSignageController {
     // MARK: - Cycle de vie
 
     /// Active le mode : capture les fenêtres, crée les calques, démarre la boucle.
-    func start(intervalTimer interval: Double) {
-        self.intervalTimer = max(interval, 0.25)
+    func start(loopDuration interval: Double) {
+        self.loopDuration = max(interval, 0.25)
         captureWindows()
         guard !tracked.isEmpty else { return }
 
@@ -96,9 +97,9 @@ final class DigitalSignageController {
         timer = t
     }
 
-    /// Met à jour la vitesse sans repartir de zéro (changement d'`intervalTimer`).
+    /// Met à jour la vitesse sans repartir de zéro (changement de `loopDuration`).
     func updateInterval(_ interval: Double) {
-        intervalTimer = max(interval, 0.25)
+        loopDuration = max(interval, 0.25)
     }
 
     /// Désactive le mode : arrête la boucle, retire les calques. Les fenêtres
@@ -193,8 +194,8 @@ final class DigitalSignageController {
         lastTick = now
         frameCounter += 1
 
-        // Fraction d'une largeur d'écran parcourue par seconde = 1 / intervalTimer.
-        progress += dt / intervalTimer
+        // Fraction d'une largeur d'écran parcourue par seconde = 1 / loopDuration.
+        progress += dt / loopDuration
 
         let refresh = (frameCounter % Self.snapshotEvery == 0)
         for t in tracked.values {
