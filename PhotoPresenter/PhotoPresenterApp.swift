@@ -361,7 +361,14 @@ struct PhotoPresenterApp: App {
     }
     
     func saveDisplaySpaceFile() {
-        
+
+        // Recopie les réglages communautaires live dans le snapshot persisté du
+        // DisplaySpace avant l'écriture JSON.
+        if displaySpace.communityParameter == nil {
+            displaySpace.communityParameter = CommunityParameter()
+        }
+        displaySpace.communityParameter?.applyPersistedValues(from: communityParam)
+
         // Pour la sauvegarde de la position de la fenêtre
         if let window = getDisplaySpaceView() {
             if let windowPos = displaySpace.windowPosition {
@@ -504,7 +511,13 @@ struct PhotoPresenterApp: App {
                     displaySpace.viewPositions = ds.viewPositions
                     displaySpace.presenters = [PhotoPresenter]()
                     displaySpace.emergencyDisplaySpace = ds.emergencyDisplaySpace
-                     
+
+                    // Synchronise l'instance live partagée avec les réglages
+                    // communautaires persistés (check4Update garantit un défaut).
+                    let loadedCommunity = ds.communityParameter ?? CommunityParameter()
+                    displaySpace.communityParameter = loadedCommunity
+                    communityParam.applyPersistedValues(from: loadedCommunity)
+
                     if loadingController == nil {
                        loadingController = PresenterLoadingFileController(
                                                loadingInProgress: $loadingInProgress,

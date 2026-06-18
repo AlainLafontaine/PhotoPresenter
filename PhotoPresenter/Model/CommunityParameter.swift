@@ -24,6 +24,17 @@ class CommunityParameter: ObservableObject, Codable, Hashable {
 
     init() {}
 
+    // MARK: - Synchronisation
+
+    /// Recopie uniquement les réglages durables depuis `other`. Sert à synchroniser
+    /// l'instance live partagée et le snapshot persisté dans le DisplaySpace, sans
+    /// toucher à l'état runtime ni changer l'identité de l'objet.
+    func applyPersistedValues(from other: CommunityParameter) {
+        intervalTimer = other.intervalTimer
+        fullPresenterMode = other.fullPresenterMode
+        digitalSignageMode = other.digitalSignageMode
+    }
+
     // MARK: - CodingKeys
 
     // Seuls les réglages durables figurent ici : l'état runtime est volontairement
