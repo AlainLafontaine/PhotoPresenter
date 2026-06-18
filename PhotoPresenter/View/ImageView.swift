@@ -208,8 +208,18 @@ struct ImageView: View {
                         Label("Transparence", systemImage: (viewSetting.isTransparent ?? false) ? "checkmark.circle.fill" : "circle")
                     }
 
+                    // §7 — Inverse le dégradé de transparence. Libellé = direction
+                    // inversée ; désactivé quand aucun dégradé n'est actif.
+                    let gradientDirection = viewSetting.transparencyGradientDirection ?? .none
+                    Button(action: {
+                        viewSetting.transparencyGradientDirection = gradientDirection.inverted
+                    }) {
+                        Text(gradientDirection.inverseLabel)
+                    }
+                    .disabled(gradientDirection == .none)
+
                     Divider() // ⬅️ Séparateur visuel
-                    
+
                     Button(action: {
                         viewSetting.isPaused.toggle()
                     }) {
