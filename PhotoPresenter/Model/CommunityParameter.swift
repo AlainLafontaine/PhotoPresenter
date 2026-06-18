@@ -15,6 +15,11 @@ class CommunityParameter: ObservableObject, Codable, Hashable {
     @Published var fullPresenterMode: Bool = false
     @Published var digitalSignageMode: Bool = false
 
+    // Durée d'un tour complet de moniteur en Digital Signage (secondes) : 30…600, pas 5.
+    @Published var loopDuration: Double = 60.0
+    // Nombre de tours avant de passer à l'image suivante en Digital Signage : 1…10.
+    @Published var loopsPerImage: Int = 1
+
     // --- État runtime (NON persisté : piloté au clavier en cours de session) ---
     @Published var isCommunityModeActived: Bool = false
     @Published var isTransparent: Bool = false
@@ -33,6 +38,8 @@ class CommunityParameter: ObservableObject, Codable, Hashable {
         intervalTimer = other.intervalTimer
         fullPresenterMode = other.fullPresenterMode
         digitalSignageMode = other.digitalSignageMode
+        loopDuration = other.loopDuration
+        loopsPerImage = other.loopsPerImage
     }
 
     // MARK: - CodingKeys
@@ -43,6 +50,8 @@ class CommunityParameter: ObservableObject, Codable, Hashable {
         case intervalTimer
         case fullPresenterMode
         case digitalSignageMode
+        case loopDuration
+        case loopsPerImage
     }
 
     // MARK: - Codable
@@ -52,6 +61,8 @@ class CommunityParameter: ObservableObject, Codable, Hashable {
         intervalTimer = try container.decodeIfPresent(Double.self, forKey: .intervalTimer) ?? 3.0
         fullPresenterMode = try container.decodeIfPresent(Bool.self, forKey: .fullPresenterMode) ?? false
         digitalSignageMode = try container.decodeIfPresent(Bool.self, forKey: .digitalSignageMode) ?? false
+        loopDuration = try container.decodeIfPresent(Double.self, forKey: .loopDuration) ?? 60.0
+        loopsPerImage = try container.decodeIfPresent(Int.self, forKey: .loopsPerImage) ?? 1
     }
 
     func encode(to encoder: Encoder) throws {
@@ -59,6 +70,8 @@ class CommunityParameter: ObservableObject, Codable, Hashable {
         try container.encode(intervalTimer, forKey: .intervalTimer)
         try container.encode(fullPresenterMode, forKey: .fullPresenterMode)
         try container.encode(digitalSignageMode, forKey: .digitalSignageMode)
+        try container.encode(loopDuration, forKey: .loopDuration)
+        try container.encode(loopsPerImage, forKey: .loopsPerImage)
     }
 
     // MARK: - Hashable
@@ -66,12 +79,16 @@ class CommunityParameter: ObservableObject, Codable, Hashable {
     static func == (lhs: CommunityParameter, rhs: CommunityParameter) -> Bool {
         lhs.intervalTimer == rhs.intervalTimer &&
         lhs.fullPresenterMode == rhs.fullPresenterMode &&
-        lhs.digitalSignageMode == rhs.digitalSignageMode
+        lhs.digitalSignageMode == rhs.digitalSignageMode &&
+        lhs.loopDuration == rhs.loopDuration &&
+        lhs.loopsPerImage == rhs.loopsPerImage
     }
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(intervalTimer)
         hasher.combine(fullPresenterMode)
         hasher.combine(digitalSignageMode)
+        hasher.combine(loopDuration)
+        hasher.combine(loopsPerImage)
     }
 }
