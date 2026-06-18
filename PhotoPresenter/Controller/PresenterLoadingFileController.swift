@@ -56,6 +56,21 @@ class PresenterLoadingFileController: ObservableObject {
                                 if grView.fastLoaddings == nil {
                                     grView.fastLoaddings = (0..<grView.nbOfView).map { _ in FastLoading() }
                                 }
+
+                                // Garantir un PackInDisplaySpace pour le DisplaySpace
+                                // courant AVANT d'ouvrir la fenêtre. Sinon getViewSetting
+                                // renvoie un ViewSetting jetable (valeurs par défaut,
+                                // jamais persistées). Idempotent : on conserve les
+                                // valeurs déjà chargées.
+                                if grView.packInDisplaySpaces == nil {
+                                    grView.packInDisplaySpaces = []
+                                }
+                                if grView.packInDisplaySpaces?.contains(where: { $0.displaySpaceId == displaySpaceId }) != true {
+                                    let viewSettings = (0..<grView.nbOfView).map { _ in ViewSetting() }
+                                    grView.packInDisplaySpaces?.append(
+                                        PackInDisplaySpace(displaySpaceId: displaySpaceId, viewSettings: viewSettings)
+                                    )
+                                }
                             }
 
                             let helper = DataPresenterHelp(
