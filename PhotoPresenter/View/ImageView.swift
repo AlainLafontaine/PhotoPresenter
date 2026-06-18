@@ -400,11 +400,18 @@ struct ImageView: View {
                 let isCommunity = viewSetting.isInCommunity ?? false
                 let isPaused = viewSetting.isPaused
 
-                if (isFav || isCommunity || isPaused) && (viewSetting.isShowPictograms ?? true) {
+                // §3 — Le Favori est toujours affiché quand l'image est favorite,
+                // indépendamment de l'option Pictogrammes. Pause/Communauté restent
+                // conditionnés par l'option (logique affinée au §6).
+                let showContextPictograms = viewSetting.isShowPictograms ?? true
+                let showPause = isPaused && showContextPictograms
+                let showCommunity = isCommunity && showContextPictograms
+
+                if isFav || showPause || showCommunity {
                     VStack {
                         HStack(spacing: 4) {
                             Spacer()
-                            if isPaused {
+                            if showPause {
                                 Image(systemName: "pause.fill")
                                     .font(.system(size: 16, weight: .regular))
                                     .foregroundColor(Color(red: 0.6, green: 0.35, blue: 0.0))
@@ -412,7 +419,7 @@ struct ImageView: View {
                                     .background(Circle().fill(Color.white))
                                     .opacity(0.75)
                             }
-                            if isCommunity {
+                            if showCommunity {
                                 Image(systemName: "person.2.fill")
                                     .font(.system(size: 16, weight: .regular))
                                     .foregroundColor(Color(red: 0.0, green: 0.1, blue: 0.6))
