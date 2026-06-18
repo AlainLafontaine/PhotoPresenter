@@ -66,6 +66,13 @@ final class DigitalSignageController {
     private var loopDuration: Double = 60.0
     private var frameCounter: Int = 0
 
+    /// Nombre de tours complets avant de passer à l'image suivante.
+    private var loopsPerImage: Int = 1
+    /// Tours accumulés depuis le dernier changement d'image.
+    private var loopsSinceAdvance: Int = 0
+    /// Dernière valeur entière de `progress` observée (détection de fin de tour).
+    private var lastWholeProgress: Int = 0
+
     private static let frameRate: Double = 1.0 / 60.0
     /// Le snapshot (contenu) est rafraîchi tous les N frames ; la position des
     /// tuiles, elle, est mise à jour à chaque frame pour un défilement fluide.
@@ -78,13 +85,16 @@ final class DigitalSignageController {
     // MARK: - Cycle de vie
 
     /// Active le mode : capture les fenêtres, crée les calques, démarre la boucle.
-    func start(loopDuration interval: Double) {
+    func start(loopDuration interval: Double, loopsPerImage loops: Int) {
         self.loopDuration = max(interval, 0.25)
+        self.loopsPerImage = max(loops, 1)
         captureWindows()
         guard !tracked.isEmpty else { return }
 
         progress = 0
         frameCounter = 0
+        loopsSinceAdvance = 0
+        lastWholeProgress = 0
         lastTick = CACurrentMediaTime()
 
         for t in tracked.values { makeOverlay(for: t) }
@@ -100,6 +110,11 @@ final class DigitalSignageController {
     /// Met à jour la vitesse sans repartir de zéro (changement de `loopDuration`).
     func updateInterval(_ interval: Double) {
         loopDuration = max(interval, 0.25)
+    }
+
+    /// Met à jour le nombre de tours par image sans repartir de zéro.
+    func updateLoopsPerImage(_ loops: Int) {
+        loopsPerImage = max(loops, 1)
     }
 
     /// Désactive le mode : arrête la boucle, retire les calques. Les fenêtres
@@ -197,11 +212,31 @@ final class DigitalSignageController {
         // Fraction d'une largeur d'écran parcourue par seconde = 1 / loopDuration.
         progress += dt / loopDuration
 
+        // Détection des fins de tour : `progress` est partagé, donc toutes les
+        // fenêtres repassent par leur position d'origine en même temps (quand
+        // `progress` franchit un entier). Après `loopsPerImage` tours, on déclenche
+        // le changement d'image.
+        let whole = Int(progress.rounded(.down))
+        if whole > lastWholeProgress {
+            loopsSinceAdvance += whole - lastWholeProgress
+            lastWholeProgress = whole
+            while loopsSinceAdvance >= loopsPerImage {
+                loopsSinceAdvance -= loopsPerImage
+                advanceSlides()
+            }
+        }
+
         let refresh = (frameCounter % Self.snapshotEvery == 0)
         for t in tracked.values {
             if refresh { refreshSnapshot(t) }
             layoutTiles(t)
         }
+    }
+
+    /// Déclenche le changement d'image sur tous les diaporamas. `advanceSlide()`
+    /// ignore lui-même les présentateurs en pause ou masqués.
+    private func advanceSlides() {
+        DisplaySpaceView.slideShowControllers.forEach { $0.advanceSlide() }
     }
 
     /// Positionne les deux tuiles : la principale au décalage courant, et sa

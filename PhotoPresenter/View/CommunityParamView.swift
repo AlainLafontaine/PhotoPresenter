@@ -60,6 +60,7 @@ struct CommunityParamView: View {
                     // (pilotée par loopDuration, plus par intervalTimer).
                     if DigitalSignageController.shared.isRunning {
                         DigitalSignageController.shared.updateInterval(loopDuration)
+                        DigitalSignageController.shared.updateLoopsPerImage(loopsPerImage)
                     }
                 }
             }
@@ -68,7 +69,10 @@ struct CommunityParamView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onChange(of: communityParam.digitalSignageMode) { _, isOn in
             if isOn {
-                DigitalSignageController.shared.start(loopDuration: communityParam.loopDuration)
+                DigitalSignageController.shared.start(
+                    loopDuration: communityParam.loopDuration,
+                    loopsPerImage: communityParam.loopsPerImage
+                )
             } else {
                 DigitalSignageController.shared.stop()
             }
