@@ -205,11 +205,10 @@ struct PhotoPresenterApp: App {
                     displaySpace.viewPositions.removeAll { $0.id == presenterId }
                     displaySpace.presenters?.removeAll { $0.fileHeader.id == presenterId }
 
-                    if let dsId = displaySpace.fileHeader.id {
-                        for groupedView in helper.presenter.groupedViews {
-                            groupedView.packInDisplaySpaces?.removeAll { $0.displaySpaceId == dsId }
-                        }
-                    }
+                    // Ne PAS retirer les packInDisplaySpaces ici : ils portent les
+                    // ViewSetting (options utilisateur) du DisplaySpace courant et
+                    // doivent rester dans le PhotoPresenter pour être restaurés au
+                    // rechargement. Les retirer effaçait les options sauvegardées.
                 }
                 // Le niveau de la fenêtre (floating/normal) est géré de façon réactive
                 // par WindowLevelController dans ImageView, branché sur viewPosition.isOnTop.
@@ -565,6 +564,14 @@ struct PhotoPresenterApp: App {
                     for groupedView in pp.groupedViews {
                         if groupedView.packInDisplaySpaces == nil {
                             groupedView.packInDisplaySpaces = []
+                        }
+
+                        // Patch défensif : ne créer un réglage par défaut que si ce
+                        // DisplaySpace n'a pas déjà ses ViewSetting. Si des valeurs
+                        // existent au chargement, on les conserve (pas d'écrasement
+                        // par des valeurs par défaut).
+                        if groupedView.packInDisplaySpaces?.contains(where: { $0.displaySpaceId == displaySpace.fileHeader.id! }) == true {
+                            continue
                         }
                          
                         var viewSettings2: [ViewSetting] = [ViewSetting]()
