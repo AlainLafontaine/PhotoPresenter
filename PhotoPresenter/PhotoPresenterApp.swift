@@ -205,11 +205,10 @@ struct PhotoPresenterApp: App {
                     displaySpace.viewPositions.removeAll { $0.id == presenterId }
                     displaySpace.presenters?.removeAll { $0.fileHeader.id == presenterId }
 
-                    if let dsId = displaySpace.fileHeader.id {
-                        for groupedView in helper.presenter.groupedViews {
-                            groupedView.packInDisplaySpaces?.removeAll { $0.displaySpaceId == dsId }
-                        }
-                    }
+                    // Ne PAS retirer les packInDisplaySpaces ici : ils portent les
+                    // ViewSetting (options utilisateur) du DisplaySpace courant et
+                    // doivent rester dans le PhotoPresenter pour être restaurés au
+                    // rechargement. Les retirer effaçait les options sauvegardées.
                 }
                 // Le niveau de la fenêtre (floating/normal) est géré de façon réactive
                 // par WindowLevelController dans ImageView, branché sur viewPosition.isOnTop.
@@ -418,34 +417,41 @@ struct PhotoPresenterApp: App {
             }
         }
         
-        let tmp = displaySpace.presenters
-        
-        displaySpace.presenters = nil
-        
         if let path = pathDisplaySpace {
+            // Sauvegarde synchrone : on neutralise `presenters` juste autour de
+            // l'écriture pour ne pas le persister dans le fichier DisplaySpace.
+            let tmp = displaySpace.presenters
+            displaySpace.presenters = nil
             saveToJSONFile(displaySpace, filename: path)
+            displaySpace.presenters = tmp
         } else {
             let panel = NSSavePanel()
-               
+
             panel.title = "Enregistrer l'espace d'affichage"
             panel.allowedContentTypes = [UTType.json]
             panel.nameFieldStringValue = "displayspace.json"
-           
+
             panel.begin { response in
                 if response == .OK, let url = panel.url {
                     let filename = URL(fileURLWithPath: url.path).deletingPathExtension().lastPathComponent
                     displaySpace.displaySpaceHeader.name = filename.replacingOccurrences(of: "_", with: " ")
+
+                    // `panel.begin` est asynchrone : la mise à nil/restauration
+                    // doit se faire ICI, autour de l'écriture réelle, sinon
+                    // `presenters` serait déjà restauré et sérialisé dans le fichier.
+                    let tmp = displaySpace.presenters
+                    displaySpace.presenters = nil
                     saveToJSONFile(displaySpace, filename: url.path)
+                    displaySpace.presenters = tmp
+
                     pathDisplaySpace = url.path
-                    
+
                     if let window = getDisplaySpaceView() {
                         window.title = displaySpace.displaySpaceHeader.name
                     }
                 }
             }
         }
-        
-        displaySpace.presenters = tmp
     }
     
     private func getDisplaySpaceView() -> NSWindow? {
@@ -558,6 +564,14 @@ struct PhotoPresenterApp: App {
                     for groupedView in pp.groupedViews {
                         if groupedView.packInDisplaySpaces == nil {
                             groupedView.packInDisplaySpaces = []
+                        }
+
+                        // Patch défensif : ne créer un réglage par défaut que si ce
+                        // DisplaySpace n'a pas déjà ses ViewSetting. Si des valeurs
+                        // existent au chargement, on les conserve (pas d'écrasement
+                        // par des valeurs par défaut).
+                        if groupedView.packInDisplaySpaces?.contains(where: { $0.displaySpaceId == displaySpace.fileHeader.id! }) == true {
+                            continue
                         }
                          
                         var viewSettings2: [ViewSetting] = [ViewSetting]()
