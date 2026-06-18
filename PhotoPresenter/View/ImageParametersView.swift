@@ -14,11 +14,17 @@ struct ImageParametersView: View {
     @Binding var opacityStart: Double?
     @Binding var opacityEnd: Double?
     var result: (_ applic: Bool) -> Void
-    
+
+    // Onglets de la vue. Presenter est sélectionné par défaut (§4).
+    private enum ParameterTab: Hashable {
+        case photo, presenter, community
+    }
+    @State private var selectedTab: ParameterTab = .presenter
+
     var body: some View {
         VStack {
-            TabView {
-                Tab("Photo", systemImage: "") {
+            TabView(selection: $selectedTab) {
+                Tab("Photo", systemImage: "", value: ParameterTab.photo) {
                     VStack {
                         GroupBox("General") {
                             VStack(alignment: .leading) {
@@ -32,7 +38,7 @@ struct ImageParametersView: View {
                     Spacer()
                 }
  
-                Tab("Presenter", systemImage: "") {
+                Tab("Presenter", systemImage: "", value: ParameterTab.presenter) {
                     VStack(alignment: .leading, spacing: 0) {
                         GroupBox(label: Text("General").font(.title2).bold()) {
                             VStack(alignment: .leading) {
@@ -92,7 +98,7 @@ struct ImageParametersView: View {
                     Spacer()
                 }
 
-                Tab("Communauté", systemImage: "") {
+                Tab("Communauté", systemImage: "", value: ParameterTab.community) {
                     VStack {
                         GroupBox("General") {
                             VStack(alignment: .leading) {

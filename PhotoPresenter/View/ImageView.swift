@@ -31,8 +31,11 @@ struct ImageView: View {
     @State private var uninterestingRefresh: Bool = false
     @State private var fKeyActive: Bool = false
     @State private var iKeyActive: Bool = false
+    @State private var isShiftPressed: Bool = false           // §5 — Shift révèle infos + pictogrammes
+    @State private var isHoveringPictogramZone: Bool = false  // §6 — survol de la zone des pictogrammes
     @State private var keyDownMonitor: Any? = nil
     @State private var keyUpMonitor: Any? = nil
+    @State private var flagsMonitor: Any? = nil
     @State private var windowStyle: NSWindow.StyleMask? = nil
 
     private var directories: [String] = []
@@ -208,8 +211,18 @@ struct ImageView: View {
                         Label("Transparence", systemImage: (viewSetting.isTransparent ?? false) ? "checkmark.circle.fill" : "circle")
                     }
 
+                    // §7 — Inverse le dégradé de transparence. Libellé = direction
+                    // inversée ; désactivé quand aucun dégradé n'est actif.
+                    let gradientDirection = viewSetting.transparencyGradientDirection ?? .none
+                    Button(action: {
+                        viewSetting.transparencyGradientDirection = gradientDirection.inverted
+                    }) {
+                        Text(gradientDirection.inverseLabel)
+                    }
+                    .disabled(gradientDirection == .none)
+
                     Divider() // ⬅️ Séparateur visuel
-                    
+
                     Button(action: {
                         viewSetting.isPaused.toggle()
                     }) {
@@ -390,11 +403,25 @@ struct ImageView: View {
                 let isCommunity = viewSetting.isInCommunity ?? false
                 let isPaused = viewSetting.isPaused
 
-                if (isFav || isCommunity || isPaused) && (viewSetting.isShowPictograms ?? true) {
-                    VStack {
+                // §3 — Le Favori est toujours affiché quand l'image est favorite.
+                //
+                // §6 — Les pictogrammes contextuels (pause, communauté) ne sont visibles,
+                // quand l'option Pictogrammes est active, que si la souris survole la zone
+                // d'affichage des pictogrammes (coin supérieur droit). Shift les force
+                // « comme si l'option était activée » (§5). La zone des infos est
+                // indépendante de celle des pictogrammes.
+                let optionPictograms = (viewSetting.isShowPictograms ?? true) && isHoveringPictogramZone
+                let showContextPictograms = isShiftPressed || optionPictograms
+                let showPause = isPaused && showContextPictograms
+                let showCommunity = isCommunity && showContextPictograms
+
+                VStack {
+                    HStack {
+                        Spacer()
+                        // Zone de survol stable (même quand aucune icône n'est visible)
+                        // bornée au coin supérieur droit, qui pilote isHoveringPictogramZone.
                         HStack(spacing: 4) {
-                            Spacer()
-                            if isPaused {
+                            if showPause {
                                 Image(systemName: "pause.fill")
                                     .font(.system(size: 16, weight: .regular))
                                     .foregroundColor(Color(red: 0.6, green: 0.35, blue: 0.0))
@@ -402,7 +429,7 @@ struct ImageView: View {
                                     .background(Circle().fill(Color.white))
                                     .opacity(0.75)
                             }
-                            if isCommunity {
+                            if showCommunity {
                                 Image(systemName: "person.2.fill")
                                     .font(.system(size: 16, weight: .regular))
                                     .foregroundColor(Color(red: 0.0, green: 0.1, blue: 0.6))
@@ -419,9 +446,14 @@ struct ImageView: View {
                                     .opacity(0.75)
                             }
                         }
-                        .padding(10)
-                        Spacer()
+                        .frame(width: 130, height: 36, alignment: .trailing)
+                        .contentShape(Rectangle())
+                        .background(MouseHoverObserver { hovering in
+                            isHoveringPictogramZone = hovering
+                        })
                     }
+                    .padding(10)
+                    Spacer()
                 }
                 let _ = uninterestingRefresh
                 if !slideShowController.fastLoading.fileInfos.isEmpty &&
@@ -503,6 +535,11 @@ struct ImageView: View {
                 if event.keyCode == 34 { iKeyActive = false }
                 return event
             }
+            // §5 — Suit l'état de la touche Shift pour révéler infos + pictogrammes.
+            flagsMonitor = NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { event in
+                isShiftPressed = event.modifierFlags.contains(.shift)
+                return event
+            }
         }.onDisappear {
             if let monitor = keyDownMonitor {
                 NSEvent.removeMonitor(monitor)
@@ -511,6 +548,10 @@ struct ImageView: View {
             if let monitor = keyUpMonitor {
                 NSEvent.removeMonitor(monitor)
                 keyUpMonitor = nil
+            }
+            if let monitor = flagsMonitor {
+                NSEvent.removeMonitor(monitor)
+                flagsMonitor = nil
             }
         }.onHover { (entered) in
             if entered {

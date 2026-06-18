@@ -23,6 +23,20 @@ enum TransparencyGradientDirection: String, Codable, CaseIterable {
         case .bottomToTop: return "Bas vers le haut"
         }
     }
+
+    /// Direction opposée du dégradé (§7). `.none` reste `.none`.
+    var inverted: TransparencyGradientDirection {
+        switch self {
+        case .none:        return .none
+        case .leftToRight: return .rightToLeft
+        case .rightToLeft: return .leftToRight
+        case .topToBottom: return .bottomToTop
+        case .bottomToTop: return .topToBottom
+        }
+    }
+
+    /// Libellé de l'item « Inverser » : décrit la direction inversée (§7).
+    var inverseLabel: String { inverted.label }
 }
 
 class ViewSetting: ObservableObject, Codable, Hashable {
