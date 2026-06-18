@@ -10,9 +10,7 @@ import AppKit  // Nécessaire pour NSImage
 import SwiftUtilities
 
 struct ImageView: View {
-    
-    @EnvironmentObject var appState: AppState
-    
+
     @ObservedObject private var viewSetting: ViewSetting
     @ObservedObject private var viewPosition: WindowPosition
     @ObservedObject private var communityParam: CommunityParameter
@@ -117,7 +115,7 @@ struct ImageView: View {
                         window.backgroundColor = .clear
                     }
                 })
-                .onChange(of: appState.fullPresenterMode) { _, isFullPresenterMode in
+                .onChange(of: communityParam.fullPresenterMode) { _, isFullPresenterMode in
                     guard let window = capturedWindow else { return }
                     if isFullPresenterMode {
                         windowStyle = window.styleMask

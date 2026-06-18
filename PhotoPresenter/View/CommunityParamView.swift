@@ -9,10 +9,8 @@ import SwiftUI
 import SwiftUtilities
 
 struct CommunityParamView: View {
-    
-    @EnvironmentObject var appState: AppState
-    
-    @Binding var communityParam: CommunityParameter
+
+    @ObservedObject var communityParam: CommunityParameter
     @State var intervalTimer: Double = 5
     
     var body: some View { 
@@ -23,21 +21,21 @@ struct CommunityParamView: View {
                 in: 0.25...60, step: 0.25
             ).padding(.top, 48)
 
-            Toggle("Full Presenter Mode", isOn: $appState.fullPresenterMode)
+            Toggle("Full Presenter Mode", isOn: $communityParam.fullPresenterMode)
                 .padding(.top, 8)
 
-            Toggle("Digital Signage Mode", isOn: $appState.digitalSignageMode)
+            Toggle("Digital Signage Mode", isOn: $communityParam.digitalSignageMode)
                 .padding(.top, 8)
 
             Spacer()
-            
+
             HStack {
                 SecondaryButton(title: "Annuler") {
-                    intervalTimer = _communityParam.wrappedValue.intervalTimer
+                    intervalTimer = communityParam.intervalTimer
                 }
-                
+
                 PrimaryButton(title: "Appliquer") {
-                    _communityParam.wrappedValue.intervalTimer = intervalTimer
+                    communityParam.intervalTimer = intervalTimer
                     DisplaySpaceView.startCommunityTimer(intervalTimer: intervalTimer)
                     // Resynchronise la vitesse du défilement Digital Signage si actif.
                     if DigitalSignageController.shared.isRunning {
@@ -48,7 +46,7 @@ struct CommunityParamView: View {
             .padding(.bottom, 16)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .onChange(of: appState.digitalSignageMode) { _, isOn in
+        .onChange(of: communityParam.digitalSignageMode) { _, isOn in
             if isOn {
                 DigitalSignageController.shared.start(intervalTimer: communityParam.intervalTimer)
             } else {
@@ -58,7 +56,7 @@ struct CommunityParamView: View {
     }
     
     init (communityParam: Binding<CommunityParameter>) {
-        _communityParam = communityParam
+        self.communityParam = communityParam.wrappedValue
         intervalTimer = communityParam.wrappedValue.intervalTimer
     }
     

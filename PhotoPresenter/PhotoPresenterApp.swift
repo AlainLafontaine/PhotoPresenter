@@ -15,7 +15,6 @@ import SwiftUtilities
 struct PhotoPresenterApp: App {
     @Environment(\.openWindow) private var openWindow
     
-    @StateObject private var appState = AppState()
     @State private var communityParam = CommunityParameter()
     
     @State private var loadingInProgress: Bool = false
@@ -51,7 +50,6 @@ struct PhotoPresenterApp: App {
                 requestRemovingPresenter: { id in removePresenter(id) },
                 communityParameter: $communityParam
             )
-            .environmentObject(appState)
             .onAppear() {
                 if let window = getDisplaySpaceView() {
                     window.title = displaySpace.displaySpaceHeader.name
@@ -184,7 +182,6 @@ struct PhotoPresenterApp: App {
                     windowIdentifier: $windowIdentifier,
                     communityParam: $communityParam
                 )
-                .environmentObject(appState)
                 .onAppear {
                     if displaySpace.presenters == nil {
                         displaySpace.presenters = []

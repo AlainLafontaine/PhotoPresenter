@@ -12,4 +12,9 @@ class CommunityParameter: ObservableObject {
     @Published var intervalTimer: Double = 3.0
     @Published var isTransparent: Bool = false
     @Published var transparentFactor: Double = 1.0
+
+    // Modes globaux du comportement communautaire (déplacés depuis AppState pour
+    // pouvoir les persister avec le reste des réglages communautaires).
+    @Published var fullPresenterMode: Bool = false
+    @Published var digitalSignageMode: Bool = false
 }
