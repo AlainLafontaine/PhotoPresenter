@@ -26,11 +26,19 @@ struct DisplaySpaceLoader {
     }
     
     private func check4Update(_ displaySpace: DisplaySpace) {
-        
+
         switch(displaySpace.fileHeader.version) {
-            
-        default:
+
+        case "0.1.0005":
             break
+
+        default:
+            // Migration vers 0.1.0005 : les anciens fichiers (≤ 0.1.0004) n'ont pas
+            // de CommunityParameter. On en crée un par défaut et on aligne la version.
+            if displaySpace.communityParameter == nil {
+                displaySpace.communityParameter = CommunityParameter()
+            }
+            displaySpace.fileHeader.version = "0.1.0005"
         }
     }
     
