@@ -31,8 +31,11 @@ struct ImageView: View {
     @State private var uninterestingRefresh: Bool = false
     @State private var fKeyActive: Bool = false
     @State private var iKeyActive: Bool = false
+    @State private var isShiftPressed: Bool = false      // §5 — Shift révèle infos + pictogrammes
+    @State private var isHoveringInfoZone: Bool = false  // §6 — survol de la zone overlay
     @State private var keyDownMonitor: Any? = nil
     @State private var keyUpMonitor: Any? = nil
+    @State private var flagsMonitor: Any? = nil
     @State private var windowStyle: NSWindow.StyleMask? = nil
 
     private var directories: [String] = []
@@ -344,7 +347,7 @@ struct ImageView: View {
                     FloatingLabelView(
                         text: slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].filename,
                         isDisplay: Binding(
-                            get: { viewSetting.isOverlayDisplayInfo ?? false },
+                            get: { (viewSetting.isOverlayDisplayInfo ?? false) || isHoveringInfoZone },
                             set: { viewSetting.isOverlayDisplayInfo = $0 }
                         ),
                         position: .halfTop,
@@ -355,7 +358,7 @@ struct ImageView: View {
                         FloatingLabelView(
                             text: "\(ratio) r",
                             isDisplay: Binding(
-                                get: { viewSetting.isOverlayDisplayInfo ?? false },
+                                get: { (viewSetting.isOverlayDisplayInfo ?? false) || isHoveringInfoZone },
                                 set: { viewSetting.isOverlayDisplayInfo = $0 }
                             ),
                             position: .leftBottom,
@@ -366,7 +369,7 @@ struct ImageView: View {
                     FloatingLabelView(
                         text: "\(viewSetting.currentIndex + 1) / \(slideShowController.fastLoading.fileInfos.count)",
                         isDisplay: Binding(
-                            get: { viewSetting.isOverlayDisplayInfo ?? false },
+                            get: { (viewSetting.isOverlayDisplayInfo ?? false) || isHoveringInfoZone },
                             set: { viewSetting.isOverlayDisplayInfo = $0 }
                         ),
                         position: .halfBottom,
@@ -376,7 +379,7 @@ struct ImageView: View {
                     FloatingLabelView(
                         text: "\(viewSetting.intervalTimer) s",
                         isDisplay: Binding(
-                            get: { viewSetting.isOverlayDisplayInfo ?? false },
+                            get: { (viewSetting.isOverlayDisplayInfo ?? false) || isHoveringInfoZone },
                             set: { viewSetting.isOverlayDisplayInfo = $0 }
                         ),
                         position: .rightBottom,
@@ -386,7 +389,7 @@ struct ImageView: View {
                     FloatingLabelView(
                         text: "\(title)",
                         isDisplay: Binding(
-                            get: { viewSetting.isOverlayDisplayInfo ?? false },
+                            get: { (viewSetting.isOverlayDisplayInfo ?? false) || isHoveringInfoZone },
                             set: { viewSetting.isOverlayDisplayInfo = $0 }
                         ),
                         position: .leftTop,
@@ -401,9 +404,15 @@ struct ImageView: View {
                 let isPaused = viewSetting.isPaused
 
                 // §3 — Le Favori est toujours affiché quand l'image est favorite,
-                // indépendamment de l'option Pictogrammes. Pause/Communauté restent
-                // conditionnés par l'option (logique affinée au §6).
-                let showContextPictograms = viewSetting.isShowPictograms ?? true
+                // indépendamment de tout le reste.
+                //
+                // §5/§6 — Les pictogrammes contextuels (pause, communauté) suivent le
+                // pattern Information : visibles si l'option Pictogrammes est active ET
+                // que les infos sont affichées (toggle) ou que la souris survole la zone
+                // overlay. Shift les force « comme si l'option était activée » (§5).
+                let infoVisible = (viewSetting.isOverlayDisplayInfo ?? false) || isHoveringInfoZone
+                let optionPictograms = (viewSetting.isShowPictograms ?? true) && infoVisible
+                let showContextPictograms = isShiftPressed || optionPictograms
                 let showPause = isPaused && showContextPictograms
                 let showCommunity = isCommunity && showContextPictograms
 
@@ -520,6 +529,11 @@ struct ImageView: View {
                 if event.keyCode == 34 { iKeyActive = false }
                 return event
             }
+            // §5 — Suit l'état de la touche Shift pour révéler infos + pictogrammes.
+            flagsMonitor = NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { event in
+                isShiftPressed = event.modifierFlags.contains(.shift)
+                return event
+            }
         }.onDisappear {
             if let monitor = keyDownMonitor {
                 NSEvent.removeMonitor(monitor)
@@ -529,7 +543,13 @@ struct ImageView: View {
                 NSEvent.removeMonitor(monitor)
                 keyUpMonitor = nil
             }
+            if let monitor = flagsMonitor {
+                NSEvent.removeMonitor(monitor)
+                flagsMonitor = nil
+            }
         }.onHover { (entered) in
+            // §6 — Survol de la zone overlay : révèle infos + pictogrammes contextuels.
+            isHoveringInfoZone = entered
             if entered {
                 if NSEvent.modifierFlags.contains(.control) {
 /*
