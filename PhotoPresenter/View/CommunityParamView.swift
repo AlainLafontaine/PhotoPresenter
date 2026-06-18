@@ -33,7 +33,7 @@ struct CommunityParamView: View {
             Stepper(
                 "Durée d'un tour : \(loopDuration, specifier: "%.0f") sec",
                 value: $loopDuration,
-                in: 30...600, step: 5
+                in: 5...600, step: 5
             ).padding(.top, 8)
 
             Stepper(

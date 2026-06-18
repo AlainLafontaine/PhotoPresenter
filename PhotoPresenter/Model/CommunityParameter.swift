@@ -15,7 +15,7 @@ class CommunityParameter: ObservableObject, Codable, Hashable {
     @Published var fullPresenterMode: Bool = false
     @Published var digitalSignageMode: Bool = false
 
-    // Durée d'un tour complet de moniteur en Digital Signage (secondes) : 30…600, pas 5.
+    // Durée d'un tour complet de moniteur en Digital Signage (secondes) : 5…600, pas 5.
     @Published var loopDuration: Double = 60.0
     // Nombre de tours avant de passer à l'image suivante en Digital Signage : 1…10.
     @Published var loopsPerImage: Int = 1
