@@ -44,6 +44,10 @@ class SlideShowController: ObservableObject {
                     communityParam.isCommunityModeActived = true
                     DisplaySpaceView.startCommunityTimer(intervalTimer: self.communityParam.intervalTimer)
                 }
+            } else if self.communityParam.digitalSignageMode && !self.viewSetting.isPaused {
+                // En Digital Signage actif (présentateur non pausé), le changement
+                // d'image est piloté par le compteur de tours du
+                // DigitalSignageController, pas par ce timer standard.
             } else {
                 self.advanceSlide()
             }

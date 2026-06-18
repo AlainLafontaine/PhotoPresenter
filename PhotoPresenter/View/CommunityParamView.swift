@@ -9,13 +9,13 @@ import SwiftUI
 import SwiftUtilities
 
 struct CommunityParamView: View {
-    
-    @EnvironmentObject var appState: AppState
-    
-    @Binding var communityParam: CommunityParameter
+
+    @ObservedObject var communityParam: CommunityParameter
     @State var intervalTimer: Double = 5
-    
-    var body: some View { 
+    @State var loopDuration: Double = 60
+    @State var loopsPerImage: Int = 1
+
+    var body: some View {
         VStack {
             Stepper(
                 "Interval timer : \(intervalTimer, specifier: "%.2f") sec",
@@ -23,34 +23,56 @@ struct CommunityParamView: View {
                 in: 0.25...60, step: 0.25
             ).padding(.top, 48)
 
-            Toggle("Full Presenter Mode", isOn: $appState.fullPresenterMode)
+            Toggle("Full Presenter Mode", isOn: $communityParam.fullPresenterMode)
                 .padding(.top, 8)
 
-            Toggle("Digital Signage Mode", isOn: $appState.digitalSignageMode)
+            Toggle("Digital Signage Mode", isOn: $communityParam.digitalSignageMode)
                 .padding(.top, 8)
+
+            // Réglages propres au Digital Signage Mode.
+            Stepper(
+                "Durée d'un tour : \(loopDuration, specifier: "%.0f") sec",
+                value: $loopDuration,
+                in: 5...600, step: 5
+            ).padding(.top, 8)
+
+            Stepper(
+                "Tours par image : \(loopsPerImage)",
+                value: $loopsPerImage,
+                in: 1...10, step: 1
+            ).padding(.top, 8)
 
             Spacer()
-            
+
             HStack {
                 SecondaryButton(title: "Annuler") {
-                    intervalTimer = _communityParam.wrappedValue.intervalTimer
+                    intervalTimer = communityParam.intervalTimer
+                    loopDuration = communityParam.loopDuration
+                    loopsPerImage = communityParam.loopsPerImage
                 }
-                
+
                 PrimaryButton(title: "Appliquer") {
-                    _communityParam.wrappedValue.intervalTimer = intervalTimer
+                    communityParam.intervalTimer = intervalTimer
+                    communityParam.loopDuration = loopDuration
+                    communityParam.loopsPerImage = loopsPerImage
                     DisplaySpaceView.startCommunityTimer(intervalTimer: intervalTimer)
-                    // Resynchronise la vitesse du défilement Digital Signage si actif.
+                    // Resynchronise la vitesse du défilement Digital Signage si actif
+                    // (pilotée par loopDuration, plus par intervalTimer).
                     if DigitalSignageController.shared.isRunning {
-                        DigitalSignageController.shared.updateInterval(intervalTimer)
+                        DigitalSignageController.shared.updateInterval(loopDuration)
+                        DigitalSignageController.shared.updateLoopsPerImage(loopsPerImage)
                     }
                 }
             }
             .padding(.bottom, 16)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .onChange(of: appState.digitalSignageMode) { _, isOn in
+        .onChange(of: communityParam.digitalSignageMode) { _, isOn in
             if isOn {
-                DigitalSignageController.shared.start(intervalTimer: communityParam.intervalTimer)
+                DigitalSignageController.shared.start(
+                    loopDuration: communityParam.loopDuration,
+                    loopsPerImage: communityParam.loopsPerImage
+                )
             } else {
                 DigitalSignageController.shared.stop()
             }
@@ -58,8 +80,10 @@ struct CommunityParamView: View {
     }
     
     init (communityParam: Binding<CommunityParameter>) {
-        _communityParam = communityParam
+        self.communityParam = communityParam.wrappedValue
         intervalTimer = communityParam.wrappedValue.intervalTimer
+        loopDuration = communityParam.wrappedValue.loopDuration
+        loopsPerImage = communityParam.wrappedValue.loopsPerImage
     }
     
 }

@@ -16,6 +16,7 @@ class DisplaySpace: ObservableObject, Codable, Hashable {
     @Published var viewPositions: [PresenterViewPosition]
     @Published var presenters: [PhotoPresenter]?
     @Published var emergencyDisplaySpace: EmergencyDisplaySpace?
+    @Published var communityParameter: CommunityParameter?
 
     // MARK: - CodingKeys
 
@@ -26,6 +27,7 @@ class DisplaySpace: ObservableObject, Codable, Hashable {
         case viewPositions
         case presenters
         case emergencyDisplaySpace
+        case communityParameter
     }
 
     // MARK: - Codable
@@ -38,6 +40,7 @@ class DisplaySpace: ObservableObject, Codable, Hashable {
         viewPositions = try container.decode([PresenterViewPosition].self, forKey: .viewPositions)
         presenters = try container.decodeIfPresent([PhotoPresenter].self, forKey: .presenters)
         emergencyDisplaySpace = try container.decodeIfPresent(EmergencyDisplaySpace.self, forKey: .emergencyDisplaySpace)
+        communityParameter = try container.decodeIfPresent(CommunityParameter.self, forKey: .communityParameter)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -48,6 +51,7 @@ class DisplaySpace: ObservableObject, Codable, Hashable {
         try container.encode(viewPositions, forKey: .viewPositions)
         try container.encodeIfPresent(presenters, forKey: .presenters)
         try container.encodeIfPresent(emergencyDisplaySpace, forKey: .emergencyDisplaySpace)
+        try container.encodeIfPresent(communityParameter, forKey: .communityParameter)
     }
 
     // MARK: - Hashable
@@ -58,7 +62,8 @@ class DisplaySpace: ObservableObject, Codable, Hashable {
         lhs.windowPosition == rhs.windowPosition &&
         lhs.viewPositions == rhs.viewPositions &&
         lhs.presenters == rhs.presenters &&
-        lhs.emergencyDisplaySpace == rhs.emergencyDisplaySpace
+        lhs.emergencyDisplaySpace == rhs.emergencyDisplaySpace &&
+        lhs.communityParameter == rhs.communityParameter
     }
 
     func hash(into hasher: inout Hasher) {
@@ -68,6 +73,7 @@ class DisplaySpace: ObservableObject, Codable, Hashable {
         hasher.combine(viewPositions)
         hasher.combine(presenters)
         hasher.combine(emergencyDisplaySpace)
+        hasher.combine(communityParameter)
     }
 
     // MARK: - Initializer
@@ -78,7 +84,8 @@ class DisplaySpace: ObservableObject, Codable, Hashable {
         windowPosition: WindowPosition? = nil,
         viewPositions: [PresenterViewPosition],
         presenters: [PhotoPresenter]? = nil,
-        emergencyDisplaySpace: EmergencyDisplaySpace? = nil
+        emergencyDisplaySpace: EmergencyDisplaySpace? = nil,
+        communityParameter: CommunityParameter? = nil
     ) {
         self.fileHeader = fileHeader
         self.displaySpaceHeader = displaySpaceHeader
@@ -86,5 +93,6 @@ class DisplaySpace: ObservableObject, Codable, Hashable {
         self.viewPositions = viewPositions
         self.presenters = presenters
         self.emergencyDisplaySpace = emergencyDisplaySpace
+        self.communityParameter = communityParameter
     }
 }
