@@ -35,10 +35,74 @@ struct ImageView: View {
     @State private var keyUpMonitor: Any? = nil
     @State private var flagsMonitor: Any? = nil
     @State private var windowStyle: NSWindow.StyleMask? = nil
+    @State private var displayedIndex: Int = 0              // index réellement affiché (pilote la transition)
+    @State private var activeTransition: AnyTransition = .identity
 
     private var directories: [String] = []
     private var ratio: Double?
-    
+
+    // MARK: - Transition (Evo_004)
+
+    /// Image à l'index donné avec sa logique d'affichage (expansion vs ajusté).
+    /// Rendue **par index** (et non `currentIndex`) pour que la vue sortante
+    /// conserve l'ancienne image pendant la transition.
+    @ViewBuilder private func transitionImage(at index: Int) -> some View {
+        if !isResizing && viewSetting.isExpansionMode ?? false {
+            Image(nsImage: imageController.getImage(at: index))
+                .resizable()
+        } else {
+            Image(nsImage: imageController.getImage(at: index))
+                .resizable()
+                .scaledToFit()
+        }
+    }
+
+    /// Durée de la transition (s), 0 = aucune. Déterminée par la durée d'affichage
+    /// de la source active. Cas particulier : si le présentateur est en pause au
+    /// moment du changement, le seul déclencheur possible est la navigation clavier
+    /// (les timers ignorent les présentateurs en pause) → 1 s.
+    private var transitionDuration: Double {
+        if viewSetting.isPaused { return 1.0 }
+
+        let displayDuration: Double
+        if communityParam.digitalSignageMode {
+            displayDuration = communityParam.loopDuration * Double(communityParam.loopsPerImage)
+        } else if communityParam.isCommunityModeActived {
+            displayDuration = communityParam.intervalTimer
+        } else {
+            displayDuration = viewSetting.intervalTimer
+        }
+
+        if displayDuration < 1.0 { return 0.0 }   // < 1 s : aucune transition
+        if displayDuration <= 2.0 { return 0.5 }  // 1 à 2 s : 0,5 s
+        return 1.0                                 // > 2 s : 1 s
+    }
+
+    /// Réagit au changement d'image (`currentIndex`). Le sens du glissement
+    /// (Horizontal/Vertical) dépend de la comparaison d'index. On fixe d'abord la
+    /// transition — la vue sortante adopte ainsi le bon bord de sortie — puis on
+    /// bascule l'index affiché au cycle suivant pour déclencher l'animation.
+    private func handleIndexChange(to newIndex: Int) {
+        let oldIndex = displayedIndex
+        guard newIndex != oldIndex else { return }
+
+        let mode = communityParam.transitionMode
+        let duration = transitionDuration
+
+        // Mode Aucune ou durée nulle : changement instantané (comportement actuel).
+        guard mode != .none, duration > 0 else {
+            activeTransition = .identity
+            displayedIndex = newIndex
+            return
+        }
+
+        activeTransition = mode.anyTransition(forward: newIndex > oldIndex)
+        DispatchQueue.main.async {
+            withAnimation(.easeInOut(duration: duration)) {
+                displayedIndex = newIndex
+            }
+        }
+    }
 
     var body: some View {
         ZStack {
@@ -88,15 +152,10 @@ struct ImageView: View {
                 // To do - exception si currentIndex dépasse le tableau
                 // tableau vide plante
 
-                Group {
-                    if !isResizing &&  viewSetting.isExpansionMode ?? false  {
-                        Image(nsImage: imageController.getImage())
-                            .resizable()
-                    } else {
-                        Image(nsImage: imageController.getImage())
-                            .resizable()
-                            .scaledToFit()
-                    }
+                ZStack {
+                    transitionImage(at: displayedIndex)
+                        .id(displayedIndex)
+                        .transition(activeTransition)
                 }
                 .mask { gradientMask }
                 .onAppear {
@@ -104,6 +163,9 @@ struct ImageView: View {
                     if !DisplaySpaceView.slideShowControllers.contains(where: { $0 === self.slideShowController }) {
                         DisplaySpaceView.slideShowControllers.append(self.slideShowController)
                     }
+                }
+                .onChange(of: viewSetting.currentIndex) { _, newIndex in
+                    handleIndexChange(to: newIndex)
                 }
                 .background(WindowAccessor { window in
                     window.title = "\(title)"
@@ -626,6 +688,7 @@ struct ImageView: View {
         self.title = title
         self.ratio = presenterDataSource.ratio
         self.communityParam = communityParameter.wrappedValue
+        self._displayedIndex = State(initialValue: setting.currentIndex)
     }
     
     private mutating func getDirectoryIndex(_ path: String) -> Int {

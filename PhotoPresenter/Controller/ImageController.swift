@@ -30,15 +30,18 @@ class ImageController: ObservableObject {
     }
     
     func getImage() -> NSImage {
-        if let nsImage = fastLoading.fileInfos[viewSetting.currentIndex].nsImage {
+        return getImage(at: viewSetting.currentIndex)
+    }
+
+    /// Image à un index précis (et non `currentIndex`). Nécessaire pour les
+    /// transitions : pendant l'animation, la vue sortante doit continuer d'afficher
+    /// l'ancienne image alors que `currentIndex` pointe déjà sur la nouvelle.
+    func getImage(at index: Int) -> NSImage {
+        if let nsImage = fastLoading.fileInfos[index].nsImage {
             return nsImage
         } else {
-            if viewSetting.isRandomizing {
-                return LoadOneFileInfoInMem(index: viewSetting.currentIndex)
-            } else {
-                // To do Optimiser le chargement
-                return LoadOneFileInfoInMem(index: viewSetting.currentIndex)
-            }
+            // To do Optimiser le chargement
+            return LoadOneFileInfoInMem(index: index)
         }
     }
     

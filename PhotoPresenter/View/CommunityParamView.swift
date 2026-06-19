@@ -14,6 +14,7 @@ struct CommunityParamView: View {
     @State var intervalTimer: Double = 5
     @State var loopDuration: Double = 60
     @State var loopsPerImage: Int = 1
+    @State var transitionMode: ImageTransition = .none
 
     var body: some View {
         VStack {
@@ -42,6 +43,12 @@ struct CommunityParamView: View {
                 in: 1...10, step: 1
             ).padding(.top, 8)
 
+            Picker("Mode de transition :", selection: $transitionMode) {
+                ForEach(ImageTransition.allCases, id: \.self) { mode in
+                    Text(mode.label).tag(mode)
+                }
+            }.padding(.top, 8)
+
             Spacer()
 
             HStack {
@@ -49,12 +56,14 @@ struct CommunityParamView: View {
                     intervalTimer = communityParam.intervalTimer
                     loopDuration = communityParam.loopDuration
                     loopsPerImage = communityParam.loopsPerImage
+                    transitionMode = communityParam.transitionMode
                 }
 
                 PrimaryButton(title: "Appliquer") {
                     communityParam.intervalTimer = intervalTimer
                     communityParam.loopDuration = loopDuration
                     communityParam.loopsPerImage = loopsPerImage
+                    communityParam.transitionMode = transitionMode
                     DisplaySpaceView.startCommunityTimer(communityParam: communityParam)
                     // Resynchronise la vitesse du défilement Digital Signage si actif
                     // (pilotée par loopDuration, plus par intervalTimer).
@@ -84,6 +93,7 @@ struct CommunityParamView: View {
         intervalTimer = communityParam.wrappedValue.intervalTimer
         loopDuration = communityParam.wrappedValue.loopDuration
         loopsPerImage = communityParam.wrappedValue.loopsPerImage
+        transitionMode = communityParam.wrappedValue.transitionMode
     }
     
 }
