@@ -38,7 +38,58 @@ struct ImageView: View {
 
     private var directories: [String] = []
     private var ratio: Double?
-    
+
+    // MARK: - Transition (Evo_004)
+
+    /// Image courante avec sa logique d'affichage (expansion vs ajusté). Extraite
+    /// du corps pour porter l'identité (`.id`) et la transition au remplacement.
+    @ViewBuilder private var transitionImage: some View {
+        if !isResizing && viewSetting.isExpansionMode ?? false {
+            Image(nsImage: imageController.getImage())
+                .resizable()
+        } else {
+            Image(nsImage: imageController.getImage())
+                .resizable()
+                .scaledToFit()
+        }
+    }
+
+    /// Durée de la transition (s), 0 = aucune. Déterminée par la durée d'affichage
+    /// de la source active. Cas particulier : si le présentateur est en pause au
+    /// moment du changement, le seul déclencheur possible est la navigation clavier
+    /// (les timers ignorent les présentateurs en pause) → 1 s.
+    private var transitionDuration: Double {
+        if viewSetting.isPaused { return 1.0 }
+
+        let displayDuration: Double
+        if communityParam.digitalSignageMode {
+            displayDuration = communityParam.loopDuration * Double(communityParam.loopsPerImage)
+        } else if communityParam.isCommunityModeActived {
+            displayDuration = communityParam.intervalTimer
+        } else {
+            displayDuration = viewSetting.intervalTimer
+        }
+
+        if displayDuration < 1.0 { return 0.0 }   // < 1 s : aucune transition
+        if displayDuration <= 2.0 { return 0.5 }  // 1 à 2 s : 0,5 s
+        return 1.0                                 // > 2 s : 1 s
+    }
+
+    /// Transition effective : `.identity` (aucun effet) si mode Aucune ou durée nulle.
+    private var effectiveTransition: AnyTransition {
+        guard communityParam.transitionMode != .none, transitionDuration > 0 else {
+            return .identity
+        }
+        return communityParam.transitionMode.anyTransition
+    }
+
+    /// Animation pilotant la transition : `nil` (changement instantané) si mode
+    /// Aucune ou durée nulle.
+    private var transitionAnimation: Animation? {
+        let duration = transitionDuration
+        guard communityParam.transitionMode != .none, duration > 0 else { return nil }
+        return .easeInOut(duration: duration)
+    }
 
     var body: some View {
         ZStack {
@@ -88,16 +139,12 @@ struct ImageView: View {
                 // To do - exception si currentIndex dépasse le tableau
                 // tableau vide plante
 
-                Group {
-                    if !isResizing &&  viewSetting.isExpansionMode ?? false  {
-                        Image(nsImage: imageController.getImage())
-                            .resizable()
-                    } else {
-                        Image(nsImage: imageController.getImage())
-                            .resizable()
-                            .scaledToFit()
-                    }
+                ZStack {
+                    transitionImage
+                        .id(viewSetting.currentIndex)
+                        .transition(effectiveTransition)
                 }
+                .animation(transitionAnimation, value: viewSetting.currentIndex)
                 .mask { gradientMask }
                 .onAppear {
                     slideShowController.start()
