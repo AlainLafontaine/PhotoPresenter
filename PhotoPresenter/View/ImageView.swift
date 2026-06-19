@@ -37,6 +37,7 @@ struct ImageView: View {
     @State private var windowStyle: NSWindow.StyleMask? = nil
     @State private var displayedIndex: Int = 0              // index réellement affiché (pilote la transition)
     @State private var activeTransition: AnyTransition = .identity
+    @State private var transitionStep: Int = 0             // compteur monotone pilotant le z-index (Recouvrement/Dévoilement)
 
     private var directories: [String] = []
     private var ratio: Double?
@@ -98,9 +99,26 @@ struct ImageView: View {
 
         activeTransition = mode.anyTransition(forward: newIndex > oldIndex)
         DispatchQueue.main.async {
+            // transitionStep et displayedIndex changent dans la MÊME transaction :
+            // la vue entrante (step courant) et la vue sortante (step précédent)
+            // obtiennent ainsi des z-index distincts, pour Recouvrement/Dévoilement.
             withAnimation(.easeInOut(duration: duration)) {
+                transitionStep += 1
                 displayedIndex = newIndex
             }
+        }
+    }
+
+    /// Facteur de z-index selon le mode : la vue entrante a un `transitionStep`
+    /// supérieur à la sortante.
+    /// - Recouvrement (+1) : la nouvelle image passe au-dessus de l'ancienne.
+    /// - Dévoilement (-1) : l'ancienne reste au-dessus et glisse pour dévoiler.
+    /// - autres (0) : ordre indifférent.
+    private func zIndexFactor(for mode: ImageTransition) -> Double {
+        switch mode {
+        case .cover:  return 1
+        case .reveal: return -1
+        default:      return 0
         }
     }
 
@@ -155,6 +173,7 @@ struct ImageView: View {
                 ZStack {
                     transitionImage(at: displayedIndex)
                         .id(displayedIndex)
+                        .zIndex(zIndexFactor(for: communityParam.transitionMode) * Double(transitionStep))
                         .transition(activeTransition)
                 }
                 .mask { gradientMask }

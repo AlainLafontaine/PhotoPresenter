@@ -34,8 +34,30 @@ extension ImageTransition {
                 ? .asymmetric(insertion: .move(edge: .bottom), removal: .move(edge: .top))
                 : .asymmetric(insertion: .move(edge: .top),    removal: .move(edge: .bottom))
 
+        // Glissement + fondu : glissement adouci par une opacité.
+        case .slideFade:
+            return forward
+                ? .asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity),
+                              removal:   .move(edge: .leading).combined(with: .opacity))
+                : .asymmetric(insertion: .move(edge: .leading).combined(with: .opacity),
+                              removal:   .move(edge: .trailing).combined(with: .opacity))
+
+        // Recouvrement : la nouvelle image glisse PAR-DESSUS l'ancienne immobile.
+        // (z-index géré dans ImageView : la nouvelle passe au-dessus.)
+        case .cover:
+            return forward
+                ? .asymmetric(insertion: .move(edge: .trailing), removal: .identity)
+                : .asymmetric(insertion: .move(edge: .leading),  removal: .identity)
+
+        // Dévoilement : l'ancienne glisse et DÉVOILE la nouvelle immobile dessous.
+        // (z-index géré dans ImageView : l'ancienne reste au-dessus.)
+        case .reveal:
+            return forward
+                ? .asymmetric(insertion: .identity, removal: .move(edge: .leading))
+                : .asymmetric(insertion: .identity, removal: .move(edge: .trailing))
+
         // Evo_005 — câblés dans les commits suivants. En attendant : aucun effet.
-        case .cover, .reveal, .slideFade, .zoom,
+        case .zoom,
              .flip, .cube, .blinds, .wipe, .iris, .shape:
             return .identity
 
