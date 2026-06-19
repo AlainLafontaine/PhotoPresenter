@@ -108,9 +108,15 @@ struct DisplaySpaceView: View {
                 DisplaySpaceView.slideShowControllers.forEach { slideShowController in
                     slideShowController.stop()
                 }
-                
-                DisplaySpaceView.slideShowControllers.forEach { slideShowController in
-                    slideShowController.advanceSlide()
+
+                // En Digital Signage, le changement d'image est piloté uniquement par
+                // le compteur de tours du DigitalSignageController (loopsPerImage). Le
+                // timer communautaire ne doit donc PAS avancer l'image sur son intervalle,
+                // sinon CapsLock court-circuiterait la logique « tours par image ».
+                if !communityParam.digitalSignageMode {
+                    DisplaySpaceView.slideShowControllers.forEach { slideShowController in
+                        slideShowController.advanceSlide()
+                    }
                 }
             } else {
                 stopCommunityTime()
