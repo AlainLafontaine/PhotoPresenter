@@ -70,7 +70,7 @@ struct DisplaySpaceView: View {
 
             if !communityParameter.wrappedValue.isCommunityModeActived {
                 communityParameter.wrappedValue.isCommunityModeActived = true
-                DisplaySpaceView.startCommunityTimer(intervalTimer: communityParameter.wrappedValue.intervalTimer)
+                DisplaySpaceView.startCommunityTimer(communityParam: communityParameter.wrappedValue)
             }
 
             switch event.keyCode {
@@ -95,10 +95,10 @@ struct DisplaySpaceView: View {
         }
     }
     
-    static func startCommunityTimer(intervalTimer: Double) {
+    static func startCommunityTimer(communityParam: CommunityParameter) {
         DisplaySpaceView.timer?.invalidate()
         DisplaySpaceView.timer = Timer.scheduledTimer(
-            withTimeInterval: intervalTimer,
+            withTimeInterval: communityParam.intervalTimer,
             repeats: true
         ) { _ in
             
@@ -108,9 +108,15 @@ struct DisplaySpaceView: View {
                 DisplaySpaceView.slideShowControllers.forEach { slideShowController in
                     slideShowController.stop()
                 }
-                
-                DisplaySpaceView.slideShowControllers.forEach { slideShowController in
-                    slideShowController.advanceSlide()
+
+                // En Digital Signage, le changement d'image est piloté uniquement par
+                // le compteur de tours du DigitalSignageController (loopsPerImage). Le
+                // timer communautaire ne doit donc PAS avancer l'image sur son intervalle,
+                // sinon CapsLock court-circuiterait la logique « tours par image ».
+                if !communityParam.digitalSignageMode {
+                    DisplaySpaceView.slideShowControllers.forEach { slideShowController in
+                        slideShowController.advanceSlide()
+                    }
                 }
             } else {
                 stopCommunityTime()
