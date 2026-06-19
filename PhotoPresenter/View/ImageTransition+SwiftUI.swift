@@ -33,6 +33,15 @@ extension ImageTransition {
             return forward
                 ? .asymmetric(insertion: .move(edge: .bottom), removal: .move(edge: .top))
                 : .asymmetric(insertion: .move(edge: .top),    removal: .move(edge: .bottom))
+
+        // Evo_005 — câblés dans les commits suivants. En attendant : aucun effet.
+        case .cover, .reveal, .slideFade, .zoom,
+             .flip, .cube, .blinds, .wipe, .iris, .shape:
+            return .identity
+
+        // Transitions à deux phases : gérées hors AnyTransition (chemin overlay).
+        case .dipToBlack, .dipToWhite:
+            return .identity
         }
     }
 }
