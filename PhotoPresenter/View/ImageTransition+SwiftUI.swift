@@ -66,9 +66,15 @@ extension ImageTransition {
         case .cube:
             return .cube(forward: forward)
 
-        // Evo_005 — câblés au commit suivant. En attendant : aucun effet.
-        case .blinds, .wipe, .iris, .shape:
-            return .identity
+        // Effets à masque : la nouvelle image est dévoilée par-dessus l'ancienne.
+        case .blinds:
+            return .maskReveal(.blinds(forward: forward))
+        case .wipe:
+            return .maskReveal(.wipe(forward: forward))
+        case .iris:
+            return .maskReveal(.iris)
+        case .shape:
+            return .maskReveal(.cornerCircle)
 
         // Transitions à deux phases : gérées hors AnyTransition (chemin overlay).
         case .dipToBlack, .dipToWhite:

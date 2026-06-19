@@ -126,9 +126,14 @@ struct ImageView: View {
     /// - autres (0) : ordre indifférent.
     private func zIndexFactor(for mode: ImageTransition) -> Double {
         switch mode {
-        case .cover:  return 1
-        case .reveal: return -1
-        default:      return 0
+        // La nouvelle image est dévoilée par-dessus l'ancienne immobile.
+        case .cover, .blinds, .wipe, .iris, .shape:
+            return 1
+        // L'ancienne reste au-dessus et glisse pour dévoiler la nouvelle dessous.
+        case .reveal:
+            return -1
+        default:
+            return 0
         }
     }
 
