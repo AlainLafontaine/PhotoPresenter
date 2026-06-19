@@ -12,24 +12,27 @@ extension ImageTransition {
     /// `ImageView`. Les glissements sont asymétriques (la nouvelle image entre par
     /// un bord, l'ancienne sort par le bord opposé) ; le fondu est un simple
     /// `.opacity`. `none` n'anime rien.
-    var anyTransition: AnyTransition {
+    ///
+    /// - Parameter forward: `true` si l'index de la nouvelle image est supérieur à
+    ///   celui de l'ancienne. Détermine le sens du glissement :
+    ///   - Horizontal, forward : nouvelle par la droite, ancienne vers la gauche.
+    ///   - Horizontal, !forward : nouvelle par la gauche, ancienne vers la droite.
+    ///   - Vertical, forward : nouvelle par le bas, ancienne vers le haut.
+    ///   - Vertical, !forward : nouvelle par le haut, ancienne vers le bas.
+    func anyTransition(forward: Bool) -> AnyTransition {
         switch self {
         case .none:
             return .identity
-        case .leftToRight:
-            return .asymmetric(insertion: .move(edge: .leading),
-                               removal:   .move(edge: .trailing))
-        case .rightToLeft:
-            return .asymmetric(insertion: .move(edge: .trailing),
-                               removal:   .move(edge: .leading))
-        case .topToBottom:
-            return .asymmetric(insertion: .move(edge: .top),
-                               removal:   .move(edge: .bottom))
-        case .bottomToTop:
-            return .asymmetric(insertion: .move(edge: .bottom),
-                               removal:   .move(edge: .top))
         case .fade:
             return .opacity
+        case .horizontal:
+            return forward
+                ? .asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading))
+                : .asymmetric(insertion: .move(edge: .leading),  removal: .move(edge: .trailing))
+        case .vertical:
+            return forward
+                ? .asymmetric(insertion: .move(edge: .bottom), removal: .move(edge: .top))
+                : .asymmetric(insertion: .move(edge: .top),    removal: .move(edge: .bottom))
         }
     }
 }

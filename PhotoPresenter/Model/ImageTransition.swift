@@ -11,25 +11,23 @@ import Foundation
 ///
 /// Réglage global (porté par `CommunityParameter`, persisté dans le `DisplaySpace`).
 /// `none` reproduit le comportement historique : aucune animation entre deux images.
-/// Calqué sur `TransparencyGradientDirection` (même structure `String, Codable,
-/// CaseIterable` + `label` français), avec en plus le cas `fade`.
+///
+/// `horizontal` et `vertical` sont des axes : le sens du glissement est déterminé
+/// à l'exécution par la comparaison de l'index de la nouvelle image avec celui de
+/// l'ancienne (voir `anyTransition(forward:)`).
 enum ImageTransition: String, Codable, CaseIterable {
-    case none        = "none"
-    case leftToRight = "leftToRight"
-    case rightToLeft = "rightToLeft"
-    case topToBottom = "topToBottom"
-    case bottomToTop = "bottomToTop"
-    case fade        = "fade"
+    case none       = "none"
+    case horizontal = "horizontal"
+    case vertical   = "vertical"
+    case fade       = "fade"
 
     /// Libellé lisible affiché dans le combobox de `CommunityParamView`.
     var label: String {
         switch self {
-        case .none:        return "Aucune"
-        case .leftToRight: return "Gauche vers droite"
-        case .rightToLeft: return "Droite vers gauche"
-        case .topToBottom: return "Haut vers bas"
-        case .bottomToTop: return "Bas vers haut"
-        case .fade:        return "Fondu"
+        case .none:       return "Aucune"
+        case .horizontal: return "Horizontal"
+        case .vertical:   return "Vertical"
+        case .fade:       return "Fondu"
         }
     }
 }
