@@ -77,6 +77,23 @@ extension ProgressBlendView {
             f.time = Float(progress)
             output = f.outputImage
 
+        case .pixelate:
+            // Fondu (dissolve) puis pixellisation, taille de bloc culminant au
+            // milieu de la transition (effet mosaïque).
+            let dissolve = CIFilter.dissolveTransition()
+            dissolve.inputImage = from
+            dissolve.targetImage = to
+            dissolve.time = Float(progress)
+            if let blended = dissolve.outputImage {
+                let pix = CIFilter.pixellate()
+                pix.inputImage = blended
+                pix.center = CGPoint(x: extent.midX, y: extent.midY)
+                pix.scale = max(1, 40 * Float(sin(progress * .pi)))
+                output = pix.outputImage
+            } else {
+                output = nil
+            }
+
         default:
             output = nil
         }

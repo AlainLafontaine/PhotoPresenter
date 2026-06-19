@@ -35,7 +35,7 @@ struct ProgressBlendView: View {
     @ViewBuilder
     private func content(progress: Double) -> some View {
         switch mode {
-        case .ripple, .pageCurl:
+        case .ripple, .pageCurl, .pixelate:
             // Back-end Core Image (mélange réel des deux images selon progress).
             if let rendered = coreImageTransition(progress: progress) {
                 image(rendered)
@@ -43,7 +43,6 @@ struct ProgressBlendView: View {
                 crossfade(progress)
             }
         default:
-            // Autres modes premium (Pixellisation au commit 4) : fondu provisoire.
             crossfade(progress)
         }
     }
