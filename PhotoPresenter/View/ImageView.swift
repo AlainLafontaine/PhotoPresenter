@@ -38,6 +38,8 @@ struct ImageView: View {
     @State private var displayedIndex: Int = 0              // index réellement affiché (pilote la transition)
     @State private var activeTransition: AnyTransition = .identity
     @State private var transitionStep: Int = 0             // compteur monotone pilotant le z-index (Recouvrement/Dévoilement)
+    @State private var dipOpacity: Double = 0              // overlay couleur des transitions « dip » (noir/blanc)
+    @State private var dipColor: Color = .black
 
     private var directories: [String] = []
     private var ratio: Double?
@@ -97,6 +99,14 @@ struct ImageView: View {
             return
         }
 
+        // Transitions « dip » : chemin 2-phases via overlay couleur.
+        if mode.isDipTransition {
+            performDipTransition(to: newIndex,
+                                 color: mode == .dipToBlack ? .black : .white,
+                                 duration: duration)
+            return
+        }
+
         activeTransition = mode.anyTransition(forward: newIndex > oldIndex)
         DispatchQueue.main.async {
             // transitionStep et displayedIndex changent dans la MÊME transaction :
@@ -119,6 +129,25 @@ struct ImageView: View {
         case .cover:  return 1
         case .reveal: return -1
         default:      return 0
+        }
+    }
+
+    /// Transition « dip » en deux temps : l'écran fond vers `color` (l'ancienne
+    /// image restant affichée), puis — une fois couvert — on bascule l'image et la
+    /// couleur se retire pour révéler la nouvelle.
+    private func performDipTransition(to newIndex: Int, color: Color, duration: Double) {
+        let half = duration / 2
+        dipColor = color
+        activeTransition = .identity
+
+        withAnimation(.easeIn(duration: half)) {
+            dipOpacity = 1.0
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + half) {
+            displayedIndex = newIndex   // swap instantané, écran couvert
+            withAnimation(.easeOut(duration: half)) {
+                dipOpacity = 0.0
+            }
         }
     }
 
@@ -177,6 +206,14 @@ struct ImageView: View {
                         .transition(activeTransition)
                 }
                 .mask { gradientMask }
+                .overlay {
+                    // Voile couleur des transitions « dip » (noir/blanc). Appliqué
+                    // après le masque pour couvrir toute la zone, sans interception.
+                    Rectangle()
+                        .fill(dipColor)
+                        .opacity(dipOpacity)
+                        .allowsHitTesting(false)
+                }
                 .onAppear {
                     slideShowController.start()
                     if !DisplaySpaceView.slideShowControllers.contains(where: { $0 === self.slideShowController }) {

@@ -56,9 +56,12 @@ extension ImageTransition {
                 ? .asymmetric(insertion: .identity, removal: .move(edge: .leading))
                 : .asymmetric(insertion: .identity, removal: .move(edge: .trailing))
 
+        // Zoom : échelle + opacité (cross zoom), non directionnel.
+        case .zoom:
+            return .scale(scale: 0.8).combined(with: .opacity)
+
         // Evo_005 — câblés dans les commits suivants. En attendant : aucun effet.
-        case .zoom,
-             .flip, .cube, .blinds, .wipe, .iris, .shape:
+        case .flip, .cube, .blinds, .wipe, .iris, .shape:
             return .identity
 
         // Transitions à deux phases : gérées hors AnyTransition (chemin overlay).
