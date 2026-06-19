@@ -60,8 +60,14 @@ extension ImageTransition {
         case .zoom:
             return .scale(scale: 0.8).combined(with: .opacity)
 
-        // Evo_005 — câblés dans les commits suivants. En attendant : aucun effet.
-        case .flip, .cube, .blinds, .wipe, .iris, .shape:
+        // Effets 3D (axe Y, sens par index).
+        case .flip:
+            return .flip(forward: forward)
+        case .cube:
+            return .cube(forward: forward)
+
+        // Evo_005 — câblés au commit suivant. En attendant : aucun effet.
+        case .blinds, .wipe, .iris, .shape:
             return .identity
 
         // Transitions à deux phases : gérées hors AnyTransition (chemin overlay).
