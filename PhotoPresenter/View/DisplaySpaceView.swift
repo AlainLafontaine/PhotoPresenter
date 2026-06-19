@@ -70,7 +70,7 @@ struct DisplaySpaceView: View {
 
             if !communityParameter.wrappedValue.isCommunityModeActived {
                 communityParameter.wrappedValue.isCommunityModeActived = true
-                DisplaySpaceView.startCommunityTimer(intervalTimer: communityParameter.wrappedValue.intervalTimer)
+                DisplaySpaceView.startCommunityTimer(communityParam: communityParameter.wrappedValue)
             }
 
             switch event.keyCode {
@@ -95,10 +95,10 @@ struct DisplaySpaceView: View {
         }
     }
     
-    static func startCommunityTimer(intervalTimer: Double) {
+    static func startCommunityTimer(communityParam: CommunityParameter) {
         DisplaySpaceView.timer?.invalidate()
         DisplaySpaceView.timer = Timer.scheduledTimer(
-            withTimeInterval: intervalTimer,
+            withTimeInterval: communityParam.intervalTimer,
             repeats: true
         ) { _ in
             

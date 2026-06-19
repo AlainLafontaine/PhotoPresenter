@@ -55,7 +55,7 @@ struct CommunityParamView: View {
                     communityParam.intervalTimer = intervalTimer
                     communityParam.loopDuration = loopDuration
                     communityParam.loopsPerImage = loopsPerImage
-                    DisplaySpaceView.startCommunityTimer(intervalTimer: intervalTimer)
+                    DisplaySpaceView.startCommunityTimer(communityParam: communityParam)
                     // Resynchronise la vitesse du défilement Digital Signage si actif
                     // (pilotée par loopDuration, plus par intervalTimer).
                     if DigitalSignageController.shared.isRunning {

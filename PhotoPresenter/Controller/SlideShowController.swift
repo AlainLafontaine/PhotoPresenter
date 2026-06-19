@@ -42,7 +42,7 @@ class SlideShowController: ObservableObject {
             if isCapsLockActive {
                 if !communityParam.isCommunityModeActived {
                     communityParam.isCommunityModeActived = true
-                    DisplaySpaceView.startCommunityTimer(intervalTimer: self.communityParam.intervalTimer)
+                    DisplaySpaceView.startCommunityTimer(communityParam: self.communityParam)
                 }
             } else if self.communityParam.digitalSignageMode && !self.viewSetting.isPaused {
                 // En Digital Signage actif (présentateur non pausé), le changement
