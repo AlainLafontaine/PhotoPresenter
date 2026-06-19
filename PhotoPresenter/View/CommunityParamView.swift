@@ -16,6 +16,14 @@ struct CommunityParamView: View {
     @State var loopsPerImage: Int = 1
     @State var transitionMode: ImageTransition = .none
 
+    /// Catégories affichées dans le combobox : la section « Premium » n'apparaît que
+    /// si le drapeau d'activation est levé.
+    private var visibleCategories: [ImageTransition.Category] {
+        ImageTransition.Category.allCases.filter {
+            $0 != .premium || FeatureFlags.premiumTransitions
+        }
+    }
+
     var body: some View {
         VStack {
             Stepper(
@@ -44,7 +52,7 @@ struct CommunityParamView: View {
             ).padding(.top, 8)
 
             Picker("Mode de transition :", selection: $transitionMode) {
-                ForEach(ImageTransition.Category.allCases, id: \.self) { category in
+                ForEach(visibleCategories, id: \.self) { category in
                     Section(category.label) {
                         ForEach(ImageTransition.cases(in: category), id: \.self) { mode in
                             Text(mode.label).tag(mode)

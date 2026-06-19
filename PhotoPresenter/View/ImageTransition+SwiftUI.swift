@@ -79,6 +79,10 @@ extension ImageTransition {
         // Transitions à deux phases : gérées hors AnyTransition (chemin overlay).
         case .dipToBlack, .dipToWhite:
             return .identity
+
+        // Transitions premium : gérées hors AnyTransition (chemin progression).
+        case .ripple, .pageCurl, .pixelate:
+            return .identity
         }
     }
 }
