@@ -34,7 +34,23 @@ struct ProgressBlendView: View {
 
     @ViewBuilder
     private func content(progress: Double) -> some View {
-        // Back-end provisoire (commit 2) : fondu enchaîné.
+        switch mode {
+        case .ripple, .pageCurl:
+            // Back-end Core Image (mélange réel des deux images selon progress).
+            if let rendered = coreImageTransition(progress: progress) {
+                image(rendered)
+            } else {
+                crossfade(progress)
+            }
+        default:
+            // Autres modes premium (Pixellisation au commit 4) : fondu provisoire.
+            crossfade(progress)
+        }
+    }
+
+    /// Fondu enchaîné de repli.
+    @ViewBuilder
+    private func crossfade(_ progress: Double) -> some View {
         ZStack {
             image(oldImage).opacity(1 - progress)
             image(newImage).opacity(progress)
