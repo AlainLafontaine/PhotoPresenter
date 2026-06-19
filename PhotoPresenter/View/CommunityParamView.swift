@@ -44,8 +44,12 @@ struct CommunityParamView: View {
             ).padding(.top, 8)
 
             Picker("Mode de transition :", selection: $transitionMode) {
-                ForEach(ImageTransition.allCases, id: \.self) { mode in
-                    Text(mode.label).tag(mode)
+                ForEach(ImageTransition.Category.allCases, id: \.self) { category in
+                    Section(category.label) {
+                        ForEach(ImageTransition.cases(in: category), id: \.self) { mode in
+                            Text(mode.label).tag(mode)
+                        }
+                    }
                 }
             }.padding(.top, 8)
 

@@ -37,6 +37,9 @@ struct ImageView: View {
     @State private var windowStyle: NSWindow.StyleMask? = nil
     @State private var displayedIndex: Int = 0              // index réellement affiché (pilote la transition)
     @State private var activeTransition: AnyTransition = .identity
+    @State private var transitionStep: Int = 0             // compteur monotone pilotant le z-index (Recouvrement/Dévoilement)
+    @State private var dipOpacity: Double = 0              // overlay couleur des transitions « dip » (noir/blanc)
+    @State private var dipColor: Color = .black
 
     private var directories: [String] = []
     private var ratio: Double?
@@ -96,10 +99,59 @@ struct ImageView: View {
             return
         }
 
+        // Transitions « dip » : chemin 2-phases via overlay couleur.
+        if mode.isDipTransition {
+            performDipTransition(to: newIndex,
+                                 color: mode == .dipToBlack ? .black : .white,
+                                 duration: duration)
+            return
+        }
+
         activeTransition = mode.anyTransition(forward: newIndex > oldIndex)
         DispatchQueue.main.async {
+            // transitionStep et displayedIndex changent dans la MÊME transaction :
+            // la vue entrante (step courant) et la vue sortante (step précédent)
+            // obtiennent ainsi des z-index distincts, pour Recouvrement/Dévoilement.
             withAnimation(.easeInOut(duration: duration)) {
+                transitionStep += 1
                 displayedIndex = newIndex
+            }
+        }
+    }
+
+    /// Facteur de z-index selon le mode : la vue entrante a un `transitionStep`
+    /// supérieur à la sortante.
+    /// - Recouvrement (+1) : la nouvelle image passe au-dessus de l'ancienne.
+    /// - Dévoilement (-1) : l'ancienne reste au-dessus et glisse pour dévoiler.
+    /// - autres (0) : ordre indifférent.
+    private func zIndexFactor(for mode: ImageTransition) -> Double {
+        switch mode {
+        // La nouvelle image est dévoilée par-dessus l'ancienne immobile.
+        case .cover, .blinds, .wipe, .iris, .shape:
+            return 1
+        // L'ancienne reste au-dessus et glisse pour dévoiler la nouvelle dessous.
+        case .reveal:
+            return -1
+        default:
+            return 0
+        }
+    }
+
+    /// Transition « dip » en deux temps : l'écran fond vers `color` (l'ancienne
+    /// image restant affichée), puis — une fois couvert — on bascule l'image et la
+    /// couleur se retire pour révéler la nouvelle.
+    private func performDipTransition(to newIndex: Int, color: Color, duration: Double) {
+        let half = duration / 2
+        dipColor = color
+        activeTransition = .identity
+
+        withAnimation(.easeIn(duration: half)) {
+            dipOpacity = 1.0
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + half) {
+            displayedIndex = newIndex   // swap instantané, écran couvert
+            withAnimation(.easeOut(duration: half)) {
+                dipOpacity = 0.0
             }
         }
     }
@@ -155,9 +207,18 @@ struct ImageView: View {
                 ZStack {
                     transitionImage(at: displayedIndex)
                         .id(displayedIndex)
+                        .zIndex(zIndexFactor(for: communityParam.transitionMode) * Double(transitionStep))
                         .transition(activeTransition)
                 }
                 .mask { gradientMask }
+                .overlay {
+                    // Voile couleur des transitions « dip » (noir/blanc). Appliqué
+                    // après le masque pour couvrir toute la zone, sans interception.
+                    Rectangle()
+                        .fill(dipColor)
+                        .opacity(dipOpacity)
+                        .allowsHitTesting(false)
+                }
                 .onAppear {
                     slideShowController.start()
                     if !DisplaySpaceView.slideShowControllers.contains(where: { $0 === self.slideShowController }) {
