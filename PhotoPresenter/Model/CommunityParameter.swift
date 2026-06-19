@@ -1,4 +1,4 @@
-//
+//  
 //  CommunityParameter.swift
 //  PhotoPresenter
 //
@@ -20,6 +20,9 @@ class CommunityParameter: ObservableObject, Codable, Hashable {
     // Nombre de tours avant de passer à l'image suivante en Digital Signage : 1…10.
     @Published var loopsPerImage: Int = 1
 
+    // Mode de transition appliqué entre deux images (réglage global). Défaut : aucune.
+    @Published var transitionMode: ImageTransition = .none
+
     // --- État runtime (NON persisté : piloté au clavier en cours de session) ---
     @Published var isCommunityModeActived: Bool = false
     @Published var isTransparent: Bool = false
@@ -40,6 +43,7 @@ class CommunityParameter: ObservableObject, Codable, Hashable {
         digitalSignageMode = other.digitalSignageMode
         loopDuration = other.loopDuration
         loopsPerImage = other.loopsPerImage
+        transitionMode = other.transitionMode
     }
 
     // MARK: - CodingKeys
@@ -52,6 +56,7 @@ class CommunityParameter: ObservableObject, Codable, Hashable {
         case digitalSignageMode
         case loopDuration
         case loopsPerImage
+        case transitionMode
     }
 
     // MARK: - Codable
@@ -63,6 +68,7 @@ class CommunityParameter: ObservableObject, Codable, Hashable {
         digitalSignageMode = try container.decodeIfPresent(Bool.self, forKey: .digitalSignageMode) ?? false
         loopDuration = try container.decodeIfPresent(Double.self, forKey: .loopDuration) ?? 60.0
         loopsPerImage = try container.decodeIfPresent(Int.self, forKey: .loopsPerImage) ?? 1
+        transitionMode = try container.decodeIfPresent(ImageTransition.self, forKey: .transitionMode) ?? .none
     }
 
     func encode(to encoder: Encoder) throws {
@@ -72,6 +78,7 @@ class CommunityParameter: ObservableObject, Codable, Hashable {
         try container.encode(digitalSignageMode, forKey: .digitalSignageMode)
         try container.encode(loopDuration, forKey: .loopDuration)
         try container.encode(loopsPerImage, forKey: .loopsPerImage)
+        try container.encode(transitionMode, forKey: .transitionMode)
     }
 
     // MARK: - Hashable
@@ -81,7 +88,8 @@ class CommunityParameter: ObservableObject, Codable, Hashable {
         lhs.fullPresenterMode == rhs.fullPresenterMode &&
         lhs.digitalSignageMode == rhs.digitalSignageMode &&
         lhs.loopDuration == rhs.loopDuration &&
-        lhs.loopsPerImage == rhs.loopsPerImage
+        lhs.loopsPerImage == rhs.loopsPerImage &&
+        lhs.transitionMode == rhs.transitionMode
     }
 
     func hash(into hasher: inout Hasher) {
@@ -90,5 +98,6 @@ class CommunityParameter: ObservableObject, Codable, Hashable {
         hasher.combine(digitalSignageMode)
         hasher.combine(loopDuration)
         hasher.combine(loopsPerImage)
+        hasher.combine(transitionMode)
     }
 }
