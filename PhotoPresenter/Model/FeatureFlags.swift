@@ -14,5 +14,5 @@ enum FeatureFlags {
     /// rendues par le chemin progression (Core Image / Metal). Masquées tant que les
     /// performances (N fenêtres, Digital Signage) ne sont pas validées.
     /// Passer à `true` pour exposer la section « Premium » dans `CommunityParamView`.
-    static let premiumTransitions = false
+    static let premiumTransitions = true
 }
