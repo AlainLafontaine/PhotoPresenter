@@ -447,19 +447,21 @@ struct ImageView: View {
 
                     Button(action: {
                         let currentFileInfo = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex]
-                        currentFileInfo.isFavorite.toggle()
+                        currentFileInfo.toggle(.favorite)
                         favoriteRefresh.toggle()
+                        uninterestingRefresh.toggle()
                     }) {
-                        let isFav = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].isFavorite
+                        let isFav = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].rating == .favorite
                         Label("Favori", systemImage: isFav ? "heart.fill" : "heart")
                     }
 
                     Button(action: {
                         let currentFileInfo = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex]
-                        currentFileInfo.isUninteresting.toggle()
+                        currentFileInfo.toggle(.uninteresting)
                         uninterestingRefresh.toggle()
+                        favoriteRefresh.toggle()
                     }) {
-                        let isUnint = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].isUninteresting
+                        let isUnint = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].rating == .uninteresting
                         Label("Inintéressant", systemImage: isUnint ? "hand.thumbsdown.fill" : "hand.thumbsdown")
                     }
 
@@ -496,12 +498,14 @@ struct ImageView: View {
                 .onTapGesture(count: 1) {
                     if fKeyActive {
                         let currentFileInfo = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex]
-                        currentFileInfo.isFavorite.toggle()
+                        currentFileInfo.toggle(.favorite)
                         favoriteRefresh.toggle()
+                        uninterestingRefresh.toggle()
                     } else if iKeyActive {
                         let currentFileInfo = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex]
-                        currentFileInfo.isUninteresting.toggle()
+                        currentFileInfo.toggle(.uninteresting)
                         uninterestingRefresh.toggle()
+                        favoriteRefresh.toggle()
                     }
                 }
 
@@ -561,7 +565,7 @@ struct ImageView: View {
 
                 let _ = favoriteRefresh
                 let isFav = !slideShowController.fastLoading.fileInfos.isEmpty &&
-                            slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].isFavorite
+                            slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].rating == .favorite
                 let isCommunity = viewSetting.isInCommunity ?? false
                 let isPaused = viewSetting.isPaused
 
@@ -619,7 +623,7 @@ struct ImageView: View {
                 }
                 let _ = uninterestingRefresh
                 if !slideShowController.fastLoading.fileInfos.isEmpty &&
-                   slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].isUninteresting {
+                   slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].rating == .uninteresting {
                     VStack {
                         HStack {
                             Spacer()

@@ -63,7 +63,7 @@ class SlideShowController: ObservableObject {
         let showUnint = viewSetting.isDisplayUninteresting ?? false
         guard showFav || showUnint else { return true }
         let info = fastLoading.fileInfos[index]
-        return (showFav && info.isFavorite) || (showUnint && info.isUninteresting)
+        return (showFav && info.rating == .favorite) || (showUnint && info.rating == .uninteresting)
     }
 
     private func nextFilteredIndex(from current: Int, reverse: Bool) -> Int {
