@@ -42,14 +42,17 @@ struct ProgressBlendView: View {
             } else {
                 crossfade(progress)
             }
+        case .checkerboard, .glitch, .dissolve:
+            // Back-end Metal (.layerEffect).
+            metalTransition(progress: progress)
         default:
             crossfade(progress)
         }
     }
 
-    /// Fondu enchaîné de repli.
+    /// Fondu enchaîné de repli. `internal` pour être réutilisé par le back-end Metal.
     @ViewBuilder
-    private func crossfade(_ progress: Double) -> some View {
+    func crossfade(_ progress: Double) -> some View {
         ZStack {
             image(oldImage).opacity(1 - progress)
             image(newImage).opacity(progress)
@@ -57,7 +60,7 @@ struct ProgressBlendView: View {
     }
 
     @ViewBuilder
-    private func image(_ ns: NSImage) -> some View {
+    func image(_ ns: NSImage) -> some View {
         if fill {
             Image(nsImage: ns).resizable()
         } else {
