@@ -40,6 +40,11 @@ enum ImageTransition: String, Codable, CaseIterable {
     case iris       = "iris"         // Iris
     case shape      = "shape"        // Forme
 
+    // MARK: Premium (Palier 3 — chemin « progression », Core Image / Metal)
+    case ripple     = "ripple"       // Ondulation
+    case pageCurl   = "pageCurl"     // Tourne-page
+    case pixelate   = "pixelate"     // Pixellisation
+
     /// Libellé lisible affiché dans le combobox de `CommunityParamView`.
     var label: String {
         switch self {
@@ -59,6 +64,9 @@ enum ImageTransition: String, Codable, CaseIterable {
         case .wipe:       return "Balayage"
         case .iris:       return "Iris"
         case .shape:      return "Forme"
+        case .ripple:     return "Ondulation"
+        case .pageCurl:   return "Tourne-page"
+        case .pixelate:   return "Pixellisation"
         }
     }
 
@@ -71,6 +79,8 @@ enum ImageTransition: String, Codable, CaseIterable {
             return .standards
         case .flip, .cube, .blinds, .wipe, .iris, .shape:
             return .optionnelles
+        case .ripple, .pageCurl, .pixelate:
+            return .premium
         }
     }
 
@@ -80,20 +90,42 @@ enum ImageTransition: String, Codable, CaseIterable {
         self == .dipToBlack || self == .dipToWhite
     }
 
+    /// `true` pour les transitions « premium » (Evo_006) rendues par le chemin
+    /// progression (mélange des deux images via Core Image / Metal).
+    var isProgressDriven: Bool {
+        category == .premium
+    }
+
+    /// Chemin de rendu à emprunter pour appliquer ce mode.
+    var engine: TransitionEngine {
+        if isProgressDriven { return .progress }
+        if isDipTransition  { return .dip }
+        return .anyTransition
+    }
+
     // MARK: - Catégories
 
     enum Category: CaseIterable {
         case base
         case standards
         case optionnelles
+        case premium
 
         var label: String {
             switch self {
             case .base:         return "Base"
             case .standards:    return "Standards"
             case .optionnelles: return "Optionnelles"
+            case .premium:      return "Premium"
             }
         }
+    }
+
+    /// Chemin de rendu d'une transition.
+    enum TransitionEngine {
+        case anyTransition   // SwiftUI AnyTransition (Base / Standards / Optionnelles)
+        case dip             // overlay couleur 2-phases (Fondu via noir/blanc)
+        case progress        // mélange des deux images piloté 0→1 (Premium)
     }
 
     /// Transitions d'une catégorie, dans l'ordre de déclaration de l'énumération.

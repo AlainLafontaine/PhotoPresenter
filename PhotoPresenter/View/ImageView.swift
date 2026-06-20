@@ -9,6 +9,16 @@ import SwiftUI
 import AppKit  // Nécessaire pour NSImage
 import SwiftUtilities
 
+/// Données de la transition « progression » en cours (Evo_006). Tant que cette
+/// valeur est non nulle, `ImageView` affiche la couche `ProgressBlendView` par-dessus
+/// l'image (qui reste l'ancienne jusqu'au commit final).
+private struct ProgressBlend {
+    let oldIndex: Int
+    let newIndex: Int
+    let mode: ImageTransition
+    let duration: Double
+}
+
 struct ImageView: View {
 
     @ObservedObject private var viewSetting: ViewSetting
@@ -40,6 +50,7 @@ struct ImageView: View {
     @State private var transitionStep: Int = 0             // compteur monotone pilotant le z-index (Recouvrement/Dévoilement)
     @State private var dipOpacity: Double = 0              // overlay couleur des transitions « dip » (noir/blanc)
     @State private var dipColor: Color = .black
+    @State private var progressBlend: ProgressBlend? = nil // transition « progression » en cours (Premium)
 
     private var directories: [String] = []
     private var ratio: Double?
@@ -93,29 +104,46 @@ struct ImageView: View {
         let duration = transitionDuration
 
         // Mode Aucune ou durée nulle : changement instantané (comportement actuel).
-        guard mode != .none, duration > 0 else {
+        // Repli aussi si une transition premium est sélectionnée mais désactivée
+        // par le drapeau (robustesse vis-à-vis d'un fichier persisté).
+        let premiumDisabled = mode.isProgressDriven && !FeatureFlags.premiumTransitions
+        guard mode != .none, duration > 0, !premiumDisabled else {
             activeTransition = .identity
             displayedIndex = newIndex
             return
         }
 
-        // Transitions « dip » : chemin 2-phases via overlay couleur.
-        if mode.isDipTransition {
+        switch mode.engine {
+        case .dip:
             performDipTransition(to: newIndex,
                                  color: mode == .dipToBlack ? .black : .white,
                                  duration: duration)
-            return
-        }
 
-        activeTransition = mode.anyTransition(forward: newIndex > oldIndex)
-        DispatchQueue.main.async {
-            // transitionStep et displayedIndex changent dans la MÊME transaction :
-            // la vue entrante (step courant) et la vue sortante (step précédent)
-            // obtiennent ainsi des z-index distincts, pour Recouvrement/Dévoilement.
-            withAnimation(.easeInOut(duration: duration)) {
-                transitionStep += 1
-                displayedIndex = newIndex
+        case .progress:
+            performProgressTransition(from: oldIndex, to: newIndex, mode: mode, duration: duration)
+
+        case .anyTransition:
+            activeTransition = mode.anyTransition(forward: newIndex > oldIndex)
+            DispatchQueue.main.async {
+                // transitionStep et displayedIndex changent dans la MÊME transaction :
+                // la vue entrante (step courant) et la vue sortante (step précédent)
+                // obtiennent ainsi des z-index distincts, pour Recouvrement/Dévoilement.
+                withAnimation(.easeInOut(duration: duration)) {
+                    transitionStep += 1
+                    displayedIndex = newIndex
+                }
             }
+        }
+    }
+
+    /// Transition « progression » (Premium) : affiche la couche ProgressBlendView
+    /// (mélange ancienne/nouvelle) pendant `duration`, puis commit l'index et retire
+    /// la couche. L'image de base reste l'ancienne sous la couche jusqu'au commit.
+    private func performProgressTransition(from oldIndex: Int, to newIndex: Int, mode: ImageTransition, duration: Double) {
+        progressBlend = ProgressBlend(oldIndex: oldIndex, newIndex: newIndex, mode: mode, duration: duration)
+        DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
+            displayedIndex = newIndex
+            progressBlend = nil
         }
     }
 
@@ -218,6 +246,19 @@ struct ImageView: View {
                         .fill(dipColor)
                         .opacity(dipOpacity)
                         .allowsHitTesting(false)
+                }
+                .overlay {
+                    // Couche des transitions « progression » (Premium). Affichée
+                    // au-dessus de l'image (ancienne) pendant la transition.
+                    if let blend = progressBlend {
+                        ProgressBlendView(
+                            oldImage: imageController.getImage(at: blend.oldIndex),
+                            newImage: imageController.getImage(at: blend.newIndex),
+                            mode: blend.mode,
+                            duration: blend.duration,
+                            fill: !isResizing && (viewSetting.isExpansionMode ?? false)
+                        )
+                    }
                 }
                 .onAppear {
                     slideShowController.start()
