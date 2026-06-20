@@ -41,9 +41,12 @@ enum ImageTransition: String, Codable, CaseIterable {
     case shape      = "shape"        // Forme
 
     // MARK: Premium (Palier 3 — chemin « progression », Core Image / Metal)
-    case ripple     = "ripple"       // Ondulation
-    case pageCurl   = "pageCurl"     // Tourne-page
-    case pixelate   = "pixelate"     // Pixellisation
+    case ripple       = "ripple"        // Ondulation (Core Image)
+    case pageCurl     = "pageCurl"      // Tourne-page (Core Image)
+    case pixelate     = "pixelate"      // Pixellisation (Core Image)
+    case checkerboard = "checkerboard"  // Damier (Metal)
+    case glitch       = "glitch"        // Glitch RGB (Metal)
+    case dissolve     = "dissolve"      // Dissolution granuleuse (Metal)
 
     /// Libellé lisible affiché dans le combobox de `CommunityParamView`.
     var label: String {
@@ -64,9 +67,12 @@ enum ImageTransition: String, Codable, CaseIterable {
         case .wipe:       return "Balayage"
         case .iris:       return "Iris"
         case .shape:      return "Forme"
-        case .ripple:     return "Ondulation"
-        case .pageCurl:   return "Tourne-page"
-        case .pixelate:   return "Pixellisation"
+        case .ripple:       return "Ondulation"
+        case .pageCurl:     return "Tourne-page"
+        case .pixelate:     return "Pixellisation"
+        case .checkerboard: return "Damier"
+        case .glitch:       return "Glitch RGB"
+        case .dissolve:     return "Dissolution granuleuse"
         }
     }
 
@@ -79,7 +85,7 @@ enum ImageTransition: String, Codable, CaseIterable {
             return .standards
         case .flip, .cube, .blinds, .wipe, .iris, .shape:
             return .optionnelles
-        case .ripple, .pageCurl, .pixelate:
+        case .ripple, .pageCurl, .pixelate, .checkerboard, .glitch, .dissolve:
             return .premium
         }
     }

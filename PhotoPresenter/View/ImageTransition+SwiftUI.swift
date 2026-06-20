@@ -81,7 +81,7 @@ extension ImageTransition {
             return .identity
 
         // Transitions premium : gérées hors AnyTransition (chemin progression).
-        case .ripple, .pageCurl, .pixelate:
+        case .ripple, .pageCurl, .pixelate, .checkerboard, .glitch, .dissolve:
             return .identity
         }
     }
