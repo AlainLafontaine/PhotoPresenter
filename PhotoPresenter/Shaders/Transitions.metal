@@ -33,3 +33,32 @@ static float hash21(float2 p) {
     c.a = layer.sample(position).a;
     return c;
 }
+
+/// Damier : la couche (nouvelle image) recouvre l'ancienne (texture) case par case,
+/// en deux vagues selon la parité de la case. `cell` = taille de case (points),
+/// `size` = taille de la vue pour normaliser l'échantillonnage de l'ancienne image.
+[[ stitchable ]] half4 checkerboard(float2 position, SwiftUI::Layer layer,
+                                    float2 size, float progress, float cell,
+                                    texture2d<half> oldImage) {
+    constexpr sampler smp(coord::normalized, address::clamp_to_edge, filter::linear);
+    half4 newColor = layer.sample(position);
+    half4 oldColor = oldImage.sample(smp, position / size);
+
+    float2 idx = floor(position / cell);
+    float parity = fmod(idx.x + idx.y, 2.0);
+    float threshold = parity < 0.5 ? progress * 2.0 : progress * 2.0 - 1.0;
+    return threshold > 0.0 ? newColor : oldColor;
+}
+
+/// Dissolution granuleuse : chaque petit bloc bascule vers la nouvelle image quand
+/// un bruit déterministe passe sous `progress`.
+[[ stitchable ]] half4 dissolve(float2 position, SwiftUI::Layer layer,
+                                float2 size, float progress,
+                                texture2d<half> oldImage) {
+    constexpr sampler smp(coord::normalized, address::clamp_to_edge, filter::linear);
+    half4 newColor = layer.sample(position);
+    half4 oldColor = oldImage.sample(smp, position / size);
+
+    float n = hash21(floor(position / 3.0));
+    return n < progress ? newColor : oldColor;
+}

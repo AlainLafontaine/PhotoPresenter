@@ -25,8 +25,35 @@ extension ProgressBlendView {
                     maxSampleOffset: CGSize(width: 30, height: 0)
                 )
 
+        case .checkerboard:
+            // Deux textures : couche = nouvelle image, ancienne passée en argument.
+            GeometryReader { geo in
+                image(newImage)
+                    .layerEffect(
+                        ShaderLibrary.checkerboard(
+                            .float2(geo.size),
+                            .float(Float(progress)),
+                            .float(40),
+                            .image(Image(nsImage: oldImage))
+                        ),
+                        maxSampleOffset: .zero
+                    )
+            }
+
+        case .dissolve:
+            GeometryReader { geo in
+                image(newImage)
+                    .layerEffect(
+                        ShaderLibrary.dissolve(
+                            .float2(geo.size),
+                            .float(Float(progress)),
+                            .image(Image(nsImage: oldImage))
+                        ),
+                        maxSampleOffset: .zero
+                    )
+            }
+
         default:
-            // Damier / Dissolution câblés au commit suivant : fondu provisoire.
             crossfade(progress)
         }
     }
