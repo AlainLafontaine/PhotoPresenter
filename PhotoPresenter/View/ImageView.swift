@@ -233,10 +233,17 @@ struct ImageView: View {
                 // tableau vide plante
 
                 ZStack {
-                    transitionImage(at: displayedIndex)
-                        .id(displayedIndex)
-                        .zIndex(zIndexFactor(for: communityParam.transitionMode) * Double(transitionStep))
-                        .transition(activeTransition)
+                    if viewSetting.hasNoDisplayOption {
+                        // Evo_010 — état invalide : aucune option du sous-menu « Afficher »
+                        // n'est cochée. On affiche un message au lieu de l'image. Le
+                        // .contextMenu attaché plus bas reste accessible pour cocher une option.
+                        noDisplayOptionMessage
+                    } else {
+                        transitionImage(at: displayedIndex)
+                            .id(displayedIndex)
+                            .zIndex(zIndexFactor(for: communityParam.transitionMode) * Double(transitionStep))
+                            .transition(activeTransition)
+                    }
                 }
                 .mask { gradientMask }
                 .overlay {
@@ -514,6 +521,7 @@ struct ImageView: View {
                     }
                 }
 
+                if !viewSetting.hasNoDisplayOption {
                 Group {
                     FloatingLabelView(
                         text: slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].filename,
@@ -651,6 +659,7 @@ struct ImageView: View {
                     }
                     .allowsHitTesting(false)
                 }
+                } // fin if !viewSetting.hasNoDisplayOption (Evo_010)
             } else {
                 Text("Initiation des images...").onAppear { displayImage = true }
             }
@@ -754,6 +763,26 @@ struct ImageView: View {
 //                NSWorkspace.shared.frontmostApplication?.setValue(newFrame, forKey: "windowFrame")
             }
         }
+    }
+
+    /// Evo_010 — Message affiché à la place de l'image lorsque aucune option du
+    /// sous-menu « Afficher » (Favori / Inintéressant / Aucune) n'est cochée.
+    /// Le menu contextuel reste accessible par-dessus pour cocher une option.
+    private var noDisplayOptionMessage: some View {
+        VStack(spacing: 14) {
+            Image(systemName: "eye.slash")
+                .font(.system(size: 48, weight: .regular))
+                .foregroundColor(.secondary)
+            Text("Aucune image à afficher.")
+                .font(.title2)
+                .bold()
+            Text("Sélectionnez au moins une option dans le menu **Afficher** : Favori, Inintéressant ou Aucune.")
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .padding(40)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var gradientMask: some View {
