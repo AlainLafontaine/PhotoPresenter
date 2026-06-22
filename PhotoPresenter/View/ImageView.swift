@@ -478,6 +478,11 @@ struct ImageView: View {
                         }) {
                             Label("Inintéressant", systemImage: (viewSetting.isDisplayUninteresting ?? false) ? "hand.thumbsdown.fill" : "hand.thumbsdown")
                         }
+                        Button(action: {
+                            viewSetting.isDisplayNone = !(viewSetting.isDisplayNone ?? false)
+                        }) {
+                            Label("Aucune", systemImage: (viewSetting.isDisplayNone ?? false) ? "circle.fill" : "circle")
+                        }
                     } label: {
                         Label("Afficher", systemImage: "eye")
                     }
