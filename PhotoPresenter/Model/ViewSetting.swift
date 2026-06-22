@@ -59,6 +59,7 @@ class ViewSetting: ObservableObject, Codable, Hashable {
     @Published var opacityEnd: Double?
     @Published var isDisplayFavorite: Bool?
     @Published var isDisplayUninteresting: Bool?
+    @Published var isDisplayNone: Bool?
 
     // MARK: - Init
     init(
@@ -79,7 +80,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         opacityStart: Double? = 1.0,
         opacityEnd: Double? = 0.0,
         isDisplayFavorite: Bool? = false,
-        isDisplayUninteresting: Bool? = false
+        isDisplayUninteresting: Bool? = false,
+        isDisplayNone: Bool? = false
     ) {
         self.isPaused = isPaused
         self.isReverse = isReverse
@@ -99,6 +101,7 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         self.opacityEnd = opacityEnd
         self.isDisplayFavorite = isDisplayFavorite
         self.isDisplayUninteresting = isDisplayUninteresting
+        self.isDisplayNone = isDisplayNone
     }
 
     // MARK: - Codable
@@ -121,6 +124,7 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         case opacityEnd
         case isDisplayFavorite
         case isDisplayUninteresting
+        case isDisplayNone
     }
 
     required init(from decoder: Decoder) throws {
@@ -147,6 +151,7 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         opacityEnd = try container.decodeIfPresent(Double.self, forKey: .opacityEnd) ?? 0.0
         isDisplayFavorite = try container.decodeIfPresent(Bool.self, forKey: .isDisplayFavorite) ?? true
         isDisplayUninteresting = try container.decodeIfPresent(Bool.self, forKey: .isDisplayUninteresting) ?? false
+        isDisplayNone = try container.decodeIfPresent(Bool.self, forKey: .isDisplayNone) ?? false
     }
 
     func encode(to encoder: Encoder) throws {
@@ -172,6 +177,7 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         try container.encodeIfPresent(opacityEnd, forKey: .opacityEnd)
         try container.encodeIfPresent(isDisplayFavorite, forKey: .isDisplayFavorite)
         try container.encodeIfPresent(isDisplayUninteresting, forKey: .isDisplayUninteresting)
+        try container.encodeIfPresent(isDisplayNone, forKey: .isDisplayNone)
     }
 
     // MARK: - Hashable
@@ -193,7 +199,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         lhs.opacityStart == rhs.opacityStart &&
         lhs.opacityEnd == rhs.opacityEnd &&
         lhs.isDisplayFavorite == rhs.isDisplayFavorite &&
-        lhs.isDisplayUninteresting == rhs.isDisplayUninteresting
+        lhs.isDisplayUninteresting == rhs.isDisplayUninteresting &&
+        lhs.isDisplayNone == rhs.isDisplayNone
     }
 
     func hash(into hasher: inout Hasher) {
@@ -215,5 +222,6 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         hasher.combine(opacityEnd)
         hasher.combine(isDisplayFavorite)
         hasher.combine(isDisplayUninteresting)
+        hasher.combine(isDisplayNone)
     }
 }
