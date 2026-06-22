@@ -61,6 +61,16 @@ class ViewSetting: ObservableObject, Codable, Hashable {
     @Published var isDisplayUninteresting: Bool?
     @Published var isDisplayNone: Bool?
 
+    /// État invalide du filtre d'affichage (Evo_010) : aucune des trois options
+    /// (Favori / Inintéressant / Aucune) n'est cochée. Dans ce cas, ImageView
+    /// affiche un texte d'invitation au lieu de l'image et le diaporama est mis
+    /// en pause. Propriété dérivée, non persistée.
+    var hasNoDisplayOption: Bool {
+        !(isDisplayFavorite ?? false)
+            && !(isDisplayUninteresting ?? false)
+            && !(isDisplayNone ?? false)
+    }
+
     // MARK: - Init
     init(
         isPaused: Bool = true,
@@ -79,9 +89,9 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         transparencyGradientDirection: TransparencyGradientDirection? = TransparencyGradientDirection.none,
         opacityStart: Double? = 1.0,
         opacityEnd: Double? = 0.0,
-        isDisplayFavorite: Bool? = false,
-        isDisplayUninteresting: Bool? = false,
-        isDisplayNone: Bool? = false
+        isDisplayFavorite: Bool? = true,
+        isDisplayUninteresting: Bool? = true,
+        isDisplayNone: Bool? = true
     ) {
         self.isPaused = isPaused
         self.isReverse = isReverse
@@ -150,8 +160,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         opacityStart = try container.decodeIfPresent(Double.self, forKey: .opacityStart) ?? 1.0
         opacityEnd = try container.decodeIfPresent(Double.self, forKey: .opacityEnd) ?? 0.0
         isDisplayFavorite = try container.decodeIfPresent(Bool.self, forKey: .isDisplayFavorite) ?? true
-        isDisplayUninteresting = try container.decodeIfPresent(Bool.self, forKey: .isDisplayUninteresting) ?? false
-        isDisplayNone = try container.decodeIfPresent(Bool.self, forKey: .isDisplayNone) ?? false
+        isDisplayUninteresting = try container.decodeIfPresent(Bool.self, forKey: .isDisplayUninteresting) ?? true
+        isDisplayNone = try container.decodeIfPresent(Bool.self, forKey: .isDisplayNone) ?? true
     }
 
     func encode(to encoder: Encoder) throws {
