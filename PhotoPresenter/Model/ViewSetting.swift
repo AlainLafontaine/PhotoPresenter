@@ -61,6 +61,16 @@ class ViewSetting: ObservableObject, Codable, Hashable {
     @Published var isDisplayUninteresting: Bool?
     @Published var isDisplayNone: Bool?
 
+    /// État invalide du filtre d'affichage (Evo_010) : aucune des trois options
+    /// (Favori / Inintéressant / Aucune) n'est cochée. Dans ce cas, ImageView
+    /// affiche un texte d'invitation au lieu de l'image et le diaporama est mis
+    /// en pause. Propriété dérivée, non persistée.
+    var hasNoDisplayOption: Bool {
+        !(isDisplayFavorite ?? false)
+            && !(isDisplayUninteresting ?? false)
+            && !(isDisplayNone ?? false)
+    }
+
     // MARK: - Init
     init(
         isPaused: Bool = true,
