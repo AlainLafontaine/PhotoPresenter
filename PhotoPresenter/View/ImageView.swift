@@ -238,6 +238,10 @@ struct ImageView: View {
                         // n'est cochée. On affiche un message au lieu de l'image. Le
                         // .contextMenu attaché plus bas reste accessible pour cocher une option.
                         noDisplayOptionMessage
+                    } else if slideShowController.hasNoMatchingImage {
+                        // Evo_010 — option(s) cochée(s) mais aucune image ne correspond :
+                        // on n'affiche aucune image non conforme, juste un message.
+                        noMatchingImageMessage
                     } else {
                         transitionImage(at: displayedIndex)
                             .id(displayedIndex)
@@ -272,9 +276,19 @@ struct ImageView: View {
                     if !DisplaySpaceView.slideShowControllers.contains(where: { $0 === self.slideShowController }) {
                         DisplaySpaceView.slideShowControllers.append(self.slideShowController)
                     }
+                    // Evo_010 — aligne l'image affichée sur le filtre dès l'ouverture.
+                    slideShowController.syncCurrentIndexToFilter()
                 }
                 .onChange(of: viewSetting.currentIndex) { _, newIndex in
                     handleIndexChange(to: newIndex)
+                }
+                // Evo_010 — quand les options « Afficher » changent, réaligne l'image
+                // courante sur une image conforme (ou laisse le message s'afficher si
+                // aucune ne correspond).
+                .onChange(of: [viewSetting.isDisplayFavorite,
+                               viewSetting.isDisplayUninteresting,
+                               viewSetting.isDisplayNone]) { _, _ in
+                    slideShowController.syncCurrentIndexToFilter()
                 }
                 .background(WindowAccessor { window in
                     window.title = "\(title)"
@@ -521,7 +535,7 @@ struct ImageView: View {
                     }
                 }
 
-                if !viewSetting.hasNoDisplayOption {
+                if !viewSetting.hasNoDisplayOption && !slideShowController.hasNoMatchingImage {
                 Group {
                     FloatingLabelView(
                         text: slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].filename,
@@ -659,7 +673,7 @@ struct ImageView: View {
                     }
                     .allowsHitTesting(false)
                 }
-                } // fin if !viewSetting.hasNoDisplayOption (Evo_010)
+                } // fin if (Evo_010 : ni état invalide, ni absence de correspondance)
             } else {
                 Text("Initiation des images...").onAppear { displayImage = true }
             }
@@ -778,6 +792,23 @@ struct ImageView: View {
                 .bold()
             Text("Sélectionnez au moins une option dans le menu **Afficher** : Favori, Inintéressant ou Aucune.")
                 .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .padding(40)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    /// Evo_010 — Message affiché lorsqu'au moins une option « Afficher » est cochée
+    /// mais qu'aucune image du diaporama ne correspond au critère. Le diaporama est
+    /// figé et aucune image non conforme n'est montrée.
+    private var noMatchingImageMessage: some View {
+        VStack(spacing: 14) {
+            Image(systemName: "photo.on.rectangle.angled")
+                .font(.system(size: 48, weight: .regular))
+                .foregroundColor(.secondary)
+            Text("Aucune image ne correspond aux options d'affichage sélectionnées.")
+                .font(.title3)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
         }

@@ -69,6 +69,29 @@ class SlideShowController: ObservableObject {
             || (showNone && info.rating == .none)
     }
 
+    /// Evo_010 — Vrai lorsque, le filtre étant actif (au moins une option cochée),
+    /// AUCUNE image du diaporama ne correspond aux options sélectionnées. Faux quand
+    /// aucune option n'est cochée (cas distinct géré par `viewSetting.hasNoDisplayOption`).
+    var hasNoMatchingImage: Bool {
+        guard !viewSetting.hasNoDisplayOption else { return false }
+        guard !fastLoading.fileInfos.isEmpty else { return true }
+        return !fastLoading.fileInfos.indices.contains { passesDisplayFilter(at: $0) }
+    }
+
+    /// Evo_010 — Réaligne l'index courant sur la prochaine image conforme au filtre
+    /// quand l'image actuellement affichée ne l'est pas (changement d'options,
+    /// ouverture de fichier). Si aucune image ne correspond, on laisse l'index tel
+    /// quel : ImageView affiche alors le message « aucune correspondance ».
+    func syncCurrentIndexToFilter() {
+        guard !viewSetting.hasNoDisplayOption else { return }
+        guard !fastLoading.fileInfos.isEmpty else { return }
+        guard !passesDisplayFilter(at: viewSetting.currentIndex) else { return }
+        let next = nextFilteredIndex(from: viewSetting.currentIndex, reverse: false)
+        if passesDisplayFilter(at: next) {
+            viewSetting.currentIndex = next
+        }
+    }
+
     private func nextFilteredIndex(from current: Int, reverse: Bool) -> Int {
         let count = fastLoading.fileInfos.count
         var next = reverse ? (current - 1 + count) % count : (current + 1) % count
@@ -86,6 +109,9 @@ class SlideShowController: ObservableObject {
         // Evo_010 : état invalide (aucune option d'affichage cochée) → ne pas avancer.
         // ImageView affiche le texte d'invitation ; le diaporama reste figé.
         guard !viewSetting.hasNoDisplayOption else { return }
+        // Evo_010 : option(s) cochée(s) mais aucune image conforme → ne pas avancer
+        // (sinon nextFilteredIndex afficherait une image non conforme).
+        guard !hasNoMatchingImage else { return }
 
         let count = fastLoading.fileInfos.count
         if viewSetting.isRandomizing {
@@ -140,8 +166,9 @@ class SlideShowController: ObservableObject {
     
     private func navigationByKeyboard(event: NSEvent) {
         guard isWindowVisible else { return }
-        // Evo_010 : aucune option d'affichage cochée → la navigation clavier n'avance pas.
+        // Evo_010 : aucune option cochée, ou aucune image conforme → pas de navigation.
         guard !viewSetting.hasNoDisplayOption else { return }
+        guard !hasNoMatchingImage else { return }
         if !viewSetting.isPaused {
             viewSetting.isPaused.toggle()
         }
