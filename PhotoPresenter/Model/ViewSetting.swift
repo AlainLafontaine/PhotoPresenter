@@ -79,9 +79,9 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         transparencyGradientDirection: TransparencyGradientDirection? = TransparencyGradientDirection.none,
         opacityStart: Double? = 1.0,
         opacityEnd: Double? = 0.0,
-        isDisplayFavorite: Bool? = false,
-        isDisplayUninteresting: Bool? = false,
-        isDisplayNone: Bool? = false
+        isDisplayFavorite: Bool? = true,
+        isDisplayUninteresting: Bool? = true,
+        isDisplayNone: Bool? = true
     ) {
         self.isPaused = isPaused
         self.isReverse = isReverse
@@ -150,8 +150,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         opacityStart = try container.decodeIfPresent(Double.self, forKey: .opacityStart) ?? 1.0
         opacityEnd = try container.decodeIfPresent(Double.self, forKey: .opacityEnd) ?? 0.0
         isDisplayFavorite = try container.decodeIfPresent(Bool.self, forKey: .isDisplayFavorite) ?? true
-        isDisplayUninteresting = try container.decodeIfPresent(Bool.self, forKey: .isDisplayUninteresting) ?? false
-        isDisplayNone = try container.decodeIfPresent(Bool.self, forKey: .isDisplayNone) ?? false
+        isDisplayUninteresting = try container.decodeIfPresent(Bool.self, forKey: .isDisplayUninteresting) ?? true
+        isDisplayNone = try container.decodeIfPresent(Bool.self, forKey: .isDisplayNone) ?? true
     }
 
     func encode(to encoder: Encoder) throws {
