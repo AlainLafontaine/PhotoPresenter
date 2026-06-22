@@ -83,6 +83,9 @@ class SlideShowController: ObservableObject {
     func advanceSlide() {
         guard !viewSetting.isPaused else { return }
         guard isWindowVisible else { return }
+        // Evo_010 : état invalide (aucune option d'affichage cochée) → ne pas avancer.
+        // ImageView affiche le texte d'invitation ; le diaporama reste figé.
+        guard !viewSetting.hasNoDisplayOption else { return }
 
         let count = fastLoading.fileInfos.count
         if viewSetting.isRandomizing {
@@ -137,6 +140,8 @@ class SlideShowController: ObservableObject {
     
     private func navigationByKeyboard(event: NSEvent) {
         guard isWindowVisible else { return }
+        // Evo_010 : aucune option d'affichage cochée → la navigation clavier n'avance pas.
+        guard !viewSetting.hasNoDisplayOption else { return }
         if !viewSetting.isPaused {
             viewSetting.isPaused.toggle()
         }
