@@ -15,21 +15,28 @@ public class FileInfo: ObservableObject, Codable, Hashable {
     @Published public var directoryIndex: Int
     @Published public var width: Int
     @Published public var height: Int
-    @Published public var isFavorite: Bool
-    @Published public var isUninteresting: Bool
+    @Published public var rating: Rating
 
                public var nsImage: NSImage?
 
     // MARK: - Initializer
 
-    public init(filename: String, directoryIndex: Int, width: Int, height: Int, isFavorite: Bool = false, isUninteresting: Bool = false, nsImage: NSImage? = nil) {
+    public init(filename: String, directoryIndex: Int, width: Int, height: Int, rating: Rating = .none, nsImage: NSImage? = nil) {
         self.filename = filename
         self.directoryIndex = directoryIndex
         self.width = width
         self.height = height
-        self.isFavorite = isFavorite
-        self.isUninteresting = isUninteresting
+        self.rating = rating
         self.nsImage = nsImage
+    }
+
+    // MARK: - Rating
+
+    /// Bascule l'appréciation : si déjà à `value`, repasse à `.none` ; sinon
+    /// assigne `value`. `rating` ne portant qu'une valeur, assigner une
+    /// appréciation efface mécaniquement la précédente (exclusivité mutuelle).
+    public func toggle(_ value: Rating) {
+        rating = (rating == value) ? .none : value
     }
 
     // MARK: - Codable
@@ -39,8 +46,7 @@ public class FileInfo: ObservableObject, Codable, Hashable {
         case directoryIndex
         case width
         case height
-        case isFavorite
-        case isUninteresting
+        case rating
         // nsImage is intentionally excluded
     }
 
@@ -50,9 +56,8 @@ public class FileInfo: ObservableObject, Codable, Hashable {
         let directoryIndex = try container.decode(Int.self, forKey: .directoryIndex)
         let width = try container.decode(Int.self, forKey: .width)
         let height = try container.decode(Int.self, forKey: .height)
-        let isFavorite = (try? container.decode(Bool.self, forKey: .isFavorite)) ?? false
-        let isUninteresting = (try? container.decode(Bool.self, forKey: .isUninteresting)) ?? false
-        self.init(filename: filename, directoryIndex: directoryIndex, width: width, height: height, isFavorite: isFavorite, isUninteresting: isUninteresting)
+        let rating = (try? container.decodeIfPresent(Rating.self, forKey: .rating)) ?? .none
+        self.init(filename: filename, directoryIndex: directoryIndex, width: width, height: height, rating: rating)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -61,8 +66,7 @@ public class FileInfo: ObservableObject, Codable, Hashable {
         try container.encode(directoryIndex, forKey: .directoryIndex)
         try container.encode(width, forKey: .width)
         try container.encode(height, forKey: .height)
-        try container.encode(isFavorite, forKey: .isFavorite)
-        try container.encode(isUninteresting, forKey: .isUninteresting)
+        try container.encode(rating, forKey: .rating)
         // nsImage intentionally not encoded
     }
 
@@ -73,8 +77,7 @@ public class FileInfo: ObservableObject, Codable, Hashable {
         lhs.directoryIndex == rhs.directoryIndex &&
         lhs.width == rhs.width &&
         lhs.height == rhs.height &&
-        lhs.isFavorite == rhs.isFavorite &&
-        lhs.isUninteresting == rhs.isUninteresting
+        lhs.rating == rhs.rating
     }
 
     public func hash(into hasher: inout Hasher) {
@@ -82,7 +85,6 @@ public class FileInfo: ObservableObject, Codable, Hashable {
         hasher.combine(directoryIndex)
         hasher.combine(width)
         hasher.combine(height)
-        hasher.combine(isFavorite)
-        hasher.combine(isUninteresting)
+        hasher.combine(rating)
     }
 }
