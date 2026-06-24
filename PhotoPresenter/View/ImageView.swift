@@ -288,6 +288,8 @@ struct ImageView: View {
                 // courante sur une image conforme (ou laisse le message s'afficher si
                 // aucune ne correspond).
                 .onChange(of: [viewSetting.isDisplayFavorite,
+                               viewSetting.isDisplaySelected,
+                               viewSetting.isDisplayImprovable,
                                viewSetting.isDisplayUninteresting,
                                viewSetting.isDisplayNone]) { _, _ in
                     slideShowController.syncCurrentIndexToFilter()
@@ -511,6 +513,16 @@ struct ImageView: View {
                             viewSetting.isDisplayFavorite = !(viewSetting.isDisplayFavorite ?? false)
                         }) {
                             Label("Favori", systemImage: (viewSetting.isDisplayFavorite ?? false) ? "heart.fill" : "heart")
+                        }
+                        Button(action: {
+                            viewSetting.isDisplaySelected = !(viewSetting.isDisplaySelected ?? false)
+                        }) {
+                            Label("Sélectionnée", systemImage: (viewSetting.isDisplaySelected ?? false) ? "checkmark.seal.fill" : "checkmark.seal")
+                        }
+                        Button(action: {
+                            viewSetting.isDisplayImprovable = !(viewSetting.isDisplayImprovable ?? false)
+                        }) {
+                            Label("À améliorer", systemImage: (viewSetting.isDisplayImprovable ?? false) ? "wrench.adjustable.fill" : "wrench.adjustable")
                         }
                         Button(action: {
                             viewSetting.isDisplayUninteresting = !(viewSetting.isDisplayUninteresting ?? false)
@@ -809,7 +821,8 @@ struct ImageView: View {
     }
 
     /// Evo_010 — Message affiché à la place de l'image lorsque aucune option du
-    /// sous-menu « Afficher » (Favori / Inintéressant / Aucune) n'est cochée.
+    /// sous-menu « Afficher » (Favori / Sélectionnée / À améliorer / Inintéressant
+    /// / Aucune) n'est cochée.
     /// Le menu contextuel reste accessible par-dessus pour cocher une option.
     private var noDisplayOptionMessage: some View {
         VStack(spacing: 14) {
@@ -819,7 +832,7 @@ struct ImageView: View {
             Text("Aucune image à afficher.")
                 .font(.title2)
                 .bold()
-            Text("Sélectionnez au moins une option dans le menu **Afficher** : Favori, Inintéressant ou Aucune.")
+            Text("Sélectionnez au moins une option dans le menu **Afficher** : Favori, Sélectionnée, À améliorer, Inintéressant ou Aucune.")
                 .font(.body)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
