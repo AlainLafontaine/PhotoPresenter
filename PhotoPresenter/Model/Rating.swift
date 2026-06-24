@@ -14,6 +14,7 @@ import Foundation
 public enum Rating: String, Codable, CaseIterable {
     case none
     case favorite
+    case selected
     case uninteresting
     case improvable
 }
