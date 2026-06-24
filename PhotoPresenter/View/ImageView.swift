@@ -41,6 +41,8 @@ struct ImageView: View {
     @State private var uninterestingRefresh: Bool = false
     @State private var fKeyActive: Bool = false
     @State private var iKeyActive: Bool = false
+    @State private var sKeyActive: Bool = false
+    @State private var aKeyActive: Bool = false
     @State private var isShiftPressed: Bool = false           // §5 — Shift révèle infos + pictogrammes
     @State private var isHoveringPictogramZone: Bool = false  // §6 — survol de la zone des pictogrammes
     @State private var keyDownMonitor: Any? = nil
@@ -552,16 +554,19 @@ struct ImageView: View {
                     }
                 }
                 .onTapGesture(count: 1) {
+                    let currentFileInfo = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex]
                     if fKeyActive {
-                        let currentFileInfo = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex]
                         currentFileInfo.toggle(.favorite)
-                        favoriteRefresh.toggle()
-                        uninterestingRefresh.toggle()
+                        refreshRatingPictograms()
                     } else if iKeyActive {
-                        let currentFileInfo = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex]
                         currentFileInfo.toggle(.uninteresting)
-                        uninterestingRefresh.toggle()
-                        favoriteRefresh.toggle()
+                        refreshRatingPictograms()
+                    } else if sKeyActive {
+                        currentFileInfo.toggle(.selected)
+                        refreshRatingPictograms()
+                    } else if aKeyActive {
+                        currentFileInfo.toggle(.improvable)
+                        refreshRatingPictograms()
                     }
                 }
 
@@ -774,11 +779,15 @@ struct ImageView: View {
             keyDownMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
                 if event.keyCode == 3 { fKeyActive = true }
                 if event.keyCode == 34 { iKeyActive = true }
+                if event.keyCode == 1 { sKeyActive = true }
+                if event.keyCode == 0 { aKeyActive = true }
                 return event
             }
             keyUpMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyUp) { event in
                 if event.keyCode == 3 { fKeyActive = false }
                 if event.keyCode == 34 { iKeyActive = false }
+                if event.keyCode == 1 { sKeyActive = false }
+                if event.keyCode == 0 { aKeyActive = false }
                 return event
             }
             // §5 — Suit l'état de la touche Shift pour révéler infos + pictogrammes.
