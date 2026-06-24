@@ -623,6 +623,12 @@ struct ImageView: View {
                 let _ = favoriteRefresh
                 let isFav = !slideShowController.fastLoading.fileInfos.isEmpty &&
                             slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].rating == .favorite
+                let _ = selectedRefresh
+                let isSelected = !slideShowController.fastLoading.fileInfos.isEmpty &&
+                            slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].rating == .selected
+                let _ = improvableRefresh
+                let isImprovable = !slideShowController.fastLoading.fileInfos.isEmpty &&
+                            slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].rating == .improvable
                 let isCommunity = viewSetting.isInCommunity ?? false
                 let isPaused = viewSetting.isPaused
 
@@ -664,6 +670,22 @@ struct ImageView: View {
                                 Image(systemName: "heart.fill")
                                     .font(.system(size: 16, weight: .regular))
                                     .foregroundColor(Color(red: 0.6, green: 0.0, blue: 0.0))
+                                    .padding(5)
+                                    .background(Circle().fill(Color.white))
+                                    .opacity(0.75)
+                            }
+                            if isSelected {
+                                Image(systemName: "checkmark.seal.fill")
+                                    .font(.system(size: 16, weight: .regular))
+                                    .foregroundColor(Color(red: 0.0, green: 0.45, blue: 0.0))
+                                    .padding(5)
+                                    .background(Circle().fill(Color.white))
+                                    .opacity(0.75)
+                            }
+                            if isImprovable {
+                                Image(systemName: "wrench.adjustable.fill")
+                                    .font(.system(size: 16, weight: .regular))
+                                    .foregroundColor(Color(red: 0.55, green: 0.35, blue: 0.0))
                                     .padding(5)
                                     .background(Circle().fill(Color.white))
                                     .opacity(0.75)
