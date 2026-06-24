@@ -36,6 +36,8 @@ struct ImageView: View {
     @State private var capturedWindow: NSWindow? = nil
     @State private var savedExpansionMode: Bool = false
     @State private var favoriteRefresh: Bool = false
+    @State private var selectedRefresh: Bool = false
+    @State private var improvableRefresh: Bool = false
     @State private var uninterestingRefresh: Bool = false
     @State private var fKeyActive: Bool = false
     @State private var iKeyActive: Bool = false
@@ -469,8 +471,7 @@ struct ImageView: View {
                     Button(action: {
                         let currentFileInfo = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex]
                         currentFileInfo.toggle(.favorite)
-                        favoriteRefresh.toggle()
-                        uninterestingRefresh.toggle()
+                        refreshRatingPictograms()
                     }) {
                         let isFav = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].rating == .favorite
                         Label("Favori", systemImage: isFav ? "heart.fill" : "heart")
@@ -478,9 +479,26 @@ struct ImageView: View {
 
                     Button(action: {
                         let currentFileInfo = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex]
+                        currentFileInfo.toggle(.selected)
+                        refreshRatingPictograms()
+                    }) {
+                        let isSel = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].rating == .selected
+                        Label("Sélectionnée", systemImage: isSel ? "checkmark.seal.fill" : "checkmark.seal")
+                    }
+
+                    Button(action: {
+                        let currentFileInfo = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex]
+                        currentFileInfo.toggle(.improvable)
+                        refreshRatingPictograms()
+                    }) {
+                        let isImp = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].rating == .improvable
+                        Label("À améliorer", systemImage: isImp ? "wrench.adjustable.fill" : "wrench.adjustable")
+                    }
+
+                    Button(action: {
+                        let currentFileInfo = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex]
                         currentFileInfo.toggle(.uninteresting)
-                        uninterestingRefresh.toggle()
-                        favoriteRefresh.toggle()
+                        refreshRatingPictograms()
                     }) {
                         let isUnint = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].rating == .uninteresting
                         Label("Inintéressant", systemImage: isUnint ? "hand.thumbsdown.fill" : "hand.thumbsdown")
@@ -777,6 +795,17 @@ struct ImageView: View {
 //                NSWorkspace.shared.frontmostApplication?.setValue(newFrame, forKey: "windowFrame")
             }
         }
+    }
+
+    /// Force le rafraîchissement des pictogrammes de rating après un toggle.
+    /// Le rating étant exclusif, marquer une valeur peut en effacer une autre :
+    /// on rafraîchit donc les quatre pictogrammes (favori, sélectionnée,
+    /// à améliorer, inintéressant).
+    private func refreshRatingPictograms() {
+        favoriteRefresh.toggle()
+        selectedRefresh.toggle()
+        improvableRefresh.toggle()
+        uninterestingRefresh.toggle()
     }
 
     /// Evo_010 — Message affiché à la place de l'image lorsque aucune option du
