@@ -58,6 +58,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
     @Published var opacityStart: Double?
     @Published var opacityEnd: Double?
     @Published var isDisplayFavorite: Bool?
+    @Published var isDisplaySelected: Bool?
+    @Published var isDisplayImprovable: Bool?
     @Published var isDisplayUninteresting: Bool?
     @Published var isDisplayNone: Bool?
 
@@ -67,6 +69,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
     /// en pause. Propriété dérivée, non persistée.
     var hasNoDisplayOption: Bool {
         !(isDisplayFavorite ?? false)
+            && !(isDisplaySelected ?? false)
+            && !(isDisplayImprovable ?? false)
             && !(isDisplayUninteresting ?? false)
             && !(isDisplayNone ?? false)
     }
@@ -90,6 +94,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         opacityStart: Double? = 1.0,
         opacityEnd: Double? = 0.0,
         isDisplayFavorite: Bool? = true,
+        isDisplaySelected: Bool? = true,
+        isDisplayImprovable: Bool? = true,
         isDisplayUninteresting: Bool? = true,
         isDisplayNone: Bool? = true
     ) {
@@ -110,6 +116,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         self.opacityStart = opacityStart
         self.opacityEnd = opacityEnd
         self.isDisplayFavorite = isDisplayFavorite
+        self.isDisplaySelected = isDisplaySelected
+        self.isDisplayImprovable = isDisplayImprovable
         self.isDisplayUninteresting = isDisplayUninteresting
         self.isDisplayNone = isDisplayNone
     }
@@ -133,6 +141,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         case opacityStart
         case opacityEnd
         case isDisplayFavorite
+        case isDisplaySelected
+        case isDisplayImprovable
         case isDisplayUninteresting
         case isDisplayNone
     }
@@ -160,6 +170,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         opacityStart = try container.decodeIfPresent(Double.self, forKey: .opacityStart) ?? 1.0
         opacityEnd = try container.decodeIfPresent(Double.self, forKey: .opacityEnd) ?? 0.0
         isDisplayFavorite = try container.decodeIfPresent(Bool.self, forKey: .isDisplayFavorite) ?? true
+        isDisplaySelected = try container.decodeIfPresent(Bool.self, forKey: .isDisplaySelected) ?? true
+        isDisplayImprovable = try container.decodeIfPresent(Bool.self, forKey: .isDisplayImprovable) ?? true
         isDisplayUninteresting = try container.decodeIfPresent(Bool.self, forKey: .isDisplayUninteresting) ?? true
         isDisplayNone = try container.decodeIfPresent(Bool.self, forKey: .isDisplayNone) ?? true
     }
@@ -186,6 +198,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         try container.encodeIfPresent(opacityStart, forKey: .opacityStart)
         try container.encodeIfPresent(opacityEnd, forKey: .opacityEnd)
         try container.encodeIfPresent(isDisplayFavorite, forKey: .isDisplayFavorite)
+        try container.encodeIfPresent(isDisplaySelected, forKey: .isDisplaySelected)
+        try container.encodeIfPresent(isDisplayImprovable, forKey: .isDisplayImprovable)
         try container.encodeIfPresent(isDisplayUninteresting, forKey: .isDisplayUninteresting)
         try container.encodeIfPresent(isDisplayNone, forKey: .isDisplayNone)
     }
@@ -209,6 +223,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         lhs.opacityStart == rhs.opacityStart &&
         lhs.opacityEnd == rhs.opacityEnd &&
         lhs.isDisplayFavorite == rhs.isDisplayFavorite &&
+        lhs.isDisplaySelected == rhs.isDisplaySelected &&
+        lhs.isDisplayImprovable == rhs.isDisplayImprovable &&
         lhs.isDisplayUninteresting == rhs.isDisplayUninteresting &&
         lhs.isDisplayNone == rhs.isDisplayNone
     }
@@ -231,6 +247,8 @@ class ViewSetting: ObservableObject, Codable, Hashable {
         hasher.combine(opacityStart)
         hasher.combine(opacityEnd)
         hasher.combine(isDisplayFavorite)
+        hasher.combine(isDisplaySelected)
+        hasher.combine(isDisplayImprovable)
         hasher.combine(isDisplayUninteresting)
         hasher.combine(isDisplayNone)
     }
