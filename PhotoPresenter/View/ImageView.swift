@@ -36,9 +36,13 @@ struct ImageView: View {
     @State private var capturedWindow: NSWindow? = nil
     @State private var savedExpansionMode: Bool = false
     @State private var favoriteRefresh: Bool = false
+    @State private var selectedRefresh: Bool = false
+    @State private var improvableRefresh: Bool = false
     @State private var uninterestingRefresh: Bool = false
     @State private var fKeyActive: Bool = false
     @State private var iKeyActive: Bool = false
+    @State private var sKeyActive: Bool = false
+    @State private var aKeyActive: Bool = false
     @State private var isShiftPressed: Bool = false           // §5 — Shift révèle infos + pictogrammes
     @State private var isHoveringPictogramZone: Bool = false  // §6 — survol de la zone des pictogrammes
     @State private var keyDownMonitor: Any? = nil
@@ -286,6 +290,8 @@ struct ImageView: View {
                 // courante sur une image conforme (ou laisse le message s'afficher si
                 // aucune ne correspond).
                 .onChange(of: [viewSetting.isDisplayFavorite,
+                               viewSetting.isDisplaySelected,
+                               viewSetting.isDisplayImprovable,
                                viewSetting.isDisplayUninteresting,
                                viewSetting.isDisplayNone]) { _, _ in
                     slideShowController.syncCurrentIndexToFilter()
@@ -469,8 +475,7 @@ struct ImageView: View {
                     Button(action: {
                         let currentFileInfo = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex]
                         currentFileInfo.toggle(.favorite)
-                        favoriteRefresh.toggle()
-                        uninterestingRefresh.toggle()
+                        refreshRatingPictograms()
                     }) {
                         let isFav = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].rating == .favorite
                         Label("Favori", systemImage: isFav ? "heart.fill" : "heart")
@@ -478,9 +483,26 @@ struct ImageView: View {
 
                     Button(action: {
                         let currentFileInfo = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex]
+                        currentFileInfo.toggle(.selected)
+                        refreshRatingPictograms()
+                    }) {
+                        let isSel = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].rating == .selected
+                        Label("Sélectionnée", systemImage: isSel ? "checkmark.seal.fill" : "checkmark.seal")
+                    }
+
+                    Button(action: {
+                        let currentFileInfo = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex]
+                        currentFileInfo.toggle(.improvable)
+                        refreshRatingPictograms()
+                    }) {
+                        let isImp = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].rating == .improvable
+                        Label("À améliorer", systemImage: isImp ? "wrench.adjustable.fill" : "wrench.adjustable")
+                    }
+
+                    Button(action: {
+                        let currentFileInfo = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex]
                         currentFileInfo.toggle(.uninteresting)
-                        uninterestingRefresh.toggle()
-                        favoriteRefresh.toggle()
+                        refreshRatingPictograms()
                     }) {
                         let isUnint = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].rating == .uninteresting
                         Label("Inintéressant", systemImage: isUnint ? "hand.thumbsdown.fill" : "hand.thumbsdown")
@@ -493,6 +515,16 @@ struct ImageView: View {
                             viewSetting.isDisplayFavorite = !(viewSetting.isDisplayFavorite ?? false)
                         }) {
                             Label("Favori", systemImage: (viewSetting.isDisplayFavorite ?? false) ? "heart.fill" : "heart")
+                        }
+                        Button(action: {
+                            viewSetting.isDisplaySelected = !(viewSetting.isDisplaySelected ?? false)
+                        }) {
+                            Label("Sélectionnée", systemImage: (viewSetting.isDisplaySelected ?? false) ? "checkmark.seal.fill" : "checkmark.seal")
+                        }
+                        Button(action: {
+                            viewSetting.isDisplayImprovable = !(viewSetting.isDisplayImprovable ?? false)
+                        }) {
+                            Label("À améliorer", systemImage: (viewSetting.isDisplayImprovable ?? false) ? "wrench.adjustable.fill" : "wrench.adjustable")
                         }
                         Button(action: {
                             viewSetting.isDisplayUninteresting = !(viewSetting.isDisplayUninteresting ?? false)
@@ -522,16 +554,19 @@ struct ImageView: View {
                     }
                 }
                 .onTapGesture(count: 1) {
+                    let currentFileInfo = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex]
                     if fKeyActive {
-                        let currentFileInfo = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex]
                         currentFileInfo.toggle(.favorite)
-                        favoriteRefresh.toggle()
-                        uninterestingRefresh.toggle()
+                        refreshRatingPictograms()
                     } else if iKeyActive {
-                        let currentFileInfo = slideShowController.fastLoading.fileInfos[viewSetting.currentIndex]
                         currentFileInfo.toggle(.uninteresting)
-                        uninterestingRefresh.toggle()
-                        favoriteRefresh.toggle()
+                        refreshRatingPictograms()
+                    } else if sKeyActive {
+                        currentFileInfo.toggle(.selected)
+                        refreshRatingPictograms()
+                    } else if aKeyActive {
+                        currentFileInfo.toggle(.improvable)
+                        refreshRatingPictograms()
                     }
                 }
 
@@ -593,6 +628,12 @@ struct ImageView: View {
                 let _ = favoriteRefresh
                 let isFav = !slideShowController.fastLoading.fileInfos.isEmpty &&
                             slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].rating == .favorite
+                let _ = selectedRefresh
+                let isSelected = !slideShowController.fastLoading.fileInfos.isEmpty &&
+                            slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].rating == .selected
+                let _ = improvableRefresh
+                let isImprovable = !slideShowController.fastLoading.fileInfos.isEmpty &&
+                            slideShowController.fastLoading.fileInfos[viewSetting.currentIndex].rating == .improvable
                 let isCommunity = viewSetting.isInCommunity ?? false
                 let isPaused = viewSetting.isPaused
 
@@ -634,6 +675,22 @@ struct ImageView: View {
                                 Image(systemName: "heart.fill")
                                     .font(.system(size: 16, weight: .regular))
                                     .foregroundColor(Color(red: 0.6, green: 0.0, blue: 0.0))
+                                    .padding(5)
+                                    .background(Circle().fill(Color.white))
+                                    .opacity(0.75)
+                            }
+                            if isSelected {
+                                Image(systemName: "checkmark.seal.fill")
+                                    .font(.system(size: 16, weight: .regular))
+                                    .foregroundColor(Color(red: 0.0, green: 0.45, blue: 0.0))
+                                    .padding(5)
+                                    .background(Circle().fill(Color.white))
+                                    .opacity(0.75)
+                            }
+                            if isImprovable {
+                                Image(systemName: "wrench.adjustable.fill")
+                                    .font(.system(size: 16, weight: .regular))
+                                    .foregroundColor(Color(red: 0.55, green: 0.35, blue: 0.0))
                                     .padding(5)
                                     .background(Circle().fill(Color.white))
                                     .opacity(0.75)
@@ -722,11 +779,15 @@ struct ImageView: View {
             keyDownMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
                 if event.keyCode == 3 { fKeyActive = true }
                 if event.keyCode == 34 { iKeyActive = true }
+                if event.keyCode == 1 { sKeyActive = true }
+                if event.keyCode == 0 { aKeyActive = true }
                 return event
             }
             keyUpMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyUp) { event in
                 if event.keyCode == 3 { fKeyActive = false }
                 if event.keyCode == 34 { iKeyActive = false }
+                if event.keyCode == 1 { sKeyActive = false }
+                if event.keyCode == 0 { aKeyActive = false }
                 return event
             }
             // §5 — Suit l'état de la touche Shift pour révéler infos + pictogrammes.
@@ -779,8 +840,20 @@ struct ImageView: View {
         }
     }
 
+    /// Force le rafraîchissement des pictogrammes de rating après un toggle.
+    /// Le rating étant exclusif, marquer une valeur peut en effacer une autre :
+    /// on rafraîchit donc les quatre pictogrammes (favori, sélectionnée,
+    /// à améliorer, inintéressant).
+    private func refreshRatingPictograms() {
+        favoriteRefresh.toggle()
+        selectedRefresh.toggle()
+        improvableRefresh.toggle()
+        uninterestingRefresh.toggle()
+    }
+
     /// Evo_010 — Message affiché à la place de l'image lorsque aucune option du
-    /// sous-menu « Afficher » (Favori / Inintéressant / Aucune) n'est cochée.
+    /// sous-menu « Afficher » (Favori / Sélectionnée / À améliorer / Inintéressant
+    /// / Aucune) n'est cochée.
     /// Le menu contextuel reste accessible par-dessus pour cocher une option.
     private var noDisplayOptionMessage: some View {
         VStack(spacing: 14) {
@@ -790,7 +863,7 @@ struct ImageView: View {
             Text("Aucune image à afficher.")
                 .font(.title2)
                 .bold()
-            Text("Sélectionnez au moins une option dans le menu **Afficher** : Favori, Inintéressant ou Aucune.")
+            Text("Sélectionnez au moins une option dans le menu **Afficher** : Favori, Sélectionnée, À améliorer, Inintéressant ou Aucune.")
                 .font(.body)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
