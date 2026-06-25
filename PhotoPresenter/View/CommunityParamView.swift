@@ -88,6 +88,9 @@ struct CommunityParamView: View {
             .padding(.bottom, 16)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .onAppear {
+            syncDraftFromModel()
+        }
         .onChange(of: communityParam.digitalSignageMode) { _, isOn in
             if isOn {
                 DigitalSignageController.shared.start(
@@ -101,11 +104,26 @@ struct CommunityParamView: View {
     }
     
     init (communityParam: Binding<CommunityParameter>) {
-        self.communityParam = communityParam.wrappedValue
-        intervalTimer = communityParam.wrappedValue.intervalTimer
-        loopDuration = communityParam.wrappedValue.loopDuration
-        loopsPerImage = communityParam.wrappedValue.loopsPerImage
-        transitionMode = communityParam.wrappedValue.transitionMode
+        let param = communityParam.wrappedValue
+        self.communityParam = param
+        // Les @State doivent être initialisés via leur projection `State(initialValue:)` :
+        // une affectation directe à travers le wrappedValue dans l'init est ignorée par
+        // SwiftUI, ce qui laissait les contrôles sur leurs valeurs par défaut au lieu des
+        // valeurs persistées du DisplaySpace chargé.
+        _intervalTimer = State(initialValue: param.intervalTimer)
+        _loopDuration = State(initialValue: param.loopDuration)
+        _loopsPerImage = State(initialValue: param.loopsPerImage)
+        _transitionMode = State(initialValue: param.transitionMode)
+    }
+
+    /// Recopie les réglages durables du modèle vivant vers les brouillons @State.
+    /// Couvre le cas où la vue reste affichée pendant l'ouverture d'un autre fichier :
+    /// l'init ne se rejoue pas, mais `onAppear` resynchronise à chaque affichage.
+    private func syncDraftFromModel() {
+        intervalTimer = communityParam.intervalTimer
+        loopDuration = communityParam.loopDuration
+        loopsPerImage = communityParam.loopsPerImage
+        transitionMode = communityParam.transitionMode
     }
     
 }
