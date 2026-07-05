@@ -14,9 +14,8 @@ struct MultiImageView: View {
     @ObservedObject private var photoPresenter: PhotoPresenter
     @ObservedObject private var helper: DataPresenterHelp
     @Binding private var communityParam: CommunityParameter
-                    
-    private let displaySpaceId: UUID
-    
+
+
     var body: some View {
         switch photoPresenter.photoPresenterHeader.orientation
         {
@@ -31,11 +30,7 @@ struct MultiImageView: View {
                                 name: photoPresenter.photoPresenterHeader.name,
                                 presenterDataSource: photoPresenter.groupedViews[grViewIndex].photoPresenterDataSources[viewSettingIndex],
                                 viewPosition: helper.windowPos!,
-                                setting: getViewSetting(
-                                    displaySpaceId: displaySpaceId,
-                                    packInDisplaySpaces: photoPresenter.groupedViews[grViewIndex].packInDisplaySpaces ?? [],
-                                    viewSettingIndex: viewSettingIndex
-                                ),
+                                setting: getViewSetting(group: grViewIndex, view: viewSettingIndex),
                                 fastLoading: photoPresenter.groupedViews[grViewIndex].fastLoaddings![viewSettingIndex],
                                 communityParameter: _communityParam
                             )
@@ -54,11 +49,7 @@ struct MultiImageView: View {
                                 name: photoPresenter.photoPresenterHeader.name,
                                 presenterDataSource: photoPresenter.groupedViews[grViewIndex].photoPresenterDataSources[viewSettingIndex],
                                 viewPosition: helper.windowPos!,
-                                setting: getViewSetting(
-                                    displaySpaceId: displaySpaceId,
-                                    packInDisplaySpaces: photoPresenter.groupedViews[grViewIndex].packInDisplaySpaces ?? [],
-                                    viewSettingIndex: viewSettingIndex
-                                ),
+                                setting: getViewSetting(group: grViewIndex, view: viewSettingIndex),
                                 fastLoading: photoPresenter.groupedViews[grViewIndex].fastLoaddings![viewSettingIndex],
                                 communityParameter: _communityParam
                             )
@@ -82,24 +73,17 @@ struct MultiImageView: View {
     ) {
         self.helper = dataHelper
         self.photoPresenter = dataHelper.presenter
-        self.displaySpaceId = dataHelper.displaySpaceId
         self._communityParam = communityParemeter
     }
     
-    private func getViewSetting(
-        displaySpaceId: UUID,
-        packInDisplaySpaces: [PackInDisplaySpace],
-        viewSettingIndex: Int
-    ) -> ViewSetting
-    {
-        // Chercher l'élément PackInDisplaySpace qui correspond au displaySpaceId
-        let packInDisplaySpace = packInDisplaySpaces.first(where: { $0.displaySpaceId == displaySpaceId })
-            
-        if packInDisplaySpace == nil {
+    private func getViewSetting(group: Int, view: Int) -> ViewSetting {
+        // Réglages portés par le PresenterViewPosition vivant du DisplaySpace
+        // courant (Evo_012), résolu par l'App à la construction de la fenêtre.
+        // Fallback jetable si la référence n'a pas pu être résolue.
+        guard let viewPosition = helper.viewPosition else {
             return ViewSetting()
         }
-        else {
-            return packInDisplaySpace!.viewSettings[viewSettingIndex]
-        }
+
+        return viewPosition.viewSetting(for: photoPresenter, group: group, view: view)
     }
 }

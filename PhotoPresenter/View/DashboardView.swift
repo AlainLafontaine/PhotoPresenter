@@ -61,7 +61,7 @@ struct DashboardView: View {
                                 Text(getFriendlyName(for: viewPosition.screenName ?? "Inconnue"))
                                 Spacer()
 /*
-                                if let settings = getViewSetting(displaySpaceId: displaySpace.fileHeader.id, presenter: presenter) {
+                                if let settings = getViewSetting(presenter: presenter) {
                                     if settings.isInCommunity {
                                         Text("Communauté: oui")
                                     } else {
@@ -114,18 +114,14 @@ struct DashboardView: View {
         return screenName
     }
     
-    private func getViewSetting(displaySpaceId: UUID, presenter: PhotoPresenter) -> ViewSetting? {
-        var viewSetting: ViewSetting?
-        
-        for i in 0..<presenter.groupedViews.count {
-            presenter.groupedViews[i].packInDisplaySpaces?.forEach { pack in
-                if pack.displaySpaceId == displaySpaceId {
-                    viewSetting = pack.viewSettings[0]
-                }
-            }
+    private func getViewSetting(presenter: PhotoPresenter) -> ViewSetting? {
+        // Premier réglage du présentateur, lu depuis son PresenterViewPosition
+        // dans le DisplaySpace courant (Evo_012).
+        guard let viewPosition = displaySpace.viewPositions.first(where: { $0.id == presenter.fileHeader.id }) else {
+            return nil
         }
 
-        return viewSetting
+        return viewPosition.viewSettings.first
     }
     
 }

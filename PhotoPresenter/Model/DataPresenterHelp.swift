@@ -19,7 +19,13 @@ class DataPresenterHelp: ObservableObject, Identifiable, Codable, Hashable {
     var displaySpaceId: UUID
     var windowPos: WindowPosition?
     var windowId: String?
-    
+
+    // Référence runtime au PresenterViewPosition vivant du DisplaySpace courant
+    // (porte les ViewSetting — Evo_012). Résolue par l'App à la construction de
+    // la fenêtre ; exclue du Codable car openWindow(value:) sérialise le payload
+    // et la copie décodée doit être rebranchée sur l'instance vivante.
+    var viewPosition: PresenterViewPosition?
+
     
     // MARK: - Initializer
     init(
