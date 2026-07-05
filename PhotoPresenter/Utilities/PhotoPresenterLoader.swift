@@ -24,15 +24,21 @@ struct PhotoPresenterLoader {
     }
     
     private func check4Update(_ presenter: PhotoPresenter) {
-        
+
         switch(presenter.fileHeader.version) {
         case "0.1.0001":
             presenter.fileHeader.version = "0.1.0002"
             presenter.fileHeader.id = UUID()
-            
+
         case "0.1.0002":
             presenter.fileHeader.version = "0.1.0003"
-            
+
+        case "0.1.0006":
+            // Version courante (Evo_012) : plus de packInDisplaySpaces dans le
+            // fichier présentateur. La migration des fichiers ≤ 0.1.0003 est
+            // assurée par un script externe, pas par l'application.
+            break
+
         default:
             break
         }

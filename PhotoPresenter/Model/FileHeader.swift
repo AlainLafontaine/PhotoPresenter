@@ -16,7 +16,7 @@ class FileHeader: ObservableObject, Codable, Hashable {
 
     // MARK: - Initializer
 
-    init(id: UUID? = UUID(), version: String = "0.1.0005", fileType: FileType) {
+    init(id: UUID? = UUID(), version: String = "0.1.0006", fileType: FileType) {
         self.id = id
         self.version = version
         self.fileType = fileType
