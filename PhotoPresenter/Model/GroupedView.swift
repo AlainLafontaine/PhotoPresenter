@@ -7,20 +7,19 @@
 
 import Foundation
 
-import Foundation
-
 class GroupedView: ObservableObject, Codable, Hashable {
     @Published var nbOfView: Int
     @Published var photoPresenterDataSources: [PhotoPresenterDataSource]
-    @Published var packInDisplaySpaces: [PackInDisplaySpace]?
-    
+
     var fastLoaddings: [FastLoading]?
 
     // MARK: - Coding Keys
+    // Note Evo_012 : les ViewSetting sont désormais persistés dans le fichier
+    // DisplaySpace (PresenterViewPosition.viewSettings). L'ancienne clé JSON
+    // packInDisplaySpaces, si encore présente dans un fichier, est ignorée.
     enum CodingKeys: String, CodingKey {
         case nbOfView
         case photoPresenterDataSources
-        case packInDisplaySpaces
         case fastLoaddings
     }
 
@@ -29,7 +28,6 @@ class GroupedView: ObservableObject, Codable, Hashable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         nbOfView = try container.decode(Int.self, forKey: .nbOfView)
         photoPresenterDataSources = try container.decode([PhotoPresenterDataSource].self, forKey: .photoPresenterDataSources)
-        packInDisplaySpaces = try container.decodeIfPresent([PackInDisplaySpace].self, forKey: .packInDisplaySpaces)
         fastLoaddings = try container.decodeIfPresent([FastLoading].self, forKey: .fastLoaddings)
     }
 
@@ -37,7 +35,6 @@ class GroupedView: ObservableObject, Codable, Hashable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(nbOfView, forKey: .nbOfView)
         try container.encodeIfPresent(photoPresenterDataSources, forKey: .photoPresenterDataSources)
-        try container.encodeIfPresent(packInDisplaySpaces, forKey: .packInDisplaySpaces)
         try container.encodeIfPresent(fastLoaddings, forKey: .fastLoaddings)
     }
 
@@ -45,25 +42,21 @@ class GroupedView: ObservableObject, Codable, Hashable {
     static func == (lhs: GroupedView, rhs: GroupedView) -> Bool {
         lhs.nbOfView == rhs.nbOfView &&
         lhs.photoPresenterDataSources == rhs.photoPresenterDataSources &&
-        lhs.packInDisplaySpaces == rhs.packInDisplaySpaces &&
         lhs.fastLoaddings == rhs.fastLoaddings
     }
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(nbOfView)
         hasher.combine(photoPresenterDataSources)
-        hasher.combine(packInDisplaySpaces)
         hasher.combine(fastLoaddings)
     }
 
     // MARK: - Initializer
     init(nbOfView: Int,
          photoPresenterDataSources: [PhotoPresenterDataSource],
-         packInDisplaySpaces: [PackInDisplaySpace]? = nil,
          fastLoaddings: [FastLoading]? = nil) {
         self.nbOfView = nbOfView
         self.photoPresenterDataSources = photoPresenterDataSources
-        self.packInDisplaySpaces = packInDisplaySpaces
         self.fastLoaddings = fastLoaddings
     }
 }

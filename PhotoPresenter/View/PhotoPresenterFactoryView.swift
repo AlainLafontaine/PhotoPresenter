@@ -303,7 +303,6 @@ struct PhotoPresenterFactoryView: View {
                     GroupedView(
                         nbOfView: 1,
                         photoPresenterDataSources: photoPresenterDataSources,
-                        packInDisplaySpaces: [],
                         fastLoaddings: fastLoadings
                     )
                 )
