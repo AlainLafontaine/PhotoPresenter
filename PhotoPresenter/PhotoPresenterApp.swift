@@ -177,7 +177,7 @@ struct PhotoPresenterApp: App {
         WindowGroup(id: "photoPresenterWindows", for: DataPresenterHelp.self) { $helper in
             if let helper = helper {
                 PhotoPresenterView(
-                    dataHelper: helper,
+                    dataHelper: resolveViewPosition(for: helper),
                     dataPresenters: $dataPresenters,
                     windowIdentifier: $windowIdentifier,
                     communityParam: $communityParam
@@ -199,13 +199,11 @@ struct PhotoPresenterApp: App {
                         dataPresenters.removeValue(forKey: windowId)
                     }
 
+                    // Retirer le viewPosition retire aussi ses ViewSetting : un
+                    // présentateur fermé quitte le DisplaySpace avec ses réglages
+                    // (Evo_012, décision validée).
                     displaySpace.viewPositions.removeAll { $0.id == presenterId }
                     displaySpace.presenters?.removeAll { $0.fileHeader.id == presenterId }
-
-                    // Ne PAS retirer les packInDisplaySpaces ici : ils portent les
-                    // ViewSetting (options utilisateur) du DisplaySpace courant et
-                    // doivent rester dans le PhotoPresenter pour être restaurés au
-                    // rechargement. Les retirer effaçait les options sauvegardées.
                 }
                 // Le niveau de la fenêtre (floating/normal) est géré de façon réactive
                 // par WindowLevelController dans ImageView, branché sur viewPosition.isOnTop.
@@ -458,6 +456,20 @@ struct PhotoPresenterApp: App {
         }
     }
     
+    /// Rebranche le helper d'une fenêtre présentateur sur le PresenterViewPosition
+    /// vivant du DisplaySpace courant (porteur des ViewSetting — Evo_012).
+    /// Nécessaire car openWindow(value:) sérialise DataPresenterHelp : le helper
+    /// reçu par la fenêtre peut être une copie décodée dont la référence runtime
+    /// est nulle. Idempotent : ensureViewSettings conserve les valeurs chargées.
+    private func resolveViewPosition(for helper: DataPresenterHelp) -> DataPresenterHelp {
+        if let viewPosition = displaySpace.viewPositions.first(where: { $0.id == helper.presenter.fileHeader.id }) {
+            viewPosition.ensureViewSettings(for: helper.presenter)
+            helper.viewPosition = viewPosition
+        }
+
+        return helper
+    }
+
     private func getDisplaySpaceView() -> NSWindow? {
         var window: NSWindow? = nil
         
@@ -562,42 +574,19 @@ struct PhotoPresenterApp: App {
                 }
                  
                 if let pp = presenter {
-                    displaySpace.viewPositions.append(
-                        PresenterViewPosition(
-                            id: pp.fileHeader.id!,
-                            pathFile: url.path(),
-                            screenName: getScreenName(for: suggestionPos, in: self.screensInfo),
-                            windowPosition: suggestionPos
-                        )
+                    let viewPosition = PresenterViewPosition(
+                        id: pp.fileHeader.id!,
+                        pathFile: url.path(),
+                        screenName: getScreenName(for: suggestionPos, in: self.screensInfo),
+                        windowPosition: suggestionPos
                     )
-                     
-                    for groupedView in pp.groupedViews {
-                        if groupedView.packInDisplaySpaces == nil {
-                            groupedView.packInDisplaySpaces = []
-                        }
 
-                        // Patch défensif : ne créer un réglage par défaut que si ce
-                        // DisplaySpace n'a pas déjà ses ViewSetting. Si des valeurs
-                        // existent au chargement, on les conserve (pas d'écrasement
-                        // par des valeurs par défaut).
-                        if groupedView.packInDisplaySpaces?.contains(where: { $0.displaySpaceId == displaySpace.fileHeader.id! }) == true {
-                            continue
-                        }
-                         
-                        var viewSettings2: [ViewSetting] = [ViewSetting]()
-                         
-                        for _ in 0..<groupedView.nbOfView {
-                            viewSettings2.append(ViewSetting())
-                        }
-                         
-                        let packInDisplaySpace = PackInDisplaySpace(
-                            displaySpaceId: displaySpace.fileHeader.id!,
-                            viewSettings: viewSettings2
-                        )
-                         
-                        groupedView.packInDisplaySpaces?.append(packInDisplaySpace)
-                    }
-                     
+                    // Réglages par défaut du présentateur dans le DisplaySpace
+                    // courant : un ViewSetting par vue, tous groupes confondus
+                    // (Evo_012 — persistés dans le fichier DisplaySpace).
+                    viewPosition.ensureViewSettings(for: pp)
+                    displaySpace.viewPositions.append(viewPosition)
+
                     let helper = DataPresenterHelp(
                                      filename: url.path(),
                                      name: pp.photoPresenterHeader.name,

@@ -29,6 +29,12 @@ struct DisplaySpaceLoader {
 
         switch(displaySpace.fileHeader.version) {
 
+        case "0.1.0006":
+            // Version courante (Evo_012) : les ViewSetting sont portés par les
+            // viewPositions. La migration des fichiers ≤ 0.1.0005 est assurée
+            // par un script externe, pas par l'application.
+            break
+
         case "0.1.0005":
             break
 

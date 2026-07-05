@@ -202,6 +202,11 @@ struct LibraryView: View {
     }
     
     private func NumberOfInclusionInDisplaySpace(_ photoPresenter: PhotoPresenter) -> Int {
-        return photoPresenter.groupedViews[0].packInDisplaySpaces?.count ?? 0
+        // Evo_012 : le fichier présentateur ne porte plus la liste des
+        // DisplaySpaces qui l'utilisent. Le compteur reflète désormais
+        // l'inclusion dans le DisplaySpace courant (0 ou 1), via ses
+        // viewPositions ; le filtre « inclusion = 0 » liste les présentateurs
+        // pas encore utilisés dans cet espace.
+        return displaySpace.viewPositions.contains(where: { $0.id == photoPresenter.fileHeader.id }) ? 1 : 0
     }
 }

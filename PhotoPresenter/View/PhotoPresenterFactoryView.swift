@@ -251,7 +251,7 @@ struct PhotoPresenterFactoryView: View {
     private func CreatePresenter() {
         analysisResultats.forEach { analysisResultat in
             if analysisResultat.isChecked {
-                let fileHeader =  FileHeader(version: "0.1.0003", fileType: FileType.PhotoPresenter)
+                let fileHeader =  FileHeader(version: "0.1.0006", fileType: FileType.PhotoPresenter)
                 let photoPresenterHeader = PhotoPresenterHeader(
                                                 name: "\(self.name) volume \(analysisResultat.suffix)",
                                                 description: self.description,
@@ -303,7 +303,6 @@ struct PhotoPresenterFactoryView: View {
                     GroupedView(
                         nbOfView: 1,
                         photoPresenterDataSources: photoPresenterDataSources,
-                        packInDisplaySpaces: [],
                         fastLoaddings: fastLoadings
                     )
                 )
