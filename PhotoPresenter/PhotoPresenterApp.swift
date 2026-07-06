@@ -54,6 +54,12 @@ struct PhotoPresenterApp: App {
                 if let window = getDisplaySpaceView() {
                     window.title = displaySpace.displaySpaceHeader.name
                 }
+
+                // Différé : le menu principal n'est pas forcément construit
+                // au moment du premier onAppear.
+                DispatchQueue.main.async {
+                    removeSystemCloseMenuItem()
+                }
             }
             .background(WindowAccessor { window in
                  window.level = .floating        // Mettre la fenêtre au-dessus
@@ -76,7 +82,12 @@ struct PhotoPresenterApp: App {
                         }
                     }
                 }
-                
+
+                Button("Close") {
+                    closeActiveView()
+                }
+                .keyboardShortcut("W", modifiers: [.command])
+
                 Button("Save") {
                     saveAllPhotoPresenter()
                 }
@@ -582,6 +593,37 @@ struct PhotoPresenterApp: App {
         return true
     }
     
+    /// « Close » (Cmd+W) — Evo_013 : agit sur la fenêtre active.
+    /// Fenêtre présentateur : fermeture individuelle (le .onDisappear retire
+    /// la référence du DisplaySpace). Fenêtre DisplaySpace : fermeture de
+    /// toutes les fenêtres présentateurs en conservant leurs références,
+    /// puis retour à l'état initial. Aucune sauvegarde dans les deux cas
+    /// (décision Evo_013) : le fichier sur disque n'est jamais touché.
+    private func closeActiveView() {
+        guard let keyWindow = NSApp.keyWindow,
+              let windowId = keyWindow.identifier?.rawValue else { return }
+
+        if windowId.hasPrefix("photoPresenterWindows") {
+            keyWindow.close()
+        } else if windowId.hasPrefix("displaySpaceWindows") {
+            closeAllPresenterWindows()
+            resetToInitialState()
+        }
+    }
+
+    /// Retire le « Close » système d'AppKit (performClose:) du menu File :
+    /// il partage Cmd+W avec notre item et fermerait brutalement la fenêtre
+    /// active (y compris la fenêtre de contrôle) sans passer par
+    /// closeActiveView(). Idempotent, appelé après la construction du menu.
+    private func removeSystemCloseMenuItem() {
+        guard let fileMenu = NSApp.mainMenu?.item(withTitle: "File")?.submenu else { return }
+
+        let index = fileMenu.indexOfItem(withTarget: nil, andAction: #selector(NSWindow.performClose(_:)))
+        if index >= 0 {
+            fileMenu.removeItem(at: index)
+        }
+    }
+
     /// Ferme toutes les fenêtres présentateurs SANS retirer leurs références
     /// du DisplaySpace (fermeture globale — Evo_013). Le vidage de
     /// dataPresenters AVANT la fermeture des fenêtres signale aux
