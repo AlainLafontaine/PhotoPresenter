@@ -184,25 +184,16 @@ struct PhotoPresenterApp: App {
                     loadingInProgress = false
                 }
                 .onDisappear {
-                    guard let presenterId = helper.presenter.fileHeader.id else { return }
-
-                    // Fermeture globale (Close du DisplaySpace, New, Open) :
-                    // closeAllPresenterWindows() a déjà retiré l'entrée de
-                    // dataPresenters et les références du DisplaySpace doivent
-                    // être conservées (Evo_013). Ce .onDisappear pouvant se
-                    // déclencher après coup, ce test protège aussi le
-                    // DisplaySpace chargé ensuite d'un retrait parasite.
-                    guard let windowId = helper.windowId,
-                          dataPresenters[windowId] != nil else { return }
-
-                    windowIdentifier.remove(windowId)
-                    dataPresenters.removeValue(forKey: windowId)
-
-                    // Retirer le viewPosition retire aussi ses ViewSetting : un
-                    // présentateur fermé quitte le DisplaySpace avec ses réglages
-                    // (Evo_012, décision validée).
-                    displaySpace.viewPositions.removeAll { $0.id == presenterId }
-                    displaySpace.presenters?.removeAll { $0.fileHeader.id == presenterId }
+                    // Evo_013 : le retrait des références du DisplaySpace se
+                    // fait explicitement aux points de fermeture individuelle
+                    // (closePresenterWindow) — jamais ici. Ce .onDisappear a
+                    // un déclenchement non garanti et parfois tardif (il peut
+                    // suivre le chargement du DisplaySpace suivant) : il ne
+                    // fait que le ménage du suivi de fenêtres.
+                    if let windowId = helper.windowId {
+                        windowIdentifier.remove(windowId)
+                        dataPresenters.removeValue(forKey: windowId)
+                    }
                 }
                 // Le niveau de la fenêtre (floating/normal) est géré de façon réactive
                 // par WindowLevelController dans ImageView, branché sur viewPosition.isOnTop.
@@ -604,23 +595,46 @@ struct PhotoPresenterApp: App {
               let windowId = keyWindow.identifier?.rawValue else { return }
 
         if windowId.hasPrefix("photoPresenterWindows") {
-            keyWindow.close()
+            closePresenterWindow(windowId: windowId, window: keyWindow)
         } else if windowId.hasPrefix("displaySpaceWindows") {
             closeAllPresenterWindows()
             resetToInitialState()
         }
     }
 
-    /// Retire le « Close » système d'AppKit (performClose:) du menu File :
-    /// il partage Cmd+W avec notre item et fermerait brutalement la fenêtre
-    /// active (y compris la fenêtre de contrôle) sans passer par
-    /// closeActiveView(). Idempotent, appelé après la construction du menu.
-    private func removeSystemCloseMenuItem() {
-        guard let fileMenu = NSApp.mainMenu?.item(withTitle: "File")?.submenu else { return }
+    /// Fermeture individuelle d'un présentateur (Evo_013) : retrait explicite
+    /// de ses références du DisplaySpace (viewPosition — donc ses ViewSetting —
+    /// et presenter), nettoyage du suivi de fenêtres, puis fermeture de la
+    /// fenêtre. Le retrait n'est PAS délégué au .onDisappear, dont le
+    /// déclenchement n'est ni garanti ni synchrone.
+    private func closePresenterWindow(windowId: String, window: NSWindow?) {
+        if let dataPresenter = dataPresenters[windowId],
+           let presenterId = dataPresenter.presenter.fileHeader.id {
+            displaySpace.viewPositions.removeAll { $0.id == presenterId }
+            displaySpace.presenters?.removeAll { $0.fileHeader.id == presenterId }
+        }
 
-        let index = fileMenu.indexOfItem(withTarget: nil, andAction: #selector(NSWindow.performClose(_:)))
-        if index >= 0 {
-            fileMenu.removeItem(at: index)
+        windowIdentifier.remove(windowId)
+        dataPresenters.removeValue(forKey: windowId)
+        window?.close()
+    }
+
+    /// Retire le « Close » système d'AppKit (performClose:) du menu : il
+    /// partage Cmd+W avec notre item et fermerait brutalement la fenêtre
+    /// active (y compris la fenêtre de contrôle) sans passer par
+    /// closeActiveView(). Recherche par action et non par titre de menu,
+    /// pour être insensible à la localisation (« File » / « Fichier »).
+    /// Idempotent, appelé après la construction du menu.
+    private func removeSystemCloseMenuItem() {
+        guard let mainMenu = NSApp.mainMenu else { return }
+
+        for menuItem in mainMenu.items {
+            guard let submenu = menuItem.submenu else { continue }
+
+            let index = submenu.indexOfItem(withTarget: nil, andAction: #selector(NSWindow.performClose(_:)))
+            if index >= 0 {
+                submenu.removeItem(at: index)
+            }
         }
     }
 
@@ -672,12 +686,8 @@ struct PhotoPresenterApp: App {
     private func removePresenter(_ presenterId: UUID) {
         for (windowId, dataPresenter) in dataPresenters {
             if dataPresenter.presenter.fileHeader.id == presenterId {
-                for window in NSApp.windows {
-                    if window.identifier?.rawValue == windowId {
-                        window.close()  // onDisappear prend le relais pour le nettoyage
-                        break
-                    }
-                }
+                let window = NSApp.windows.first(where: { $0.identifier?.rawValue == windowId })
+                closePresenterWindow(windowId: windowId, window: window)
                 break
             }
         }
