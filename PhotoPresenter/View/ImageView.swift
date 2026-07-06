@@ -796,6 +796,12 @@ struct ImageView: View {
                 return event
             }
         }.onDisappear {
+            // Evo_013 — arrête le diaporama et désenregistre le contrôleur du
+            // mode communautaire : une fenêtre fermée ne doit plus être
+            // pilotée par le timer communautaire (contrôleur orphelin).
+            slideShowController.stop()
+            DisplaySpaceView.slideShowControllers.removeAll { $0 === slideShowController }
+
             if let monitor = keyDownMonitor {
                 NSEvent.removeMonitor(monitor)
                 keyDownMonitor = nil

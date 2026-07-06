@@ -495,7 +495,7 @@ struct PhotoPresenterApp: App {
             case .DisplaySpace:
                 if pathDisplaySpace != nil {
                     saveAllPhotoPresenter()
-                    DisplaySpaceView.slideShowControllers = []
+                    DisplaySpaceView.resetCommunity()
                     closeAllPresenterWindows()
                 }
 
@@ -653,7 +653,7 @@ struct PhotoPresenterApp: App {
         emergencyExit = false
         back2LastDisplaySpace = nil
 
-        DisplaySpaceView.slideShowControllers = []
+        DisplaySpaceView.resetCommunity()
         communityParam = CommunityParameter()
 
         displaySpace.fileHeader = FileHeader(fileType: FileType.DisplaySpace)
