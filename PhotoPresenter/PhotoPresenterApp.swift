@@ -61,31 +61,12 @@ struct PhotoPresenterApp: App {
         }.commands {
             CommandGroup(after: .newItem) {
                 Button("New") {
-                    
                     if pathDisplaySpace != nil {
                         saveAllPhotoPresenter()
-                        pathDisplaySpace = nil
                     }
-                    
-                    // Libére les fenêtres du chargement précédent
-                    for window in NSApp.windows {
-                        if let windowId = window.identifier?.rawValue {
-                            let components = windowId.split(separator: "-")
-                            
-                            if components[0] == "photoPresenterWindows"  {
-                                window.close()
-                            }
-                        }
-                    }
-                    
-                    windowIdentifier.removeAll()
-                    dataPresenters.removeAll()
-                    
-                    displaySpace.fileHeader = FileHeader(fileType: FileType.DisplaySpace)
-                    displaySpace.displaySpaceHeader = DisplaySpaceHeader(name: "Photo presenter")
-                    displaySpace.windowPosition = nil
-                    displaySpace.viewPositions = [PresenterViewPosition]()
-                    displaySpace.presenters = [PhotoPresenter]()
+
+                    closeAllPresenterWindows()
+                    resetToInitialState()
                 }
                 
                 Button("Open…") {
@@ -194,10 +175,17 @@ struct PhotoPresenterApp: App {
                 .onDisappear {
                     guard let presenterId = helper.presenter.fileHeader.id else { return }
 
-                    if let windowId = helper.windowId {
-                        windowIdentifier.remove(windowId)
-                        dataPresenters.removeValue(forKey: windowId)
-                    }
+                    // Fermeture globale (Close du DisplaySpace, New, Open) :
+                    // closeAllPresenterWindows() a déjà retiré l'entrée de
+                    // dataPresenters et les références du DisplaySpace doivent
+                    // être conservées (Evo_013). Ce .onDisappear pouvant se
+                    // déclencher après coup, ce test protège aussi le
+                    // DisplaySpace chargé ensuite d'un retrait parasite.
+                    guard let windowId = helper.windowId,
+                          dataPresenters[windowId] != nil else { return }
+
+                    windowIdentifier.remove(windowId)
+                    dataPresenters.removeValue(forKey: windowId)
 
                     // Retirer le viewPosition retire aussi ses ViewSetting : un
                     // présentateur fermé quitte le DisplaySpace avec ses réglages
@@ -497,20 +485,7 @@ struct PhotoPresenterApp: App {
                 if pathDisplaySpace != nil {
                     saveAllPhotoPresenter()
                     DisplaySpaceView.slideShowControllers = []
-
-                    // Libére les fenêtres du chargement précédent
-                    for window in NSApp.windows {
-                        if let windowId = window.identifier?.rawValue {
-                            let components = windowId.split(separator: "-")
-
-                            if components[0] == "photoPresenterWindows"  {
-                                window.close()
-                            }
-                        }
-                    }
-
-                    windowIdentifier.removeAll()
-                    dataPresenters.removeAll()
+                    closeAllPresenterWindows()
                 }
 
                 pathDisplaySpace = path
@@ -607,6 +582,51 @@ struct PhotoPresenterApp: App {
         return true
     }
     
+    /// Ferme toutes les fenêtres présentateurs SANS retirer leurs références
+    /// du DisplaySpace (fermeture globale — Evo_013). Le vidage de
+    /// dataPresenters AVANT la fermeture des fenêtres signale aux
+    /// .onDisappear (asynchrones) qu'il s'agit d'une fermeture globale : ils
+    /// laissent alors viewPositions/presenters intacts.
+    private func closeAllPresenterWindows() {
+        windowIdentifier.removeAll()
+        dataPresenters.removeAll()
+
+        for window in NSApp.windows {
+            if let windowId = window.identifier?.rawValue {
+                let components = windowId.split(separator: "-")
+
+                if components[0] == "photoPresenterWindows" {
+                    window.close()
+                }
+            }
+        }
+    }
+
+    /// Remet l'application dans l'état initial de son lancement (Evo_013) :
+    /// DisplaySpace vierge, aucun fichier courant, indicateurs EDS remis à
+    /// zéro, mode communautaire arrêté. Utilisée par « New » et par le
+    /// « Close » du DisplaySpace. N'écrit rien sur disque.
+    private func resetToInitialState() {
+        pathDisplaySpace = nil
+        emergencyExit = false
+        back2LastDisplaySpace = nil
+
+        DisplaySpaceView.slideShowControllers = []
+        communityParam = CommunityParameter()
+
+        displaySpace.fileHeader = FileHeader(fileType: FileType.DisplaySpace)
+        displaySpace.displaySpaceHeader = DisplaySpaceHeader(name: "Photo presenter")
+        displaySpace.windowPosition = nil
+        displaySpace.viewPositions = [PresenterViewPosition]()
+        displaySpace.presenters = [PhotoPresenter]()
+        displaySpace.emergencyDisplaySpace = nil
+        displaySpace.communityParameter = nil
+
+        if let window = getDisplaySpaceView() {
+            window.title = displaySpace.displaySpaceHeader.name
+        }
+    }
+
     private func removePresenter(_ presenterId: UUID) {
         for (windowId, dataPresenter) in dataPresenters {
             if dataPresenter.presenter.fileHeader.id == presenterId {
