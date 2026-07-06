@@ -130,6 +130,16 @@ struct DisplaySpaceView: View {
             slideShowController.start()
         }
     }
+
+    /// Arrêt complet du mode communautaire (Evo_013) : timer invalidé SANS
+    /// relancer les diaporamas (contrairement à stopCommunityTime) et
+    /// désenregistrement de tous les contrôleurs. Utilisé lors d'une
+    /// fermeture globale (Close du DisplaySpace, New, Open).
+    static func resetCommunity() {
+        DisplaySpaceView.timer?.invalidate()
+        DisplaySpaceView.timer = nil
+        DisplaySpaceView.slideShowControllers = []
+    }
 }
 
 #Preview {
