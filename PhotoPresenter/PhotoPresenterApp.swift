@@ -94,7 +94,7 @@ struct PhotoPresenterApp: App {
                 .keyboardShortcut("S", modifiers: [.command])
                 
                 Button("Save As...") {
-                    
+                    saveDisplaySpaceAs()
                 }
             }
             
@@ -362,6 +362,16 @@ struct PhotoPresenterApp: App {
         } else {
             promptAndSaveDisplaySpace(regenerateID: false)
         }
+    }
+
+    /// Save As… (Evo_014) : sauvegarde le DisplaySpace sous un nouveau nom avec
+    /// un nouveau UUID ; l'ancien fichier reste intact et les sauvegardes
+    /// suivantes vont vers le nouveau fichier. Les fichiers PhotoPresenter ne
+    /// sont pas touchés. Sans fichier existant, se comporte comme le Save
+    /// initial (pas de régénération d'UUID).
+    func saveDisplaySpaceAs() {
+        snapshotDisplaySpaceState()
+        promptAndSaveDisplaySpace(regenerateID: pathDisplaySpace != nil)
     }
 
     /// Recopie l'état runtime (réglages communautaires, positions de fenêtres,
