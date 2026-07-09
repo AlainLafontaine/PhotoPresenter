@@ -94,7 +94,7 @@ struct PhotoPresenterApp: App {
                 .keyboardShortcut("S", modifiers: [.command])
                 
                 Button("Save As...") {
-                    
+                    saveDisplaySpaceAs()
                 }
             }
             
@@ -350,6 +350,34 @@ struct PhotoPresenterApp: App {
     
     func saveDisplaySpaceFile() {
 
+        snapshotDisplaySpaceState()
+
+        if let path = pathDisplaySpace {
+            // Sauvegarde synchrone : on neutralise `presenters` juste autour de
+            // l'écriture pour ne pas le persister dans le fichier DisplaySpace.
+            let tmp = displaySpace.presenters
+            displaySpace.presenters = nil
+            saveToJSONFile(displaySpace, filename: path)
+            displaySpace.presenters = tmp
+        } else {
+            promptAndSaveDisplaySpace(regenerateID: false)
+        }
+    }
+
+    /// Save As… (Evo_014) : sauvegarde le DisplaySpace sous un nouveau nom avec
+    /// un nouveau UUID ; l'ancien fichier reste intact et les sauvegardes
+    /// suivantes vont vers le nouveau fichier. Les fichiers PhotoPresenter ne
+    /// sont pas touchés. Sans fichier existant, se comporte comme le Save
+    /// initial (pas de régénération d'UUID).
+    func saveDisplaySpaceAs() {
+        snapshotDisplaySpaceState()
+        promptAndSaveDisplaySpace(regenerateID: pathDisplaySpace != nil)
+    }
+
+    /// Recopie l'état runtime (réglages communautaires, positions de fenêtres,
+    /// viewPositions) dans le modèle avant persistance.
+    private func snapshotDisplaySpaceState() {
+
         // Recopie les réglages communautaires live dans le snapshot persisté du
         // DisplaySpace avant l'écriture JSON.
         if displaySpace.communityParameter == nil {
@@ -409,38 +437,39 @@ struct PhotoPresenterApp: App {
             }
         }
         
-        if let path = pathDisplaySpace {
-            // Sauvegarde synchrone : on neutralise `presenters` juste autour de
-            // l'écriture pour ne pas le persister dans le fichier DisplaySpace.
-            let tmp = displaySpace.presenters
-            displaySpace.presenters = nil
-            saveToJSONFile(displaySpace, filename: path)
-            displaySpace.presenters = tmp
-        } else {
-            let panel = NSSavePanel()
+    }
 
-            panel.title = "Enregistrer l'espace d'affichage"
-            panel.allowedContentTypes = [UTType.json]
-            panel.nameFieldStringValue = "displayspace.json"
+    /// Demande l'emplacement via le panel système puis écrit le DisplaySpace.
+    /// regenerateID : affecte un nouveau UUID à fileHeader.id juste avant
+    /// l'écriture (Save As — Evo_014) ; l'annulation du panel ne change rien.
+    private func promptAndSaveDisplaySpace(regenerateID: Bool) {
+        let panel = NSSavePanel()
 
-            panel.begin { response in
-                if response == .OK, let url = panel.url {
-                    let filename = URL(fileURLWithPath: url.path).deletingPathExtension().lastPathComponent
-                    displaySpace.displaySpaceHeader.name = filename.replacingOccurrences(of: "_", with: " ")
+        panel.title = "Enregistrer l'espace d'affichage"
+        panel.allowedContentTypes = [UTType.json]
+        panel.nameFieldStringValue = "displayspace.json"
 
-                    // `panel.begin` est asynchrone : la mise à nil/restauration
-                    // doit se faire ICI, autour de l'écriture réelle, sinon
-                    // `presenters` serait déjà restauré et sérialisé dans le fichier.
-                    let tmp = displaySpace.presenters
-                    displaySpace.presenters = nil
-                    saveToJSONFile(displaySpace, filename: url.path)
-                    displaySpace.presenters = tmp
+        panel.begin { response in
+            if response == .OK, let url = panel.url {
+                let filename = URL(fileURLWithPath: url.path).deletingPathExtension().lastPathComponent
+                displaySpace.displaySpaceHeader.name = filename.replacingOccurrences(of: "_", with: " ")
 
-                    pathDisplaySpace = url.path
+                if regenerateID {
+                    displaySpace.fileHeader.id = UUID()
+                }
 
-                    if let window = getDisplaySpaceView() {
-                        window.title = displaySpace.displaySpaceHeader.name
-                    }
+                // `panel.begin` est asynchrone : la mise à nil/restauration
+                // doit se faire ICI, autour de l'écriture réelle, sinon
+                // `presenters` serait déjà restauré et sérialisé dans le fichier.
+                let tmp = displaySpace.presenters
+                displaySpace.presenters = nil
+                saveToJSONFile(displaySpace, filename: url.path)
+                displaySpace.presenters = tmp
+
+                pathDisplaySpace = url.path
+
+                if let window = getDisplaySpaceView() {
+                    window.title = displaySpace.displaySpaceHeader.name
                 }
             }
         }
